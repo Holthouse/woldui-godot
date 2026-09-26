@@ -1,0 +1,88 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_card/wold_card.gd" id="1_card"]
+
+[node name="WoldCard" type="PanelContainer"]
+custom_minimum_size = Vector2(320, 0)
+theme_type_variation = &"Card"
+script = ExtResource("1_card")
+title = "Great Library"
+description = "Wonder. +3 research in every city."
+icon = "library"
+
+[node name="Body" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"StackNone"
+
+[node name="Header" type="MarginContainer" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"CardSection"
+
+[node name="Row" type="HBoxContainer" parent="Body/Header"]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"RowMd"
+
+[node name="Icon" type="TextureRect" parent="Body/Header/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="Body/Header/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_type_variation = &"StackXs"
+
+[node name="Title" type="Label" parent="Body/Header/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"CardTitle"
+text = "Great Library"
+autowrap_mode = 3
+
+[node name="Description" type="Label" parent="Body/Header/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"CardDescription"
+text = "Wonder. +3 research in every city."
+autowrap_mode = 3
+
+[node name="Action" type="HBoxContainer" parent="Body/Header/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"RowXs"
+
+[node name="ContentBox" type="MarginContainer" parent="Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"CardSectionNext"
+
+[node name="Content" type="VBoxContainer" parent="Body/ContentBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"StackSm"
+
+[node name="FooterBox" type="MarginContainer" parent="Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"CardSectionNext"
+
+[node name="Footer" type="HBoxContainer" parent="Body/FooterBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"RowSm"

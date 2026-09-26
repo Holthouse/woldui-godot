@@ -77,6 +77,7 @@ func rebuild() -> void:
 	_wold_steppers()
 	_wold_fields()
 	_wold_button_strips()
+	_wold_cards()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -706,6 +707,52 @@ func _wold_button_strips() -> void:
 		row.add_child(strip)
 	var zoom: WoldButtonStrip = load("res://addons/woldui/gallery/examples/map_zoom.tscn").instantiate()
 	row.add_child(zoom)
+	s.add_child(row)
+
+
+## UpgradeCard: selectable, one-of-a-group choices
+func _wold_cards() -> void:
+	var s := _section("WoldCard", "components/wold_card. Header (icon, title, description, %Action), %Content and %Footer; empty parts take no room. selectable makes it a choice you can focus and press; UpgradeCards pick one at a time.")
+	var picks := _row(&"RowLg")
+	var ups := [["Sharper spears", "Spearmen deal +2 damage.", "swords", 40], ["Granaries", "Cities keep half their food when they grow.", "wheat", 60], ["Scouting", "See two hexes further.", "eye", 0]]
+	for u in ups:
+		var c: WoldCard = load("res://addons/woldui/gallery/examples/upgrade_card.tscn").instantiate()
+		c.title = u[0]
+		c.description = u[1]
+		c.icon = u[2]
+		c.cost = u[3]
+		c.size_flags_vertical = Control.SIZE_FILL
+		picks.add_child(c)
+	s.add_child(picks)
+	var row := _row(&"RowLg")
+	var info: WoldCard = load("res://addons/woldui/components/wold_card/wold_card.tscn").instantiate()
+	info.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	var body := _label("Takes 6 turns. Only one civilisation can build it.", &"Body")
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.get_node("%Content").add_child(body)
+	var meter := WoldMeter.new()
+	meter.value = 35
+	meter.show_percentage = false
+	meter.custom_minimum_size.y = 8
+	info.get_node("%Content").add_child(meter)
+	var build: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	build.text = "Build"
+	build.shape = WoldButton.Shape.PRIMARY
+	build.disabled = show_disabled
+	info.get_node("%Footer").add_child(build)
+	var later: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	later.text = "Later"
+	later.shape = WoldButton.Shape.GHOST
+	info.get_node("%Footer").add_child(later)
+	row.add_child(info)
+	var small: WoldCard = load("res://addons/woldui/components/wold_card/wold_card.tscn").instantiate()
+	small.card_size = WoldCard.Size.SM
+	small.title = "Rivermouth"
+	small.description = "Pop 12, +4 gold"
+	small.icon = "castle"
+	small.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	small.custom_minimum_size.x = 220
+	row.add_child(small)
 	s.add_child(row)
 
 

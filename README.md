@@ -241,6 +241,19 @@ strip.add_child(redo_button)
 
 Any Button works, WoldButtons included, and it keeps up when a button changes shape, hides, or the tokens change. It's only looks: for pick-one behaviour give the buttons a `ButtonGroup` as usual. The joins are stylebox overrides on your buttons, taken off right before the editor saves so they never end up in your scene. See `gallery/examples/map_zoom.tscn`.
 
+### WoldCard
+
+A surface with a header (icon, title, description and an `%Action` slot), a `%Content` slot and a `%Footer` slot. Parts you leave empty take no room, and the padding stays even whichever ones are there.
+
+```gdscript
+card.title = "Great Library"
+card.description = "Wonder. +3 research in every city."
+card.icon = "library"
+card.get_node("%Footer").add_child(build_button)
+```
+
+`card_size` is SM or MD. Set `selectable` and it becomes a choice: it takes focus, lights up on hover, and a click or accept emits `pressed`. Cards that share a `card_group` select one at a time, which is most of an upgrade picker. See `gallery/examples/upgrade_card.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.
