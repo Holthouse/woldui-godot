@@ -171,11 +171,20 @@ func _roles() -> Dictionary:
 		r[t + "_hover"] = ramp_t[400] if dark else ramp_t[600]
 		r[t + "_pressed"] = ramp_t[600] if dark else ramp_t[700]
 		r["on_" + t] = WoldColor.on(ramp_t[500], Color.WHITE, n[950])
-		# 500 works as a fill but is often too dim as text on a surface
-		r[t + "_text"] = ramp_t[300] if dark else ramp_t[700]
+		# 500 works as a fill but is often too dim as text on a surface. Step
+		# further from it until it reads on the hardest surface (overlay in
+		# dark, sunken in light): error text ends up in dialogs too
+		r[t + "_text"] = _readable(ramp_t, [300, 200, 100, 50] if dark else [700, 800, 900], r.surface_overlay if dark else r.surface_sunken)
 		r[t + "_soft"] = Color(ramp_t[500], 0.16 if dark else 0.12)
 	r.focus = ramp("accent")[300] if dark else ramp("accent")[600]
 	return r
+
+
+func _readable(tone_ramp: Dictionary, steps: Array, on: Color) -> Color:
+	for step in steps:
+		if WoldColor.contrast(tone_ramp[step], on) >= 4.5:
+			return tone_ramp[step]
+	return tone_ramp[steps[-1]]
 
 
 # ---------------------------------------------------------------- scales

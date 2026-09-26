@@ -22,6 +22,11 @@ const CONTRAST_PAIRS := [
 	["text", "field", 4.5], ["text_muted", "field", 4.5],
 	# segmented controls: unpicked labels sit on the sunken track
 	["text_muted", "surface_sunken", 4.5],
+	# status text (field errors, toasts) turns up in dialogs and sunken panels too
+	["accent_text", "surface_overlay", 4.5], ["success_text", "surface_overlay", 4.5],
+	["warning_text", "surface_overlay", 4.5], ["danger_text", "surface_overlay", 4.5],
+	["accent_text", "surface_sunken", 4.5], ["success_text", "surface_sunken", 4.5],
+	["warning_text", "surface_sunken", 4.5], ["danger_text", "surface_sunken", 4.5],
 ]
 
 
