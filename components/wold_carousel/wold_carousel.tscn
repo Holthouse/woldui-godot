@@ -1,0 +1,39 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_carousel/wold_carousel.gd" id="1_car"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_button/wold_button.tscn" id="2_button"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_page_dots/wold_page_dots.tscn" id="3_dots"]
+
+[node name="WoldCarousel" type="VBoxContainer"]
+custom_minimum_size = Vector2(360, 0)
+theme_type_variation = &"StackMd"
+script = ExtResource("1_car")
+
+[node name="Controls" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"RowSm"
+
+[node name="Prev" parent="Controls" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Previous"
+text = ""
+shape = 5
+button_size = 0
+icon_start = "chevron-left"
+
+[node name="Dots" parent="Controls" instance=ExtResource("3_dots")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 6
+count = 1
+
+[node name="Next" parent="Controls" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Next"
+text = ""
+shape = 5
+button_size = 0
+icon_start = "chevron-right"

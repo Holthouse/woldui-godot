@@ -303,6 +303,19 @@ The quiet ones.
 
 Under Reduce motion the skeleton and spinner hold still.
 
+### WoldCarousel and WoldPageDots
+
+```gdscript
+# pages are the carousel's children, like WoldTabs
+carousel.add_child(page_one)
+carousel.add_child(page_two)
+carousel.page_changed.connect(func(i): print("page ", i))
+```
+
+One page at a time with arrows and page dots under it. The new page slides in from the side you went, `wrap` goes round at the ends, and LB / RB flip pages while focus is somewhere inside the carousel (so two on one screen don't fight). With a single page the controls hide.
+
+WoldPageDots is the dots on their own: `count`, `current`, and `page_selected` when one is clicked. The current dot stretches into a pill that slides along. See `gallery/examples/how_to_play.tscn` and `step_dots.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

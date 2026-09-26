@@ -82,6 +82,7 @@ func rebuild() -> void:
 	_wold_avatars()
 	_wold_alerts()
 	_wold_status()
+	_wold_carousels()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -895,6 +896,28 @@ func _wold_status() -> void:
 	lines.add_child(load("res://addons/woldui/components/wold_separator/wold_separator.tscn").instantiate())
 	lines.add_child(load("res://addons/woldui/gallery/examples/turn_divider.tscn").instantiate())
 	row.add_child(lines)
+	s.add_child(row)
+
+
+## HowToPlay: pages are children; StepDots on its own
+func _wold_carousels() -> void:
+	var s := _section("WoldCarousel / WoldPageDots", "components/wold_carousel, wold_page_dots. One page at a time with arrows and dots; the page slides in from the side you went, and LB / RB flip pages while focus is inside. The dots work on their own too.")
+	var row := _row(&"RowXxl")
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"PanelRaised"
+	panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	panel.add_child(load("res://addons/woldui/gallery/examples/how_to_play.tscn").instantiate())
+	row.add_child(panel)
+	var col := _stack(&"StackMd")
+	col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var dots: WoldPageDots = load("res://addons/woldui/gallery/examples/step_dots.tscn").instantiate()
+	col.add_child(dots)
+	var note := _label("", &"Muted")
+	var show := func(i: int): note.text = "Step %d of %d" % [i + 1, dots.count]
+	dots.page_selected.connect(show)
+	show.call(dots.current)
+	col.add_child(note)
+	row.add_child(col)
 	s.add_child(row)
 
 

@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_carousel/wold_carousel.tscn" id="1_base"]
+
+[node name="HowToPlay" instance=ExtResource("1_base")]
+custom_minimum_size = Vector2(420, 0)
+
+[node name="Roll" type="VBoxContainer" parent="." index="1"]
+layout_mode = 2
+theme_type_variation = &"StackSm"
+
+[node name="Title" type="Label" parent="Roll"]
+layout_mode = 2
+theme_type_variation = &"Subheading"
+text = "1. Roll the dice"
+
+[node name="Body" type="Label" parent="Roll"]
+layout_mode = 2
+theme_type_variation = &"Muted"
+text = "Each turn starts with a roll. Faces give food, wood, gold or a skull."
+autowrap_mode = 3
+
+[node name="Build" type="VBoxContainer" parent="." index="2"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"StackSm"
+
+[node name="Title" type="Label" parent="Build"]
+layout_mode = 2
+theme_type_variation = &"Subheading"
+text = "2. Build"
+
+[node name="Body" type="Label" parent="Build"]
+layout_mode = 2
+theme_type_variation = &"Muted"
+text = "Spend what you rolled on cities, roads and wonders."
+autowrap_mode = 3
+
+[node name="Win" type="VBoxContainer" parent="." index="3"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"StackSm"
+
+[node name="Title" type="Label" parent="Win"]
+layout_mode = 2
+theme_type_variation = &"Subheading"
+text = "3. Win"
+
+[node name="Body" type="Label" parent="Win"]
+layout_mode = 2
+theme_type_variation = &"Muted"
+text = "First to three wonders, or the last one standing."
+autowrap_mode = 3
