@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_avatar_group/wold_avatar_group.tscn" id="1_base"]
+
+[node name="LobbyPlayers" instance=ExtResource("1_base")]
+names = PackedStringArray("Queen Mab", "Old Tom", "Ivy", "Bramble", "Nettle")
+max_visible = 3
+avatar_size = 0

@@ -79,6 +79,7 @@ func rebuild() -> void:
 	_wold_button_strips()
 	_wold_cards()
 	_wold_disclosure()
+	_wold_avatars()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -781,6 +782,52 @@ func _wold_disclosure() -> void:
 	for c in [codex.items()[0].trigger(), codex.items()[1].trigger(), unit.trigger()]:
 		c.disabled = show_disabled
 	s.add_child(row)
+
+
+## FactionLeader and LobbyPlayers are scene-only examples
+func _wold_avatars() -> void:
+	var s := _section("WoldAvatar / WoldAvatarGroup", "components/wold_avatar, wold_avatar_group. A portrait cropped round or square, initials when there's no picture, a presence dot. Groups overlap and fold the rest into +N.")
+	var scene := load("res://addons/woldui/components/wold_avatar/wold_avatar.tscn")
+	var row := _row(&"RowLg")
+	var portrait := _gradient_portrait()
+	var people := [["Queen Mab", WoldAvatar.Size.SM, null, WoldAvatar.Status.NONE], ["Old Tom", WoldAvatar.Size.MD, null, WoldAvatar.Status.ONLINE], ["Ivy", WoldAvatar.Size.LG, null, WoldAvatar.Status.AWAY], ["Bramble", WoldAvatar.Size.LG, portrait, WoldAvatar.Status.BUSY]]
+	for p in people:
+		var a: WoldAvatar = scene.instantiate()
+		a.display_name = p[0]
+		a.avatar_size = p[1]
+		a.texture = p[2]
+		a.status = p[3]
+		a.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(a)
+	for f in [["Ants", Color("c0392b")], ["Spidobots", Color("3a7bd5")], ["Moles", Color("5da574")]]:
+		var a: WoldAvatar = scene.instantiate()
+		a.display_name = f[0]
+		a.color = f[1]
+		a.shape = WoldAvatar.Shape.SQUARE
+		a.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(a)
+	var leader: WoldAvatar = load("res://addons/woldui/gallery/examples/faction_leader.tscn").instantiate()
+	leader.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(leader)
+	s.add_child(row)
+	var groups := _row(&"RowXxl")
+	groups.add_child(load("res://addons/woldui/components/wold_avatar_group/wold_avatar_group.tscn").instantiate())
+	groups.add_child(load("res://addons/woldui/gallery/examples/lobby_players.tscn").instantiate())
+	s.add_child(groups)
+
+
+func _gradient_portrait() -> Texture2D:
+	var g := Gradient.new()
+	g.set_color(0, tokens.tone("accent", 300))
+	g.set_color(1, tokens.tone("accent", 800))
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.4, 0.3)
+	tex.fill_to = Vector2(1.0, 1.0)
+	tex.width = 64
+	tex.height = 64
+	return tex
 
 
 func _wold_tabs() -> void:

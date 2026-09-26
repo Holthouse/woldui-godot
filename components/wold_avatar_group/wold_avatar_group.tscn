@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_avatar_group/wold_avatar_group.gd" id="1_group"]
+
+[node name="WoldAvatarGroup" type="HBoxContainer"]
+theme_type_variation = &"AvatarGroup"
+script = ExtResource("1_group")
+names = PackedStringArray("Queen Mab", "Old Tom", "Ivy", "Bramble", "Nettle", "Sorrel")

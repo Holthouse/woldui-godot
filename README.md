@@ -267,6 +267,18 @@ A collapsible is a trigger row that opens to show its `%Content`. The height sli
 
 A WoldAccordion is collapsibles as children: they turn into flush rows with a line between them, and only one is open at a time unless `multiple`. Turn `collapsible` off to keep one section always open. `item_toggled(index, open)` reports changes. See `gallery/examples/unit_details.tscn` and `codex_accordion.tscn`.
 
+### WoldAvatar and WoldAvatarGroup
+
+```gdscript
+avatar.texture = preload("res://art/portraits/mab.png")   # or leave it empty for initials
+avatar.display_name = "Queen Mab"                          # "QM", and the tooltip
+avatar.status = WoldAvatar.Status.ONLINE
+```
+
+The picture is cropped to a circle or a rounded square (`shape`) and covers the frame. With no picture it shows the initials, on `color` if you give it one (a faction colour, say) with the text colour picked to read on it. `status` puts a presence dot on the rim: online, away, busy or offline. For a count, add a WoldBadge as a child with `pin = TOP_RIGHT`. `initials` overrides the letters.
+
+WoldAvatarGroup builds overlapping avatars from `names` (and optional `textures`), each with a ring in the surface colour, and folds anything past `max_visible` into a "+N" whose tooltip lists who's in it. See `gallery/examples/faction_leader.tscn` and `lobby_players.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.
