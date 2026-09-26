@@ -264,7 +264,7 @@ step.options = PackedStringArray(["Easy", "Normal", "Hard"])
 step.value_changed.connect(func(v): settings.difficulty = int(v))
 ```
 
-The whole row takes focus, so up and down still move between rows while left and right (keys, d-pad or the little arrows) step the value. Accept steps forward and goes round at the end. With no `options` it steps numbers from `min_value` to `max_value` by `step`, shown with `format` (`"%d%%"`). `wrap` makes both ends go round. The value box is as wide as its widest step, so the arrows stay put. See `gallery/examples/ui_volume.tscn`.
+The whole row takes focus, so up and down still move between rows while left and right (keys, d-pad or the little arrows) step the value. Accept steps forward and goes round at the end; a click or tap steps towards whichever side of the value it lands on, so the whole row is a target. With no `options` it steps numbers from `min_value` to `max_value` by `step`, shown with `format` (`"%d%%"`). `wrap` makes both ends go round. The value box is as wide as its widest step, so the arrows stay put. See `gallery/examples/ui_volume.tscn`.
 
 ### WoldField
 
@@ -468,7 +468,9 @@ For buttons, drop a `WoldFeedback` node into a scene. Every button under its par
 
 There are eight sound slots (hover, click, confirm, back, error, open, close, focus), set through a `WoldSoundSet` on the tokens. Empty slots fall back to built-in synthesised sounds while `use_builtin_sounds` is on, so a prototype isn't silent.
 
-Enabling the plugin adds a `WoldUI` autoload. It holds the player preferences (`reduced_motion`, `sound_enabled`, `sound_volume_db`) and tracks the input device in `input_mode` (MOUSE, KEYBOARD or PAD), with `input_mode_changed` when it switches. Focus sounds only play on keyboard and pad. If you don't have the autoload, `WoldUIRuntime.instance()` makes one when first needed.
+Enabling the plugin adds a `WoldUI` autoload. It holds the player preferences (`reduced_motion`, `sound_enabled`, `sound_volume_db`) and tracks the input device in `input_mode` (MOUSE, KEYBOARD, PAD or TOUCH), with `input_mode_changed` when it switches. Focus sounds only play on keyboard and pad.
+
+On touch (`WoldUI.is_touch()`) the components behave for fingers: buttons don't lift or play a hover sound on a tap, tooltips show on a long-press and hide on the next touch, hover cards open on a tap, page dots take a fingertip-sized tap, and a stepper steps towards whichever side of its value you tap. Button prompts hide when `hide_on_mouse` is on, as they do for the mouse. If you don't have the autoload, `WoldUIRuntime.instance()` makes one when first needed.
 
 The dock's "Motion & sound" tab plays every preset and sound right in the editor.
 
@@ -505,7 +507,6 @@ The gallery shows your own styles under "Game styles" without you doing anything
 ## Known gaps
 
 - The built-in sounds are placeholders.
-- Nothing touch-specific yet.
 
 ## Development
 

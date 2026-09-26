@@ -6,8 +6,7 @@ extends Node
 ## Main reason it exists over tooltip_text: it also shows on keyboard/pad
 ## focus, and it's anchored to the control rather than the cursor.
 ## Override _wold_fill() to stuff extra nodes into the panel's %Extra.
-# TODO: no touch support. It only listens for hover and focus, there's no
-# tap / long-press handling.
+## On touch it shows on a long-press instead, and the next touch hides it.
 
 signal shown
 signal hidden
@@ -39,6 +38,13 @@ var panel: PanelContainer
 # one tooltip at a time, across all instances
 static var _current: WoldTooltip
 var _wait: SceneTreeTimer
+# long-press: where the finger went down, and when
+var _press_at := Vector2.INF
+var _press_timer: SceneTreeTimer
+
+const LONG_PRESS := 0.5
+# a finger that moves this far is scrolling, not pressing
+const PRESS_SLOP := 12.0
 
 
 func _ready() -> void:
@@ -128,6 +134,9 @@ func place() -> void:
 
 
 func _on_hover() -> void:
+	# on touch this is the pointer Godot fakes from a tap, not a real hover
+	if WoldUIRuntime.instance().is_touch():
+		return
 	var wait := delay if delay >= 0.0 else WoldUIRuntime.instance().tokens.tooltip_delay
 	var timer := get_tree().create_timer(wait)
 	_wait = timer
@@ -135,6 +144,31 @@ func _on_hover() -> void:
 	# hide_tip() or a newer hover replaced _wait -> this one's stale
 	if _wait == timer:
 		show_tip()
+
+
+# fingers: _input sees every touch, the target doesn't need to be on top
+func _input(event: InputEvent) -> void:
+	var target := get_parent() as Control
+	if target == null or Engine.is_editor_hint():
+		return
+	var touch := event as InputEventScreenTouch
+	if touch and touch.pressed:
+		if is_showing():
+			hide_tip()
+		elif target.is_visible_in_tree() and target.get_global_rect().has_point(touch.position):
+			_press_at = touch.position
+			var timer := get_tree().create_timer(LONG_PRESS)
+			_press_timer = timer
+			await timer.timeout
+			if _press_timer == timer and _press_at != Vector2.INF:
+				show_tip()
+	elif touch:
+		_press_at = Vector2.INF
+		_press_timer = null
+	elif event is InputEventScreenDrag and _press_at != Vector2.INF:
+		if (event as InputEventScreenDrag).position.distance_to(_press_at) > PRESS_SLOP:
+			_press_at = Vector2.INF
+			_press_timer = null
 
 
 func _on_focus() -> void:

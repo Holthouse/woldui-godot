@@ -97,7 +97,9 @@ func _dot_at(p: Vector2) -> int:
 	var gap := float(get_theme_constant(&"gap"))
 	var rects := dot_rects()
 	for i in rects.size():
-		if rects[i].grow(gap / 2.0 + 4.0).has_point(p):
+		# at least 44 px tall: a dot is far smaller than a fingertip
+		var tall := maxf(4.0, (44.0 - rects[i].size.y) / 2.0)
+		if rects[i].grow_individual(gap / 2.0 + 4.0, tall, gap / 2.0 + 4.0, tall).has_point(p):
 			return i
 	return -1
 

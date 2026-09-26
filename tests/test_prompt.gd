@@ -18,7 +18,7 @@ func _run() -> void:
 	await _live_switching()
 	await _fallbacks_and_hiding()
 	await _own_art()
-	finish(26)
+	finish(27)
 
 
 func _key(code: Key, physical := false) -> InputEventKey:
@@ -126,6 +126,10 @@ func _fallbacks_and_hiding() -> void:
 	key.pressed = true
 	ui.note_input(key)
 	check(p.visible, "and shows it again on the keyboard")
+	var tap := InputEventScreenTouch.new()
+	tap.pressed = true
+	ui.note_input(tap)
+	check(not p.visible, "a finger counts as the mouse here too")
 	ui.note_input(InputEventMouseButton.new())
 	p.queue_free()
 

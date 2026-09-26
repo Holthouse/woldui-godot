@@ -26,7 +26,7 @@ func _run() -> void:
 	check(how.pages().size() == 3 and how.pages()[0].visible and steps.count == 4 and steps.current == 1, "HowToPlay has its three pages, StepDots its four")
 	how.queue_free()
 	steps.queue_free()
-	finish(18)
+	finish(19)
 
 
 func _frames() -> void:
@@ -63,6 +63,9 @@ func _dots() -> void:
 	await create_timer(t.duration_base + 0.1).timeout
 	rects = d.dot_rects()
 	check(rects[3].size.x == t.space_sm * 3 and rects[0].size.x == t.space_sm, "and the pill slides over to it")
+	hit.position = rects[1].get_center() + Vector2(0, 16)
+	d._gui_input(hit)
+	check(d.current == 1, "a tap well above or below a dot still counts (finger-sized)")
 	check(WoldColor.contrast(d.get_theme_color("dot"), t.role("surface_raised")) >= 3.0, "idle dots stand off the surface (3:1)")
 	d.queue_free()
 

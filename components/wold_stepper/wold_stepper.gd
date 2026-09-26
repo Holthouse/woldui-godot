@@ -4,7 +4,8 @@ extends Button
 ## The console-style "< Normal >" setting. Left / right (keys, d-pad, or the
 ## arrows) step through `options`, or through numbers when there are none.
 ## The whole row takes focus as one, so up / down still move between rows.
-## Accept (or a click on the row) steps forward.
+## Accept steps forward; a click or tap steps towards whichever side of the
+## value it lands on, so the whole row is the target, not just the arrows.
 
 signal value_changed(value: float)
 
@@ -53,6 +54,8 @@ const Content := preload("../shared/wold_button_content.gd")
 		_refresh()
 
 var _refreshing := false
+# where the last click / tap went down, x in our space; -1 = keys or pad
+var _press_x := -1.0
 
 
 func _ready() -> void:
@@ -103,6 +106,9 @@ func step_by(direction: int) -> bool:
 
 
 func _gui_input(event: InputEvent) -> void:
+	var mb := event as InputEventMouseButton
+	if mb and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+		_press_x = mb.position.x
 	if event.is_action_pressed(&"ui_left", true):
 		step_by(-1)
 		accept_event()
@@ -112,7 +118,13 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _on_pressed() -> void:
-	# accept / a click on the row: forward, and round again if it wraps
+	if _press_x >= 0.0:
+		var value_mid := (%Value as Control).get_global_rect().get_center().x - global_position.x
+		var dir := -1 if _press_x < value_mid else 1
+		_press_x = -1.0
+		step_by(dir)
+		return
+	# accept: forward, and round again at the end even without wrap
 	if not step_by(1) and not wrap and value >= _hi() - 0.0001:
 		value = _lo()
 

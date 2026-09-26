@@ -11,7 +11,7 @@ signal preferences_changed
 ## From apply_tokens(). WoldScopes listen and rebuild.
 signal tokens_changed
 
-enum InputMode { MOUSE, KEYBOARD, PAD }
+enum InputMode { MOUSE, KEYBOARD, PAD, TOUCH }
 
 const SETTING_TOKENS := "woldui/tokens"
 const SETTING_BUS := "woldui/sound_bus"
@@ -77,10 +77,15 @@ func _input(event: InputEvent) -> void:
 
 
 ## Called from _input. Public in case your game routes input itself.
-# TODO: touch events are ignored, a touch counts as whatever came before it
 func note_input(event: InputEvent) -> void:
+	# a tap also arrives as made-up mouse events for mouse-only controls;
+	# those mustn't flip TOUCH back to MOUSE
+	if event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION:
+		return
 	var mode := input_mode
-	if event is InputEventJoypadButton:
+	if event is InputEventScreenTouch or event is InputEventScreenDrag:
+		mode = InputMode.TOUCH
+	elif event is InputEventJoypadButton:
 		mode = InputMode.PAD
 	elif event is InputEventJoypadMotion:
 		if absf((event as InputEventJoypadMotion).axis_value) >= PAD_DEADZONE:
@@ -96,7 +101,12 @@ func note_input(event: InputEvent) -> void:
 
 ## Keys or pad. Focus rings/sounds and prompts only matter then.
 func is_focus_navigating() -> bool:
-	return input_mode != InputMode.MOUSE
+	return input_mode == InputMode.KEYBOARD or input_mode == InputMode.PAD
+
+
+## Fingers: no hover, bigger targets, long-press for tooltips.
+func is_touch() -> bool:
+	return input_mode == InputMode.TOUCH
 
 
 ## Play a slot ("click", "confirm"...). `sounds` overrides the token set.

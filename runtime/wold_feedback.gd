@@ -58,7 +58,8 @@ func _ui() -> WoldUIRuntime:
 
 
 func _on_hover(b: BaseButton, on: bool) -> void:
-	if b.disabled:
+	# fingers don't hover; a tap would leave the button lifted
+	if b.disabled or _ui().is_touch():
 		return
 	if motion and b is Control:
 		WoldMotion.hover(b, on or b.has_focus() and _ui().is_focus_navigating())

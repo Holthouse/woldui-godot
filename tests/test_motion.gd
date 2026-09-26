@@ -22,9 +22,10 @@ func _run() -> void:
 	_input_mode()
 	_sounds()
 	await _feedback()
+	await _touch_feedback()
 	ui.reduced_motion = false
 	ui.sound_enabled = true
-	finish(63)
+	finish(67)
 
 
 func _card() -> PanelContainer:
@@ -211,6 +212,16 @@ func _input_mode() -> void:
 	ui.note_input(key)
 	check(ui.input_mode == WoldUIRuntime.InputMode.KEYBOARD, "a key switches to KEYBOARD")
 	check(seen.has(WoldUIRuntime.InputMode.PAD) and seen.has(WoldUIRuntime.InputMode.KEYBOARD), "input_mode_changed fires on each switch")
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	ui.note_input(touch)
+	check(ui.input_mode == WoldUIRuntime.InputMode.TOUCH and not ui.is_focus_navigating(), "a touch switches to TOUCH, which isn't focus navigation")
+	# what Godot makes up from a tap for controls that only know the mouse
+	var emulated := InputEventMouseButton.new()
+	emulated.pressed = true
+	emulated.device = InputEvent.DEVICE_ID_EMULATION
+	ui.note_input(emulated)
+	check(ui.input_mode == WoldUIRuntime.InputMode.TOUCH, "the mouse clicks a tap turns into don't switch it back")
 	ui.input_mode_changed.disconnect(on_change)
 	ui.note_input(mouse)
 
@@ -287,3 +298,33 @@ func _feedback() -> void:
 	check(ui.last_sound == "error", "clicking a disabled button answers with the error sound")
 	ui.note_input(InputEventMouseButton.new())
 	host.queue_free()
+
+
+# a finger has no hover: a tap mustn't leave a button lifted or click twice
+func _touch_feedback() -> void:
+	var keep := ui.tokens
+	ui.tokens = keep.derive({"hover_scale": 1.1})
+	var holder := Control.new()
+	stage.add_child(holder)
+	var b := Button.new()
+	holder.add_child(b)
+	var fb := WoldFeedback.new()
+	holder.add_child(fb)
+	await process_frame
+	ui.last_sound = ""
+	b.mouse_entered.emit()
+	await create_timer(0.2).timeout
+	var lifted := b.offset_transform_scale.x > 1.0
+	b.mouse_exited.emit()
+	await create_timer(0.2).timeout
+	var tap := InputEventScreenTouch.new()
+	tap.pressed = true
+	ui.note_input(tap)
+	ui.last_sound = ""
+	b.mouse_entered.emit()
+	await create_timer(0.2).timeout
+	check(lifted and b.offset_transform_scale.x == 1.0, "with a mouse hovering lifts a button, with a finger it doesn't")
+	check(ui.last_sound != "hover", "and no hover sound on touch")
+	ui.note_input(InputEventMouseButton.new())
+	ui.tokens = keep
+	holder.queue_free()

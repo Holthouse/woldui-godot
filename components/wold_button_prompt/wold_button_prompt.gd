@@ -67,7 +67,7 @@ func device() -> WoldPrompts.Device:
 		InputKind.MOUSE: return WoldPrompts.Device.MOUSE
 	match WoldUIRuntime.instance().input_mode:
 		WoldUIRuntime.InputMode.PAD: return WoldPrompts.Device.PAD
-		WoldUIRuntime.InputMode.MOUSE: return WoldPrompts.Device.MOUSE
+		WoldUIRuntime.InputMode.MOUSE, WoldUIRuntime.InputMode.TOUCH: return WoldPrompts.Device.MOUSE
 	return WoldPrompts.Device.KEYBOARD
 
 
@@ -89,7 +89,8 @@ func refresh() -> void:
 	g.glyph = glyph
 	var set := ui.tokens.icon_set
 	g.art = set.get_icon(glyph.art) if set and glyph.art != "" and set.custom_names().has(glyph.art) else null
-	var mouse_now := input_kind == InputKind.AUTO and ui.input_mode == WoldUIRuntime.InputMode.MOUSE
+	# a finger is a pointer too: button glyphs mean nothing to it
+	var mouse_now := input_kind == InputKind.AUTO and ui.input_mode in [WoldUIRuntime.InputMode.MOUSE, WoldUIRuntime.InputMode.TOUCH]
 	visible = not (hide_on_mouse and mouse_now)
 	if event == null and not Engine.is_editor_hint():
 		push_warning("WoldButtonPrompt: action '%s' has no bindings" % action)

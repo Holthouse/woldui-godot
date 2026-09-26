@@ -18,13 +18,14 @@ func _run() -> void:
 	await _dismiss()
 	await _keyboard()
 	await _hover()
+	await _touch_hover()
 	var a := _anchor()
 	var card: WoldPopover = load("res://addons/woldui/gallery/examples/city_card.tscn").instantiate()
 	a.add_child(card)
 	await _frames()
 	check(card.trigger == WoldPopover.Trigger.HOVER and card.content().get_child_count() == 2, "CityCard is a hover card with its own content")
 	a.queue_free()
-	finish(20)
+	finish(22)
 
 
 func _frames() -> void:
@@ -189,3 +190,26 @@ func _hover() -> void:
 	check(not p.is_open, "and focus moving on closes it")
 	a.queue_free()
 	away.queue_free()
+
+
+# hover cards on touch: a tap is the only way in
+func _touch_hover() -> void:
+	var ui := WoldUIRuntime.instance()
+	var tap := InputEventScreenTouch.new()
+	tap.pressed = true
+	ui.note_input(tap)
+	var a := _anchor()
+	var p := _pop(a)
+	p.trigger = WoldPopover.Trigger.HOVER
+	p.delay = 0.05
+	await _frames()
+	a.pressed.emit()
+	await _frames()
+	a.mouse_exited.emit()
+	await create_timer(0.3).timeout
+	check(p.is_open, "touch: tapping a hover card's anchor opens it, and the faked pointer leaving doesn't close it")
+	a.pressed.emit()
+	await _frames()
+	check(not p.is_open, "tapping again closes it")
+	ui.note_input(InputEventMouseButton.new())
+	a.queue_free()

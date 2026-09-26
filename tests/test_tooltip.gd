@@ -22,7 +22,8 @@ func _run() -> void:
 	await _placement()
 	await _one_at_a_time_and_cleanup()
 	await _hook()
-	finish(26)
+	await _touch()
+	finish(30)
 
 
 func _target(pos := Vector2(400, 300)) -> Button:
@@ -177,4 +178,40 @@ func _hook() -> void:
 	t.show_tip()
 	check(t.calls == 1 and t.panel.get_node("%Extra").get_node_or_null("Mine") != null, "_wold_fill adds your own content to the Extra slot")
 	t.hide_tip()
+	b.queue_free()
+
+
+func _touch_at(at: Vector2, pressed: bool) -> void:
+	var e := InputEventScreenTouch.new()
+	e.position = at
+	e.pressed = pressed
+	get_root().push_input(e)
+	await process_frame
+
+
+# a finger can't hover: long-press shows it, the next touch puts it away
+func _touch() -> void:
+	var ui := WoldUIRuntime.instance()
+	var b := _target()
+	var tip := _tip(b)
+	tip.delay = 0.05
+	await process_frame
+	await _touch_at(Vector2(5, 5), true)
+	await _touch_at(Vector2(5, 5), false)
+	b.mouse_entered.emit()
+	await create_timer(0.2).timeout
+	check(ui.is_touch() and not tip.is_showing(), "touch: the hover a tap fakes doesn't show it")
+	var at := b.get_global_rect().get_center()
+	await _touch_at(at, true)
+	await _touch_at(at, false)
+	await create_timer(0.7).timeout
+	check(not tip.is_showing(), "a quick tap doesn't either")
+	await _touch_at(at, true)
+	await create_timer(0.7).timeout
+	check(tip.is_showing(), "holding a finger on it does")
+	await _touch_at(at, false)
+	await _touch_at(Vector2(5, 5), true)
+	await _touch_at(Vector2(5, 5), false)
+	check(not tip.is_showing(), "and the next touch anywhere puts it away")
+	ui.note_input(InputEventMouseButton.new())
 	b.queue_free()

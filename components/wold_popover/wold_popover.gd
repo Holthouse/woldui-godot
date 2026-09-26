@@ -231,6 +231,11 @@ func _hook() -> void:
 			else:
 				a.gui_input.connect(_on_anchor_input)
 		Trigger.HOVER:
+			# fingers can't hover, so on touch a tap toggles it instead
+			if a is BaseButton:
+				a.pressed.connect(_on_touch_tap)
+			else:
+				a.gui_input.connect(_on_touch_input)
 			a.mouse_entered.connect(_on_hover)
 			a.mouse_exited.connect(_on_anchor_exit)
 			a.focus_entered.connect(_on_anchor_focus)
@@ -238,7 +243,7 @@ func _hook() -> void:
 
 
 func _unhook(a: Control) -> void:
-	for pair in [[&"pressed", toggle], [&"gui_input", _on_anchor_input], [&"mouse_entered", _on_hover], [&"mouse_exited", _on_anchor_exit], [&"focus_entered", _on_anchor_focus], [&"focus_exited", _on_anchor_blur]]:
+	for pair in [[&"pressed", toggle], [&"gui_input", _on_anchor_input], [&"pressed", _on_touch_tap], [&"gui_input", _on_touch_input], [&"mouse_entered", _on_hover], [&"mouse_exited", _on_anchor_exit], [&"focus_entered", _on_anchor_focus], [&"focus_exited", _on_anchor_blur]]:
 		if a.has_signal(pair[0]) and a.is_connected(pair[0], pair[1]):
 			a.disconnect(pair[0], pair[1])
 
@@ -249,7 +254,21 @@ func _on_anchor_input(event: InputEvent) -> void:
 		toggle()
 
 
+func _on_touch_tap() -> void:
+	if WoldUIRuntime.instance().is_touch():
+		toggle()
+
+
+func _on_touch_input(event: InputEvent) -> void:
+	var touch := event as InputEventScreenTouch
+	if touch and touch.pressed and WoldUIRuntime.instance().is_touch():
+		toggle()
+
+
 func _on_hover() -> void:
+	# on touch that's the pointer faked from a tap; _on_touch_tap handles it
+	if WoldUIRuntime.instance().is_touch():
+		return
 	_over_anchor = true
 	var wait := delay if delay >= 0.0 else WoldUIRuntime.instance().tokens.tooltip_delay
 	var timer := get_tree().create_timer(wait)
@@ -261,7 +280,7 @@ func _on_hover() -> void:
 
 # a little grace so moving from the anchor onto the card doesn't close it
 func _on_leave() -> void:
-	if trigger != Trigger.HOVER:
+	if trigger != Trigger.HOVER or WoldUIRuntime.instance().is_touch():
 		return
 	var a := anchor()
 	if a and not a.get_global_rect().has_point(a.get_global_mouse_position()):

@@ -19,7 +19,8 @@ func _run() -> void:
 	await _layout()
 	await _saved_scene()
 	await _example()
-	finish(24)
+	await _sides()
+	finish(26)
 
 
 func _stepper() -> WoldStepper:
@@ -159,4 +160,29 @@ func _example() -> void:
 	s.step_by(-1)
 	check(start == "100%" and s.value_text() == "90%" and is_equal_approx(ui.sound_volume_db, linear_to_db(0.9)), "UiVolume shows the volume as a percentage and writes it back in dB")
 	ui.sound_volume_db = 0.0
+	s.queue_free()
+
+
+func _click(at: Vector2) -> void:
+	for down in [true, false]:
+		var e := InputEventMouseButton.new()
+		e.button_index = MOUSE_BUTTON_LEFT
+		e.pressed = down
+		e.position = at
+		e.global_position = at
+		get_root().push_input(e)
+		await process_frame
+
+
+# the arrows are small for a finger; the whole row is the target instead
+func _sides() -> void:
+	var s := _stepper()
+	await process_frame
+	await process_frame
+	var r := s.get_global_rect()
+	await _click(Vector2(r.position.x + 20, r.get_center().y))
+	check(s.value_text() == "Easy", "a click or tap left of the value steps back (%s)" % s.value_text())
+	await _click(Vector2(r.end.x - 4, r.get_center().y))
+	await _click(Vector2(r.end.x - 4, r.get_center().y))
+	check(s.value_text() == "Hard", "right of it steps on (%s)" % s.value_text())
 	s.queue_free()
