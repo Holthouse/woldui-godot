@@ -1,0 +1,34 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_switch/wold_switch.gd" id="1_switch"]
+
+[node name="WoldSwitch" type="Button"]
+theme_type_variation = &"Switch"
+toggle_mode = true
+script = ExtResource("1_switch")
+label = "Show hex grid"
+description = "Outlines every tile on the map."
+
+[node name="Content" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"StackNone"
+alignment = 1
+
+[node name="Label" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ToggleLabel"
+text = "Show hex grid"
+
+[node name="Description" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ToggleDescription"
+text = "Outlines every tile on the map."

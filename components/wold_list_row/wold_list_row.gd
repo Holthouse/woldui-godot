@@ -6,6 +6,8 @@ extends Button
 ## across rows for single-select.
 ## Extra bits go in %Leading (avatar, flag) or %Trailing (a badge, say).
 
+const Content := preload("../shared/wold_button_content.gd")
+
 @export var title := "Row title":
 	set(v):
 		title = v
@@ -85,19 +87,12 @@ func _refresh() -> void:
 	_fit()
 
 
-# Button doesn't size itself to its children, so do it by hand: inset
-# %Content by the stylebox margins and grow the min size to fit.
 func _fit() -> void:
 	if not is_node_ready():
 		return
-	var sb := get_theme_stylebox("normal")
-	var content := %Content as Control
-	content.offset_left = sb.get_margin(SIDE_LEFT)
-	content.offset_top = sb.get_margin(SIDE_TOP)
-	content.offset_right = -sb.get_margin(SIDE_RIGHT)
-	content.offset_bottom = -sb.get_margin(SIDE_BOTTOM)
-	var need := content.get_combined_minimum_size() + sb.get_minimum_size()
-	custom_minimum_size = Vector2(need.x, maxf(need.y, min_height))
+	Content.fit(self, %Content)
+	# min_height is the whole row, padding included
+	custom_minimum_size.y = maxf(custom_minimum_size.y, min_height)
 
 
 # all set in code, don't save them

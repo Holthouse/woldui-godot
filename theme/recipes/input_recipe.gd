@@ -1,8 +1,7 @@
 @tool
 extends RefCounted
-## Text fields, toggles, pickers.
-# TODO: CheckBox/CheckButton still use the engine's default check and switch
-# icons, only recoloured. Should draw our own.
+## Text fields, toggles, pickers. The check / radio / switch icons are drawn
+## in toggle_recipe.
 
 const STYLES: PackedStringArray = ["FieldSm", "FieldLg"]
 

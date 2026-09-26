@@ -143,6 +143,18 @@ row.trailing_icon = "chevron-right"
 
 There's also `trailing_text`, and `%Leading` / `%Trailing` slots (a WoldBadge fits nicely). It's a Button, so focus, pad activation, disabled and WoldFeedback all work. Give a set of rows one `ButtonGroup` and they select one at a time; the selected one gets an accent tint and an accent bar on its leading edge.
 
+### WoldSwitch
+
+An on/off switch whose knob slides.
+
+```gdscript
+sw.label = "Show hex grid"
+sw.description = "Outlines every tile on the map."
+sw.toggled.connect(func(on): settings.hex_grid = on)
+```
+
+It's a toggle Button, so `button_pressed` is the state and `toggled` the signal. Disabled dims the label and description too. Plain CheckBox and CheckButton controls get matching drawn icons from the theme, so they fit in even if you don't use the component. `gallery/examples/motion_switch.tscn` binds one to the Reduce motion preference.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.
@@ -263,7 +275,6 @@ The gallery shows your own styles under "Game styles" without you doing anything
 
 ## Known gaps
 
-- Checkbox and switch icons are still the engine defaults.
 - `WoldSlider` is horizontal only.
 - The built-in sounds are placeholders.
 - Nothing touch-specific yet.

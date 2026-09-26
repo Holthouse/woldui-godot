@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_switch/wold_switch.tscn" id="1_base"]
+[ext_resource type="Script" path="res://addons/woldui/gallery/examples/motion_switch.gd" id="2_script"]
+
+[node name="MotionSwitch" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+label = "Reduce motion"
+description = "Menus and panels appear without sliding or scaling."

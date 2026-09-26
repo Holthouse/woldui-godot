@@ -68,6 +68,8 @@ func rebuild() -> void:
 	_wold_toasts()
 	_wold_tooltips()
 	_wold_list_rows()
+	_wold_switches()
+	_wold_checkboxes()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -428,6 +430,67 @@ func _wold_list_rows() -> void:
 		if i == 0:
 			r.button_pressed = true
 	s.add_child(list)
+
+
+## MotionSwitch is bound to the real Reduce motion preference
+func _wold_switches() -> void:
+	var s := _section("WoldSwitch", "components/wold_switch. A toggle Button whose knob slides. Label and description are props; the description lines up under the label. MotionSwitch is bound to a real setting.")
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"PanelRaised"
+	panel.custom_minimum_size.x = 480
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var col := _stack(&"StackSm")
+	panel.add_child(col)
+	var scene := load("res://addons/woldui/components/wold_switch/wold_switch.tscn")
+	var items := [["Show hex grid", "Outlines every tile on the map.", true], ["Auto end turn", "", false], ["Fog of war", "Set by the scenario.", true]]
+	for i in items.size():
+		var sw: WoldSwitch = scene.instantiate()
+		sw.label = items[i][0]
+		sw.description = items[i][1]
+		sw.button_pressed = items[i][2]
+		sw.disabled = show_disabled or i == 2
+		col.add_child(sw)
+	col.add_child(HSeparator.new())
+	col.add_child(load("res://addons/woldui/gallery/examples/motion_switch.tscn").instantiate())
+	s.add_child(panel)
+
+
+## CheckAll is an inherited scene that drives the other three
+func _wold_checkboxes() -> void:
+	var s := _section("WoldCheckbox", "components/wold_checkbox. Label, description and a mixed state. In a ButtonGroup the same component draws as radios. CheckAll shows the dash while only some units are picked.")
+	var row := _row(&"RowXl")
+	var scene := load("res://addons/woldui/components/wold_checkbox/wold_checkbox.tscn")
+	var units := _stack(&"StackXs")
+	var all: WoldCheckbox = load("res://addons/woldui/gallery/examples/check_all.tscn").instantiate()
+	all.disabled = show_disabled
+	units.add_child(all)
+	var picked: Array[WoldCheckbox] = []
+	for unit in [["Spearmen", true], ["Archers", false], ["Riders", true]]:
+		var indent := MarginContainer.new()
+		indent.add_theme_constant_override("margin_left", tokens.space_xl)
+		var c: WoldCheckbox = scene.instantiate()
+		c.label = unit[0]
+		c.description = ""
+		c.button_pressed = unit[1]
+		c.disabled = show_disabled
+		indent.add_child(c)
+		units.add_child(indent)
+		picked.append(c)
+	all.boxes = picked
+	row.add_child(units)
+	var radios := _stack(&"StackXs")
+	radios.add_child(_label("Difficulty", &"Caption"))
+	var group := ButtonGroup.new()
+	for level in [["Settler", "For learning the ropes."], ["Chieftain", "The AI plays fair."], ["Deity", "The AI gets a head start."]]:
+		var r: WoldCheckbox = scene.instantiate()
+		r.label = level[0]
+		r.description = level[1]
+		r.button_group = group
+		r.button_pressed = level[0] == "Chieftain"
+		r.disabled = show_disabled
+		radios.add_child(r)
+	row.add_child(radios)
+	s.add_child(row)
 
 
 func _wold_tabs() -> void:
