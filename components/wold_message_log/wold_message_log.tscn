@@ -1,0 +1,43 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_message_log/wold_message_log.gd" id="1_log"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_button/wold_button.tscn" id="2_button"]
+
+[node name="WoldMessageLog" type="Control"]
+custom_minimum_size = Vector2(360, 280)
+layout_mode = 3
+script = ExtResource("1_log")
+
+[node name="Scroll" type="ScrollContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"MessageLog"
+horizontal_scroll_mode = 0
+
+[node name="List" type="VBoxContainer" parent="Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"StackMd"
+
+[node name="Jump" parent="." instance=ExtResource("2_button")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_top = -48.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "1 new"
+button_size = 0
+icon_start = "arrow-down"

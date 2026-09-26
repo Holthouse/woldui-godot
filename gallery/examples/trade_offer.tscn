@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_message/wold_message.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_button/wold_button.tscn" id="2_button"]
+
+[node name="TradeOffer" instance=ExtResource("1_base")]
+author = "The Ants"
+text = "20 wood for 10 gold. Offer ends this turn."
+
+[node name="Accept" parent="Column/Bubble/Panel/Body/Content" index="0" instance=ExtResource("2_button")]
+layout_mode = 2
+text = "Accept"
+shape = 0
+button_size = 0
+
+[node name="Decline" parent="Column/Bubble/Panel/Body/Content" index="1" instance=ExtResource("2_button")]
+layout_mode = 2
+text = "Decline"
+shape = 3
+button_size = 0
+
+[editable path="Column/Bubble"]

@@ -86,6 +86,7 @@ func rebuild() -> void:
 	_wold_menus()
 	_wold_popovers()
 	_wold_sheets()
+	_wold_chat()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -1040,6 +1041,45 @@ func _open_layered(make: Callable) -> void:
 	d.tree_exited.connect(layer.queue_free)
 	layer.add_child(d)
 	d.open()
+
+
+## DiplomacyLog: say() lines and turn markers; scroll up to see "N new"
+func _wold_chat() -> void:
+	var s := _section("WoldBubble / WoldMessage / WoldMessageLog / WoldKbd", "Speech bubbles with a squared-off tail, chat lines with avatars (yours on the right), and a log that follows new lines unless you've scrolled up. WoldKbd draws key caps for a written shortcut.")
+	var row := _row(&"RowXxl")
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"PanelRaised"
+	var col := _stack(&"StackSm")
+	panel.add_child(col)
+	var log_view = load("res://addons/woldui/gallery/examples/diplomacy_log.tscn").instantiate()
+	col.add_child(log_view)
+	var lines := [["The Ants", "Your scouts are on our land.", false], ["You", "Just passing through.", true], ["The Ants", "Then pass faster.", false]]
+	log_view.turn(41)
+	for l in lines:
+		log_view.say(l[0], l[1], l[2])
+	log_view.turn(42)
+	var more := [["The Ants", "We could use some wood."], ["The Ants", "20 wood for 10 gold?"], ["Spidobots", "Beep. Declined on their behalf."]]
+	var next := [0]
+	var say: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	say.text = "Next line"
+	say.button_size = WoldButton.Size.SM
+	say.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	say.pressed.connect(func():
+		var l: Array = more[next[0] % more.size()]
+		log_view.say(l[0], l[1])
+		next[0] += 1)
+	col.add_child(say)
+	row.add_child(panel)
+	var side := _stack(&"StackLg")
+	side.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	side.add_child(load("res://addons/woldui/gallery/examples/npc_bark.tscn").instantiate())
+	side.add_child(load("res://addons/woldui/gallery/examples/trade_offer.tscn").instantiate())
+	var keys := _row(&"RowMd")
+	keys.add_child(_label("Quick save", &"Muted"))
+	keys.add_child(load("res://addons/woldui/gallery/examples/save_shortcut.tscn").instantiate())
+	side.add_child(keys)
+	row.add_child(side)
+	s.add_child(row)
 
 
 func _wold_tabs() -> void:

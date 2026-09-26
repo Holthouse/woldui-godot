@@ -366,6 +366,24 @@ One page at a time with arrows and page dots under it. The new page slides in fr
 
 WoldPageDots is the dots on their own: `count`, `current`, and `page_selected` when one is clicked. The current dot stretches into a pill that slides along. See `gallery/examples/how_to_play.tscn` and `step_dots.tscn`.
 
+### WoldBubble, WoldMessage, WoldMessageLog
+
+Speech and chat, for multiplayer lobbies, diplomacy screens and NPCs talking.
+
+```gdscript
+log.say("The Ants", "20 wood for 10 gold?")
+log.say("You", "Deal.", true)          # your own lines sit on the right
+log.add(any_control)                   # a turn marker, a notice, a card
+```
+
+- **WoldBubble** is the speech bubble: `text`, a `look` (default accent, secondary, muted, tinted, outline, ghost, danger), and a `tail` that squares off the corner towards the speaker. It shrinks to short lines and wraps at `max_width`. `%Content` takes buttons inside it, `%Reactions` badges under it. See `gallery/examples/npc_bark.tscn`.
+- **WoldMessage** is one chat line: avatar, `author`, `time`, and a bubble. `mine` flips it to the right. `show_header = false` makes a follow-up line that keeps the avatar's gap. See `trade_offer.tscn`, which puts Accept / Decline in the bubble.
+- **WoldMessageLog** holds them. New lines slide in, and it follows them while you're at the bottom. Scroll up and it stays put, showing an "N new" button that takes you back down. Lines from the same speaker in a row share a header, and past `max_items` the oldest drop off. See `diplomacy_log.tscn`.
+
+### WoldKbd
+
+Key caps for a shortcut written as text: `keys = "Ctrl+Shift+S"`. It uses the same drawn caps as WoldButtonPrompt. Use WoldButtonPrompt when you want an InputMap action that follows the player's device, and WoldKbd for fixed text in help screens and menus. See `gallery/examples/save_shortcut.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

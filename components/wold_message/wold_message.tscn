@@ -1,0 +1,45 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_message/wold_message.gd" id="1_msg"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_avatar/wold_avatar.tscn" id="2_avatar"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_bubble/wold_bubble.tscn" id="3_bubble"]
+
+[node name="WoldMessage" type="HBoxContainer"]
+theme_type_variation = &"RowSm"
+script = ExtResource("1_msg")
+text = "Trade you 20 wood for 10 gold?"
+time = "Turn 42"
+
+[node name="Avatar" parent="." instance=ExtResource("2_avatar")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+avatar_size = 0
+
+[node name="Column" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"StackXs"
+
+[node name="Header" type="HBoxContainer" parent="Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"RowSm"
+
+[node name="Name" type="Label" parent="Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MessageName"
+text = "Queen Mab"
+
+[node name="Time" type="Label" parent="Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 8
+theme_type_variation = &"MessageTime"
+text = "Turn 42"
+
+[node name="Bubble" parent="Column" instance=ExtResource("3_bubble")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Trade you 20 wood for 10 gold?"
