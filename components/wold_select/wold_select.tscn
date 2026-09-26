@@ -1,0 +1,47 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_select/wold_select.gd" id="1_select"]
+
+[node name="WoldSelect" type="Button"]
+theme_type_variation = &"Select"
+script = ExtResource("1_select")
+options = PackedStringArray("Small", "Medium", "Large", "Huge")
+icons = PackedStringArray()
+placeholder = "Map size"
+min_width = 220
+
+[node name="Content" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"RowSm"
+
+[node name="Icon" type="TextureRect" parent="Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SelectPlaceholder"
+text = "Map size"
+text_overrun_behavior = 3
+
+[node name="Chevron" type="TextureRect" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5

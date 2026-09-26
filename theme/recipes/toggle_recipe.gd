@@ -228,3 +228,21 @@ static func check_path(px: int) -> String:
 static func dash_path(px: int) -> String:
 	var s := px / 20.0
 	return "M%.1f %.1fH%.1f" % [6 * s, 10 * s, 14 * s]
+
+
+## Just a stroked path, no box. Menu checks and arrows.
+static func mark(px: int, path: String, color: Color) -> DPITexture:
+	return _texture(px, px, '<path d="%s" fill="none" %s stroke-width="%.1f" stroke-linecap="round" stroke-linejoin="round"/>' % [path, _paint("stroke", color), maxf(px / 10.0, 1.5)])
+
+
+## Empty square, for keeping menu items lined up.
+static func blank(px: int) -> DPITexture:
+	return _texture(px, px, "")
+
+
+## `right` false = pointing down.
+static func chevron_path(px: int, right: bool) -> String:
+	var s := px / 20.0
+	if right:
+		return "M%.1f %.1fL%.1f %.1fL%.1f %.1f" % [8 * s, 5 * s, 13 * s, 10 * s, 8 * s, 15 * s]
+	return "M%.1f %.1fL%.1f %.1fL%.1f %.1f" % [5 * s, 8 * s, 10 * s, 13 * s, 15 * s, 8 * s]

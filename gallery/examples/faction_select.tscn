@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_select/wold_select.tscn" id="1_base"]
+[ext_resource type="Script" path="res://addons/woldui/gallery/examples/faction_select.gd" id="2_script"]
+
+[node name="FactionSelect" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+options = PackedStringArray("Ants", "Spidobots", "Moles")
+icons = PackedStringArray("bug", "bot", "shovel")
+placeholder = "Pick a faction"

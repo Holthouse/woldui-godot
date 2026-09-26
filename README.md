@@ -192,6 +192,18 @@ grid.toggled.connect(func(on): map.show_grid = on)
 
 `outline` adds an edge, `button_size` is SM, MD or LG, and `shape = ICON` makes it square for an icon-only toggle (give it a tooltip). The other shapes don't apply. See `gallery/examples/fast_forward.tscn`.
 
+### WoldSelect
+
+A field that drops down a list of options.
+
+```gdscript
+sel.options = PackedStringArray(["Small", "Medium", "Large"])
+sel.placeholder = "Map size"
+sel.item_selected.connect(func(i): settings.map_size = i)
+```
+
+`selected = -1` shows the placeholder. `icons` puts an icon next to each option (and in the field once picked), `select_size` is SM, MD or LG, and `min_width` stops it being narrower than you want. It sizes itself to the longest option, so picking one never resizes it. Accept opens the list on keyboard or pad, the list takes up / down / accept / cancel, and focus comes back to the field when it closes. It isn't an OptionButton: that one saves its generated items into your scene. Plain PopupMenus also get drawn check boxes, radio dots and a submenu arrow from the theme. See `gallery/examples/faction_select.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

@@ -73,6 +73,7 @@ func rebuild() -> void:
 	_wold_radio_groups()
 	_wold_segmented()
 	_wold_toggles()
+	_wold_selects()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -581,6 +582,38 @@ func _wold_toggles() -> void:
 	ff.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	ff.disabled = show_disabled
 	row.add_child(ff)
+	s.add_child(row)
+
+
+## FactionSelect recolours a WoldScope from the pick
+func _wold_selects() -> void:
+	var s := _section("WoldSelect", "components/wold_select. A field that drops down a list; the current option is checked. Accept opens it on keyboard or pad and focus comes back when it closes. FactionSelect tints a WoldScope.")
+	var row := _row(&"RowLg")
+	var scene := load("res://addons/woldui/components/wold_select/wold_select.tscn")
+	for z in [WoldSelect.Size.SM, WoldSelect.Size.MD, WoldSelect.Size.LG]:
+		var sel: WoldSelect = scene.instantiate()
+		sel.select_size = z
+		sel.min_width = 160
+		sel.selected = 1 if z == WoldSelect.Size.MD else -1
+		sel.disabled = show_disabled
+		sel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(sel)
+	var faction: WoldSelect = load("res://addons/woldui/gallery/examples/faction_select.tscn").instantiate()
+	faction.disabled = show_disabled
+	faction.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(faction)
+	var scope: WoldScope = load("res://addons/woldui/components/wold_scope/wold_scope.tscn").instantiate()
+	var badge: WoldBadge = load("res://addons/woldui/components/wold_badge/wold_badge.tscn").instantiate()
+	badge.text = "Your colour"
+	badge.tone = WoldBadge.Tone.ACCENT
+	badge.fill = WoldBadge.Fill.SOLID
+	scope.add_child(badge)
+	scope.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	scope.visible = false
+	faction.item_selected.connect(func(_i):
+		scope.accent = faction.accent()
+		scope.visible = true)
+	row.add_child(scope)
 	s.add_child(row)
 
 

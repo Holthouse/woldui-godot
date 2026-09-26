@@ -95,7 +95,8 @@ func _declared_styles(path: String) -> void:
 			declared += 1
 			var native := WoldThemeBuilder.native_base(theme, style)
 			check(theme.get_type_variation_base(style) != &"", "%s declares %s and the theme has it" % [file, style])
-			check(ClassDB.class_exists(native) and ClassDB.is_parent_class(native, "Control"), "%s ends on a Control class (got %s)" % [style, native])
+			# popups are Windows, not Controls, and take variations just the same
+			check(ClassDB.class_exists(native) and (ClassDB.is_parent_class(native, "Control") or ClassDB.is_parent_class(native, "Window")), "%s ends on a Control or Window class (got %s)" % [style, native])
 	check(declared >= 76, "the recipes declare the whole catalogue (%d styles)" % declared)
 	var names := WoldThemeBuilder.variation_names(theme)
 	for style in names:
