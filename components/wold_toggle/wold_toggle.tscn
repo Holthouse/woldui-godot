@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_toggle/wold_toggle.gd" id="1_toggle"]
+
+[node name="WoldToggle" type="Button"]
+toggle_mode = true
+text = "Grid"
+script = ExtResource("1_toggle")
+icon_start = "grid-3x3"

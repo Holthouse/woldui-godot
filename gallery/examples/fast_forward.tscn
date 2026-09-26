@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_toggle/wold_toggle.tscn" id="1_base"]
+
+[node name="FastForward" instance=ExtResource("1_base")]
+tooltip_text = "Fast forward AI turns"
+text = ""
+shape = 5
+outline = true
+icon_start = "fast-forward"

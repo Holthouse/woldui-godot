@@ -72,6 +72,7 @@ func rebuild() -> void:
 	_wold_checkboxes()
 	_wold_radio_groups()
 	_wold_segmented()
+	_wold_toggles()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -547,6 +548,40 @@ func _wold_segmented() -> void:
 	wide.stretch = true
 	wide.custom_minimum_size.x = 520
 	s.add_child(wide)
+
+
+## FastForward is a scene-only example: an icon-only outline toggle
+func _wold_toggles() -> void:
+	var s := _section("WoldToggle", "components/wold_toggle. A WoldButton that stays on: quiet when off, accent tint when on. outline adds an edge; shape ICON makes it square for icon-only toggles.")
+	var scene := load("res://addons/woldui/components/wold_toggle/wold_toggle.tscn")
+	var make := func(label: String, icon: String, on: bool, outline := false, square := false, size := WoldButton.Size.MD) -> WoldToggle:
+		var b: WoldToggle = scene.instantiate()
+		b.text = label
+		b.icon_start = icon
+		b.outline = outline
+		b.button_size = size
+		if square:
+			b.shape = WoldButton.Shape.ICON
+			b.tooltip_text = icon
+		b.button_pressed = on
+		b.disabled = show_disabled
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		return b
+	var row := _row(&"RowXs")
+	for l in [["Grid", "grid-3x3", true], ["Yields", "wheat", false], ["Fog", "cloud-fog", true]]:
+		row.add_child(make.call(l[0], l[1], l[2]))
+	row.add_child(VSeparator.new())
+	for l in [["eye", true], ["flag", false], ["mountain", false]]:
+		row.add_child(make.call("", l[0], l[1], true, true))
+	row.add_child(VSeparator.new())
+	for z in [WoldButton.Size.SM, WoldButton.Size.MD, WoldButton.Size.LG]:
+		row.add_child(make.call("Pin", "pin", true, true, false, z))
+	row.add_child(VSeparator.new())
+	var ff: WoldToggle = load("res://addons/woldui/gallery/examples/fast_forward.tscn").instantiate()
+	ff.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	ff.disabled = show_disabled
+	row.add_child(ff)
+	s.add_child(row)
 
 
 func _wold_tabs() -> void:

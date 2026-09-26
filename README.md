@@ -180,6 +180,18 @@ seg.selected_changed.connect(func(i): show_view(i))
 
 With one pick, a raised thumb slides to the chosen segment. Set `multiple` and any number can be on instead (`pressed_items()`, `item_toggled`). `segment_size` is SM or MD, and `stretch` shares the width equally. An option with an icon and no text gets the icon name as its tooltip; set a better one through `item(i)`. See `gallery/examples/map_layers.tscn`.
 
+### WoldToggle
+
+A WoldButton that stays on, for tool palettes and view options: no fill when off, an accent tint and accent text when on.
+
+```gdscript
+grid.text = "Grid"
+grid.icon_start = "grid-3x3"
+grid.toggled.connect(func(on): map.show_grid = on)
+```
+
+`outline` adds an edge, `button_size` is SM, MD or LG, and `shape = ICON` makes it square for an icon-only toggle (give it a tooltip). The other shapes don't apply. See `gallery/examples/fast_forward.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

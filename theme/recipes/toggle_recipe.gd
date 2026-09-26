@@ -7,6 +7,8 @@ extends RefCounted
 const STYLES: PackedStringArray = [
 	"Switch", "Checkbox", "ToggleLabel", "ToggleLabelDisabled", "ToggleDescription", "ToggleDescriptionDisabled", "Segmented", "SegmentedButton", "SegmentedThumb",
 	"SegmentedSm", "SegmentedButtonSm",
+	"Toggle", "ToggleSm", "ToggleLg", "ToggleOutline", "ToggleOutlineSm", "ToggleOutlineLg",
+	"ToggleIcon", "ToggleIconSm", "ToggleIconLg", "ToggleOutlineIcon", "ToggleOutlineIconSm", "ToggleOutlineIconLg",
 ]
 
 
@@ -60,6 +62,10 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 	theme.set_color("halo", "Checkbox", t.role("surface_hover"))
 	_segmented(theme, t, "", t.control_size(""))
 	_segmented(theme, t, "Sm", t.control_size("Sm"))
+	for outline in [false, true]:
+		for square in [false, true]:
+			for size in ["", "Sm", "Lg"]:
+				_toggle(theme, t, outline, square, size)
 
 
 static func switch_width(t: WoldTokens) -> int:
@@ -131,6 +137,43 @@ static func _segmented(theme: Theme, t: WoldTokens, size: String, dims: Dictiona
 		theme.set_stylebox("panel", "SegmentedThumb", WoldStyle.raised(t.role("control"), dims.radius, Vector2i.ZERO, t, t.role("border")))
 		(theme.get_stylebox("panel", "SegmentedThumb") as StyleBoxFlat).shadow_size = 4
 		(theme.get_stylebox("panel", "SegmentedThumb") as StyleBoxFlat).shadow_offset = Vector2(0, 1)
+
+
+# WoldToggle: quiet when off, accent tint + accent text when on. The plain
+# button pressed look is a press, not a state, so it reads too weak here.
+static func _toggle(theme: Theme, t: WoldTokens, outline: bool, square: bool, size: String) -> void:
+	var style := "Toggle" + ("Outline" if outline else "") + ("Icon" if square else "") + size
+	theme.set_type_variation(style, "Button" if size == "" else style.trim_suffix(size))
+	var dims := t.control_size(size)
+	var pad: Vector2i = dims.padding
+	if square:
+		pad = Vector2i(pad.y, pad.y)
+	var radius: int = dims.radius
+	var clear := Color(0, 0, 0, 0)
+	var edge := t.role("border_strong") if outline else clear
+	var on_edge := t.role("accent") if outline else clear
+	var bw := t.border_width
+	theme.set_stylebox("normal", style, WoldStyle.flat(clear, radius, pad, edge, bw))
+	theme.set_stylebox("hover", style, WoldStyle.flat(t.role("surface_hover"), radius, pad, edge, bw))
+	theme.set_stylebox("pressed", style, WoldStyle.flat(t.role("accent_soft"), radius, pad, on_edge, bw))
+	var hot := t.role("accent_soft")
+	hot.a = minf(hot.a * 1.6, 1.0)
+	theme.set_stylebox("hover_pressed", style, WoldStyle.flat(hot, radius, pad, on_edge, bw))
+	theme.set_stylebox("disabled", style, WoldStyle.flat(clear, radius, pad, t.role("control_disabled") if outline else clear, bw))
+	theme.set_stylebox("focus", style, WoldStyle.ring(t, radius))
+	var off := t.role("text_muted")
+	var on := t.role("accent_text")
+	var colors := {
+		"font_color": off, "font_hover_color": t.role("text"), "font_focus_color": t.role("text"),
+		"font_pressed_color": on, "font_hover_pressed_color": on, "font_disabled_color": t.role("text_disabled"),
+		"icon_normal_color": off, "icon_hover_color": t.role("text"), "icon_focus_color": t.role("text"),
+		"icon_pressed_color": on, "icon_hover_pressed_color": on, "icon_disabled_color": t.role("text_disabled"),
+	}
+	for item in colors:
+		theme.set_color(item, style, colors[item])
+	theme.set_font_size("font_size", style, dims.font)
+	theme.set_constant("h_separation", style, t.space_sm)
+	theme.set_constant("icon_max_width", style, dims.icon)
 
 
 # ---------------------------------------------------------------- svg
