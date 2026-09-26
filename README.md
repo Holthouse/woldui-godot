@@ -460,6 +460,18 @@ WoldMotion.shake(button)
 WoldTransition.swap(old_screen, new_screen)
 ```
 
+For a timed sequence of your own (a turn banner, a toast that holds), build one with `sequence()`: its fades are instant under Reduce motion, but holds still hold, since they're reading time.
+
+```gdscript
+var tw := WoldMotion.sequence(banner)       # a new one on the node kills the old
+WoldMotion.fade(tw, banner, 1.0, 0.35)
+tw.tween_interval(0.9)
+WoldMotion.fade(tw, banner, 0.0, 0.35)
+tw.tween_callback(banner.hide)
+```
+
+`WoldMotion.slide(card, Vector2(-40, 0))` eases something the layout just moved in from where it was.
+
 The important bit is that it only animates `modulate.a` and a Control's offset transform, which is visual only. Containers don't reset it, so a node can animate inside a VBoxContainer without its neighbours jumping, and clicks still land where the node really is. Starting a new motion on a node replaces the running one. With reduced motion on, everything goes straight to its end state, but the tween still finishes so `await` works the same.
 
 Presets are `.tres` files in `motion/presets/` (appear, disappear, dialog_in, toast_in, screen_enter and a few more). Each one picks a duration step, an easing from the tokens and a starting alpha/offset/scale. To change one for the whole game, put your own under the same name in the tokens' `motion_presets`.

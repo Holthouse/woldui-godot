@@ -156,6 +156,41 @@ static func nudge(node: Control, from: Vector2) -> Tween:
 	return tw
 
 
+## Slides in from `from` (an offset) to where layout put it, alpha to full.
+## For moving something the layout just moved (a card shuffling along).
+static func slide(node: Control, from: Vector2, seconds := -1.0) -> Tween:
+	var t := tokens()
+	_prepare(node)
+	if reduced():
+		_rest(node)
+		return _finished(node)
+	var tw := _tween(node, null, t)
+	node.offset_transform_position = from
+	var d := seconds if seconds > 0.0 else t.duration_base
+	tw.tween_property(node, "offset_transform_position", Vector2.ZERO, d).set_trans(t.move_transition).set_ease(t.move_ease)
+	# a slide can cut a fade short; finish it
+	tw.tween_property(node, "modulate:a", 1.0, d)
+	return tw
+
+
+# ------------------------------------------------------------------ sequences
+
+## A game's own timed sequence on `node` (a turn banner, a toast): build it
+## with fade(), tween_interval() and tween_callback(). Like every WoldMotion
+## tween, a new one on the same node kills the old.
+static func sequence(node: Node) -> Tween:
+	return _tween(node, null, tokens(), false)
+
+
+## A fade step in a sequence. Instant under reduced motion; holds around it
+## stay, they're reading time, not motion. `together` runs it alongside the
+## step before.
+static func fade(tw: Tween, node: CanvasItem, alpha: float, seconds: float, together := false) -> PropertyTweener:
+	if together:
+		tw.parallel()
+	return tw.tween_property(node, "modulate:a", alpha, 0.0 if reduced() else seconds)
+
+
 static func hover(node: Control, on: bool) -> Tween:
 	var t := tokens()
 	_prepare(node)

@@ -18,6 +18,7 @@ func _run() -> void:
 	await _stagger()
 	await _count_and_press()
 	await _nudge()
+	await _sequences()
 	await _transition()
 	_input_mode()
 	_sounds()
@@ -25,7 +26,7 @@ func _run() -> void:
 	await _touch_feedback()
 	ui.reduced_motion = false
 	ui.sound_enabled = true
-	finish(67)
+	finish(73)
 
 
 func _card() -> PanelContainer:
@@ -328,3 +329,39 @@ func _touch_feedback() -> void:
 	ui.note_input(InputEventMouseButton.new())
 	ui.tokens = keep
 	holder.queue_free()
+
+
+# a game's own timed sequence (a turn banner): fades honour reduced motion,
+# holds don't, and a new sequence on the node kills the old one
+func _sequences() -> void:
+	var c := _card()
+	c.modulate.a = 0.0
+	var steps := []
+	var tw := WoldMotion.sequence(c)
+	WoldMotion.fade(tw, c, 1.0, 0.2)
+	tw.tween_interval(0.2)
+	tw.tween_callback(func(): steps.append("held"))
+	WoldMotion.fade(tw, c, 0.0, 0.2)
+	await create_timer(0.1).timeout
+	check(c.modulate.a > 0.0 and c.modulate.a < 1.0 and steps.is_empty(), "a sequence fades at its own pace")
+	await tw.finished
+	check(c.modulate.a == 0.0 and steps == ["held"], "and runs its steps in order")
+	ui.reduced_motion = true
+	var quick := WoldMotion.sequence(c)
+	WoldMotion.fade(quick, c, 1.0, 0.2)
+	quick.tween_interval(0.25)
+	await process_frame
+	await process_frame
+	check(c.modulate.a == 1.0 and quick.is_running(), "reduced motion: the fade is instant but the hold still holds")
+	var newer := WoldMotion.sequence(c)
+	check(not quick.is_valid() and newer.is_valid(), "a new sequence on the node kills the old one")
+	newer.kill()
+	ui.reduced_motion = false
+	var s := _card()
+	s.modulate.a = 0.4
+	WoldMotion.slide(s, Vector2(-40, 0))
+	check(s.offset_transform_position.x < 0.0, "slide starts off to the side")
+	await create_timer(tokens().duration_base + 0.1).timeout
+	check(s.offset_transform_position == Vector2.ZERO and s.modulate.a == 1.0, "and settles, finishing any fade it cut short")
+	c.queue_free()
+	s.queue_free()
