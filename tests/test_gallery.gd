@@ -22,7 +22,8 @@ func _gallery(path: String) -> void:
 	var page := (g.get_child(0) as ScrollContainer).get_child(0) as Control
 	check(page.get_combined_minimum_size().x <= 1280.0, "%s: the page fits a 1280 px window (needs %.0f px; a long note that does not wrap pushes the gallery off-screen)" % [file, page.get_combined_minimum_size().x])
 	check(buttons.size() > 150, "%s: the gallery shows the catalogue (%d buttons)" % [file, buttons.size()])
-	var unreachable := buttons.filter(func(b): return b.focus_mode == Control.FOCUS_NONE)
+	# a stepper's arrows sit inside a focusable row, that's how you reach them
+	var unreachable := buttons.filter(func(b): return b.focus_mode == Control.FOCUS_NONE and not _inside_focusable(b))
 	check(unreachable.is_empty(), "%s: every button can take keyboard / pad focus (%d cannot)" % [file, unreachable.size()])
 	var fields := _all(g, "LineEdit")
 	check(not fields.is_empty() and fields.all(func(f): return f.focus_mode != Control.FOCUS_NONE), "%s: fields take focus" % file)
@@ -35,6 +36,15 @@ func _gallery(path: String) -> void:
 	check(tips.size() >= 4 and tips.all(func(t): return not t.rows.is_empty()), "%s: every gallery tooltip got its rows (%d tooltips)" % [file, tips.size()])
 	g.queue_free()
 	await process_frame
+
+
+func _inside_focusable(node: Node) -> bool:
+	var p := node.get_parent()
+	while p:
+		if p is BaseButton and p.focus_mode != Control.FOCUS_NONE:
+			return true
+		p = p.get_parent()
+	return false
 
 
 func _all(node: Node, type: String) -> Array:

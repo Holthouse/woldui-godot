@@ -74,6 +74,7 @@ func rebuild() -> void:
 	_wold_segmented()
 	_wold_toggles()
 	_wold_selects()
+	_wold_steppers()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -615,6 +616,37 @@ func _wold_selects() -> void:
 		scope.visible = true)
 	row.add_child(scope)
 	s.add_child(row)
+
+
+## a settings list: the row takes focus, left / right change it
+func _wold_steppers() -> void:
+	var s := _section("WoldStepper", "components/wold_stepper. The console-style < value > setting. Left and right step it (keys, d-pad or the arrows); up and down move between rows. UiVolume is bound to WoldUI's sound volume.")
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"PanelRaised"
+	panel.custom_minimum_size.x = 480
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var col := _stack(&"StackXs")
+	panel.add_child(col)
+	var scene := load("res://addons/woldui/components/wold_stepper/wold_stepper.tscn")
+	var difficulty: WoldStepper = scene.instantiate()
+	col.add_child(difficulty)
+	var turns: WoldStepper = scene.instantiate()
+	turns.label = "Turn limit"
+	turns.options = PackedStringArray()
+	turns.min_value = 50
+	turns.max_value = 500
+	turns.step = 50
+	turns.value = 200
+	col.add_child(turns)
+	var speed: WoldStepper = scene.instantiate()
+	speed.label = "Animation speed"
+	speed.options = PackedStringArray(["Slow", "Normal", "Fast", "Instant"])
+	speed.wrap = true
+	col.add_child(speed)
+	col.add_child(load("res://addons/woldui/gallery/examples/ui_volume.tscn").instantiate())
+	for st in col.get_children():
+		st.disabled = show_disabled
+	s.add_child(panel)
 
 
 func _wold_tabs() -> void:

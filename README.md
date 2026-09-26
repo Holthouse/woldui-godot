@@ -204,6 +204,18 @@ sel.item_selected.connect(func(i): settings.map_size = i)
 
 `selected = -1` shows the placeholder. `icons` puts an icon next to each option (and in the field once picked), `select_size` is SM, MD or LG, and `min_width` stops it being narrower than you want. It sizes itself to the longest option, so picking one never resizes it. Accept opens the list on keyboard or pad, the list takes up / down / accept / cancel, and focus comes back to the field when it closes. It isn't an OptionButton: that one saves its generated items into your scene. Plain PopupMenus also get drawn check boxes, radio dots and a submenu arrow from the theme. See `gallery/examples/faction_select.tscn`.
 
+### WoldStepper
+
+The console-style `< Normal >` setting, for settings screens you drive with a pad.
+
+```gdscript
+step.label = "Difficulty"
+step.options = PackedStringArray(["Easy", "Normal", "Hard"])
+step.value_changed.connect(func(v): settings.difficulty = int(v))
+```
+
+The whole row takes focus, so up and down still move between rows while left and right (keys, d-pad or the little arrows) step the value. Accept steps forward and goes round at the end. With no `options` it steps numbers from `min_value` to `max_value` by `step`, shown with `format` (`"%d%%"`). `wrap` makes both ends go round. The value box is as wide as its widest step, so the arrows stay put. See `gallery/examples/ui_volume.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

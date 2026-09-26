@@ -122,6 +122,22 @@ static func bump(node: Control, amount := 1.18) -> Tween:
 	return tw
 
 
+## Slides in from `from` (an offset) while fading up. A value stepping
+## left / right in a WoldStepper, say.
+static func nudge(node: Control, from: Vector2) -> Tween:
+	var t := tokens()
+	_prepare(node)
+	if reduced():
+		_rest(node)
+		return _finished(node)
+	var tw := _tween(node, null, t)
+	node.offset_transform_position = from
+	node.modulate.a = 0.35
+	tw.tween_property(node, "offset_transform_position", Vector2.ZERO, t.duration_fast).set_trans(t.enter_transition).set_ease(t.enter_ease)
+	tw.tween_property(node, "modulate:a", 1.0, t.duration_fast)
+	return tw
+
+
 static func hover(node: Control, on: bool) -> Tween:
 	var t := tokens()
 	_prepare(node)

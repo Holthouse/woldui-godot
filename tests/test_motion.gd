@@ -17,13 +17,14 @@ func _run() -> void:
 	await _reduced_motion()
 	await _stagger()
 	await _count_and_press()
+	await _nudge()
 	await _transition()
 	_input_mode()
 	_sounds()
 	await _feedback()
 	ui.reduced_motion = false
 	ui.sound_enabled = true
-	finish(50)
+	finish(63)
 
 
 func _card() -> PanelContainer:
@@ -160,6 +161,19 @@ func _count_and_press() -> void:
 	check(is_equal_approx(b.offset_transform_scale.x, 1.0), "press springs back to rest")
 	label.queue_free()
 	b.queue_free()
+
+
+func _nudge() -> void:
+	var c := _card()
+	var tw := WoldMotion.nudge(c, Vector2(12, 0))
+	check(c.offset_transform_position.x > 0.0 and c.modulate.a < 1.0, "nudge starts off to the side, faded")
+	await tw.finished
+	check(c.offset_transform_position == Vector2.ZERO and is_equal_approx(c.modulate.a, 1.0), "and settles at rest")
+	ui.reduced_motion = true
+	WoldMotion.nudge(c, Vector2(-12, 0))
+	check(c.offset_transform_position == Vector2.ZERO and c.modulate.a == 1.0, "reduced motion: nudge doesn't move it")
+	ui.reduced_motion = false
+	c.queue_free()
 
 
 func _transition() -> void:

@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_stepper/wold_stepper.tscn" id="1_base"]
+[ext_resource type="Script" path="res://addons/woldui/gallery/examples/ui_volume.gd" id="2_script"]
+
+[node name="UiVolume" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+label = "UI sounds"
+options = PackedStringArray()
+value = 100.0
+max_value = 100.0
+step = 10.0
+format = "%d%%"
+
+[node name="Label" parent="Content" index="0"]
+text = "UI sounds"
