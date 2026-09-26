@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="WoldTokens" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/core/wold_tokens.gd" id="1_tokens"]
+
+[resource]
+script = ExtResource("1_tokens")
+mode = 1
+accent = Color(0.549, 0.388, 0.122, 1)

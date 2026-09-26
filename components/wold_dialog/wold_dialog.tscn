@@ -1,0 +1,110 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_dialog/wold_dialog.gd" id="1_dialog"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_button/wold_button.tscn" id="2_button"]
+
+[node name="WoldDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dialog")
+title = "Leave the match?"
+message = "Your army stays on the board and the game goes on without you."
+icon = "log-out"
+
+[node name="Scrim" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"PanelScrim"
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme_type_variation = &"PanelOverlay"
+
+[node name="Body" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_type_variation = &"StackLg"
+
+[node name="Header" type="HBoxContainer" parent="Center/Panel/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"RowMd"
+
+[node name="Icon" type="TextureRect" parent="Center/Panel/Body/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+custom_minimum_size = Vector2(24, 24)
+
+[node name="Title" type="Label" parent="Center/Panel/Body/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"Heading"
+text = "Leave the match?"
+autowrap_mode = 3
+
+[node name="Close" parent="Center/Panel/Body/Header" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+text = ""
+shape = 5
+button_size = 0
+icon_start = "x"
+sound = "close"
+tooltip_text = "Close"
+
+[node name="Message" type="Label" parent="Center/Panel/Body"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1, 0)
+layout_mode = 2
+theme_type_variation = &"Muted"
+text = "Your army stays on the board and the game goes on without you."
+autowrap_mode = 3
+
+[node name="Content" type="VBoxContainer" parent="Center/Panel/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"StackMd"
+
+[node name="Actions" type="HBoxContainer" parent="Center/Panel/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"RowSm"
+alignment = 2
+
+[node name="Cancel" parent="Center/Panel/Body/Actions" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancel"
+shape = 3
+sound = "back"
+
+[node name="Confirm" parent="Center/Panel/Body/Actions" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "OK"
+shape = 0
+sound = "confirm"

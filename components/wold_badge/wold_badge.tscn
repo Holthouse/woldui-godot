@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_badge/wold_badge.gd" id="1_badge"]
+
+[node name="WoldBadge" type="PanelContainer"]
+mouse_filter = 1
+theme_type_variation = &"BadgeNeutralSoft"
+script = ExtResource("1_badge")
+
+[node name="Row" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"RowXs"
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="Row"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BadgeLabelNeutralSoft"
+text = "Badge"
+horizontal_alignment = 1

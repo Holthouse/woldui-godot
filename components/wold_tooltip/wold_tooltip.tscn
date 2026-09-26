@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_tooltip/wold_tooltip.gd" id="1_tip"]
+
+[node name="WoldTooltip" type="Node"]
+script = ExtResource("1_tip")
+title = "Spearman"
+icon = "swords"
+body = "Cheap infantry. [b]Double damage[/b] against riders."
+rows = Dictionary[String, String]({
+"Attack": "6",
+"Move": "2",
+"Range": "1"
+})
+hint = "Right-click for details"

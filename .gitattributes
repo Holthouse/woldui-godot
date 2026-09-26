@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.png binary
+
+# Left out of release zips and GitHub's "Download ZIP" (git archive): the
+# addon's own test suites and the dev-only scripts. Games get the addon only.
+/tests export-ignore
+/tools/*.ps1 export-ignore
+/tools/build_lucide.mjs export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore

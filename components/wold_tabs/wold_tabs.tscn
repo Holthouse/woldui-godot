@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_tabs/wold_tabs.gd" id="1_tabs"]
+
+[node name="WoldTabs" type="VBoxContainer"]
+custom_minimum_size = Vector2(420, 0)
+theme_type_variation = &"StackMd"
+script = ExtResource("1_tabs")
+tabs = PackedStringArray("Army", "Economy", "Research")
+
+[node name="Header" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"StackNone"
+
+[node name="Bar" type="HBoxContainer" parent="Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"RowXs"
+
+[node name="Rail" type="Control" parent="Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Track" type="Panel" parent="Header/Rail"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"TabsTrack"
+
+[node name="Indicator" type="Panel" parent="Header/Rail"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 80.0
+offset_bottom = 2.0
+mouse_filter = 2
+theme_type_variation = &"TabsIndicator"

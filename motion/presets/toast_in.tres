@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="WoldMotionPreset" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/core/wold_motion_preset.gd" id="1_preset"]
+
+[resource]
+script = ExtResource("1_preset")
+duration = 2
+easing = 0
+from_offset = Vector2(0, -16)
+from_scale = Vector2(1, 1)
+

@@ -1,0 +1,1041 @@
+@tool
+extends PanelContainer
+## Dev showcase: every WoldUI style under one tokens file. F6 to run it, or just
+## open it in the editor, it's @tool and draws live.
+## Sections come from the built theme, so a game's own variants and recipes land
+## under "Game styles" without touching this file.
+## TODO: all built in code instead of a scene tree. tweaking layout is a pain.
+
+const TOKEN_DIR := "res://addons/woldui/tokens/"
+const SAMPLE := "The quick brown fox jumps over the lazy dog"
+
+## empty = project tokens
+@export_file("*.tres") var tokens_path := "":
+	set(value):
+		tokens_path = value
+		if is_inside_tree():
+			rebuild()
+## for eyeballing disabled states
+@export var show_disabled := false:
+	set(value):
+		show_disabled = value
+		if is_inside_tree():
+			rebuild()
+
+var tokens: WoldTokens
+var _content: VBoxContainer
+var _picker: OptionButton
+var _picker_paths: PackedStringArray = []
+var _mode_label: Label
+
+
+func _ready() -> void:
+	theme_type_variation = &"PanelBase"
+	rebuild()
+
+
+func rebuild() -> void:
+	var path := _resolved_path()
+	tokens = load(path) as WoldTokens
+	if tokens == null:
+		push_error("WoldUI gallery: no WoldTokens at %s" % path)
+		return
+	theme = WoldThemeBuilder.build(tokens)
+	for child in get_children():
+		remove_child(child)
+		child.queue_free()
+
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	add_child(scroll)
+	var margin := MarginContainer.new()
+	margin.theme_type_variation = &"InsetXxl"
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(margin)
+	_content = VBoxContainer.new()
+	_content.theme_type_variation = &"StackXxl"
+	margin.add_child(_content)
+
+	# hover/press/sound on every button in here
+	if not Engine.is_editor_hint():
+		add_child(WoldFeedback.new())
+
+	_header(path)
+	_wold_buttons()
+	_wold_stats()
+	_wold_badges()
+	_wold_dialogs()
+	_wold_toasts()
+	_wold_tooltips()
+	_wold_list_rows()
+	_wold_tabs()
+	_wold_prompts()
+	_wold_scopes()
+	_wold_screens()
+	_motion()
+	_colours()
+	_type()
+	_buttons()
+	_inputs()
+	_meters_and_tabs()
+	_panels()
+	_fills()
+	_layout()
+	_icons()
+	_game_styles()
+
+
+func _resolved_path() -> String:
+	if tokens_path != "":
+		return tokens_path
+	return ProjectSettings.get_setting("woldui/tokens", TOKEN_DIR + "default_dark.tres")
+
+
+# ------------------------------------------------------------------ sections
+
+func _header(path: String) -> void:
+	var row := _row(&"RowLg")
+	_content.add_child(row)
+	var titles := _stack(&"StackXs")
+	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(titles)
+	titles.add_child(_label("WoldUI", &"Display"))
+	titles.add_child(_label("Every style, drawn from %s" % path.get_file(), &"Muted"))
+
+	_picker = OptionButton.new()
+	_picker_paths = _token_files()
+	for i in _picker_paths.size():
+		_picker.add_item(_picker_paths[i].get_file())
+		if _picker_paths[i] == path:
+			_picker.select(i)
+	_picker.item_selected.connect(func(i): tokens_path = _picker_paths[i])
+	_picker.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(_picker)
+
+	var disabled := CheckBox.new()
+	disabled.text = "Disabled"
+	disabled.button_pressed = show_disabled
+	disabled.toggled.connect(func(on): show_disabled = on)
+	disabled.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(disabled)
+
+
+## ConfirmButton is an inherited scene with its own `busy` prop
+func _wold_buttons() -> void:
+	var s := _section("WoldButton", "components/wold_button. Icons at the start and/or end by name; shape, size and sound are props. ConfirmButton extends it with a busy prop.")
+	var scene := load("res://addons/woldui/components/wold_button/wold_button.tscn")
+	var make := func(label: String, shape: int, size: int, start := "", end := "") -> WoldButton:
+		var b: WoldButton = scene.instantiate()
+		b.text = label
+		b.shape = shape
+		b.button_size = size
+		b.icon_start = start
+		b.icon_end = end
+		b.disabled = show_disabled
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		return b
+	var S := WoldButton.Shape
+	var Z := WoldButton.Size
+	var row := _row(&"RowMd")
+	row.add_child(make.call("Continue", S.PRIMARY, Z.MD, "", "arrow-right"))
+	row.add_child(make.call("Settings", S.SECONDARY, Z.MD, "settings", "chevron-down"))
+	row.add_child(make.call("Map", S.OUTLINE, Z.MD, "map"))
+	row.add_child(make.call("Back", S.GHOST, Z.MD, "arrow-left"))
+	row.add_child(make.call("Delete", S.DANGER, Z.MD, "trash"))
+	s.add_child(row)
+	var sizes := _row(&"RowMd")
+	for z in [Z.SM, Z.MD, Z.LG]:
+		sizes.add_child(make.call("Recruit", S.PRIMARY, z, "swords", "plus"))
+	for z in [Z.SM, Z.MD, Z.LG]:
+		var only: WoldButton = make.call("", S.ICON, z, "x")
+		only.tooltip_text = "Close"
+		sizes.add_child(only)
+	s.add_child(sizes)
+	var extended := _row(&"RowMd")
+	var confirm: WoldButton = load("res://addons/woldui/gallery/examples/confirm_button.tscn").instantiate()
+	extended.add_child(confirm)
+	var busy := CheckButton.new()
+	busy.text = "busy"
+	busy.toggled.connect(func(on): confirm.busy = on)
+	extended.add_child(busy)
+	s.add_child(extended)
+
+
+## HealthStat = a meter in the Extra slot
+func _wold_stats() -> void:
+	var s := _section("WoldStat", "components/wold_stat. Icon, value and meaning; counts and flashes when the value changes. HealthStat puts a meter in the Extra slot.")
+	var scene := load("res://addons/woldui/components/wold_stat/wold_stat.tscn")
+	var make := func(icon: String, value: float, label := "", delta := 0.0) -> WoldStat:
+		var st: WoldStat = scene.instantiate()
+		st.icon = icon
+		st.value = value
+		st.label = label
+		st.delta = delta
+		st.show_delta = delta != 0.0
+		st.tooltip_text = label
+		st.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		return st
+
+	# top-bar HUD row
+	var bar := PanelContainer.new()
+	bar.theme_type_variation = &"PanelHud"
+	bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var bar_row := _row(&"RowXl")
+	bar.add_child(bar_row)
+	var resources := [["wheat", 1240, "Food", 12], ["trees", 380, "Wood", 8], ["mountain", 95, "Stone", -2], ["coins", 610, "Gold", 20], ["flask-conical", 44, "Research", 3]]
+	var stats: Array[WoldStat] = []
+	for r in resources:
+		var st: WoldStat = make.call(r[0], r[1], "", r[3])
+		st.surface = WoldStat.Surface.BARE
+		st.compact = true
+		st.tooltip_text = r[2]
+		bar_row.add_child(st)
+		stats.append(st)
+	var pop: WoldStat = make.call("users", 12)
+	pop.max_value = 20
+	pop.surface = WoldStat.Surface.BARE
+	pop.tooltip_text = "Population"
+	bar_row.add_child(pop)
+	s.add_child(bar)
+
+	var controls := _row(&"RowSm")
+	var income := Button.new()
+	income.theme_type_variation = &"ButtonPrimarySm"
+	income.text = "Next turn"
+	income.icon = tokens.icon("hourglass", "Sm")
+	income.pressed.connect(func():
+		for st in stats:
+			st.value += st.delta * 10)
+	controls.add_child(income)
+	s.add_child(controls)
+
+	var variants := _row(&"RowLg")
+	for z in [WoldStat.Size.SM, WoldStat.Size.MD, WoldStat.Size.LG]:
+		var st: WoldStat = make.call("trophy", 2480, "Score")
+		st.stat_size = z
+		st.tone = WoldStat.Tone.ACCENT
+		st.surface = WoldStat.Surface.RAISED
+		variants.add_child(st)
+	var stacked: WoldStat = make.call("clock", 42, "Turn")
+	stacked.layout = WoldStat.Layout.STACKED
+	stacked.surface = WoldStat.Surface.RAISED
+	variants.add_child(stacked)
+	s.add_child(variants)
+
+	var health_row := _row(&"RowMd")
+	var health: WoldStat = load("res://addons/woldui/gallery/examples/health_stat.tscn").instantiate()
+	health.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	health_row.add_child(health)
+	for pair in [["Hit for 15", -15.0, "sword"], ["Heal 20", 20.0, "heart-plus"]]:
+		var b := Button.new()
+		b.theme_type_variation = &"ButtonSecondarySm"
+		b.text = pair[0]
+		b.icon = tokens.icon(pair[2], "Sm")
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var amount: float = pair[1]
+		b.pressed.connect(func(): health.value = clampf(health.value + amount, 0.0, health.max_value))
+		health_row.add_child(b)
+	s.add_child(health_row)
+
+
+func _wold_badges() -> void:
+	var s := _section("WoldBadge", "components/wold_badge. Tone × fill, a count (99+), a dot, or pinned to a corner of its parent.")
+	var scene := load("res://addons/woldui/components/wold_badge/wold_badge.tscn")
+	var tones := ["Neutral", "Accent", "Success", "Warning", "Danger"]
+	for fill in [WoldBadge.Fill.SOFT, WoldBadge.Fill.SOLID, WoldBadge.Fill.OUTLINE]:
+		var row := _row(&"RowSm")
+		var tag := _label(WoldBadge.Fill.keys()[fill].capitalize(), &"Caption")
+		tag.custom_minimum_size.x = 120
+		row.add_child(tag)
+		for i in tones.size():
+			var b: WoldBadge = scene.instantiate()
+			b.text = tones[i]
+			b.tone = i
+			b.fill = fill
+			b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			row.add_child(b)
+		s.add_child(row)
+
+	var row := _row(&"RowXl")
+	var labelled := [["Allied", "shield", WoldBadge.Tone.SUCCESS], ["At war", "swords", WoldBadge.Tone.DANGER], ["New", "sparkles", WoldBadge.Tone.ACCENT]]
+	for l in labelled:
+		var b: WoldBadge = scene.instantiate()
+		b.text = l[0]
+		b.icon = l[1]
+		b.tone = l[2]
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(b)
+	var inbox := Button.new()
+	inbox.theme_type_variation = &"ButtonSecondary"
+	inbox.text = "Messages"
+	inbox.icon = tokens.icon("mail")
+	inbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var counter: WoldBadge = scene.instantiate()
+	counter.count = 3
+	counter.tone = WoldBadge.Tone.DANGER
+	counter.fill = WoldBadge.Fill.SOLID
+	counter.badge_size = WoldBadge.Size.SM
+	counter.pin = WoldBadge.Pin.TOP_RIGHT
+	inbox.add_child(counter)
+	inbox.pressed.connect(func(): counter.count += 1)
+	row.add_child(inbox)
+	var turn := _row(&"RowSm")
+	var dot: WoldBadge = scene.instantiate()
+	dot.dot = true
+	dot.tone = WoldBadge.Tone.ACCENT
+	dot.pulse = true
+	dot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	turn.add_child(dot)
+	turn.add_child(_label("Your turn", &"Body"))
+	row.add_child(turn)
+	s.add_child(row)
+
+
+func _wold_dialogs() -> void:
+	var s := _section("WoldDialog", "components/wold_dialog. Modal for mouse, keyboard and pad: focus starts on confirm, stays inside, and returns on close. Esc cancels.")
+	var row := _row(&"RowMd")
+	var answer := _label("", &"Muted")
+	var ask := Button.new()
+	ask.theme_type_variation = &"ButtonSecondary"
+	ask.text = "WoldDialog.ask()"
+	ask.icon = tokens.icon("message-circle-question-mark")
+	ask.pressed.connect(func():
+		var result := await WoldDialog.ask(self, "Trade 20 wood for 10 gold?", "The offer goes to the Spidobots.", "Offer trade", "Not now")
+		answer.text = "ask() returned \"%s\"" % result)
+	row.add_child(ask)
+	var quit := Button.new()
+	quit.theme_type_variation = &"ButtonSecondary"
+	quit.text = "QuitDialog example"
+	quit.icon = tokens.icon("log-out")
+	quit.pressed.connect(func():
+		var layer := CanvasLayer.new()
+		layer.layer = 100
+		add_child(layer)
+		var d: WoldDialog = load("res://addons/woldui/gallery/examples/quit_dialog.tscn").instantiate()
+		d.free_on_close = true
+		d.tree_exited.connect(layer.queue_free)
+		d.closed.connect(func(r): answer.text = "QuitDialog closed with \"%s\", dont_ask_again = %s" % [r, d.dont_ask_again])
+		layer.add_child(d)
+		d.open())
+	row.add_child(quit)
+	answer.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(answer)
+	s.add_child(row)
+
+
+func _wold_toasts() -> void:
+	var s := _section("WoldToast", "components/wold_toast. WoldToast.notify(self, text, tone) from anywhere. Hover pauses the timer; the stack closes up smoothly.")
+	var row := _row(&"RowSm")
+	var samples := [
+		["Info", WoldToast.Tone.NEUTRAL, "", "The Spidobots ended their turn."],
+		["Accent", WoldToast.Tone.ACCENT, "Wonder started", "Your Great Library will take 6 turns."],
+		["Success", WoldToast.Tone.SUCCESS, "", "Game saved."],
+		["Warning", WoldToast.Tone.WARNING, "Low food", "Your population stops growing next turn."],
+		["Danger", WoldToast.Tone.DANGER, "City under attack", "Rivermouth is being besieged."],
+	]
+	for sample in samples:
+		var b := Button.new()
+		b.theme_type_variation = &"ButtonOutlineSm"
+		b.text = sample[0]
+		b.pressed.connect(func(): WoldToast.notify(self, sample[3], sample[1], sample[2]))
+		row.add_child(b)
+	var sticky := Button.new()
+	sticky.theme_type_variation = &"ButtonSecondarySm"
+	sticky.text = "Sticky with action"
+	sticky.pressed.connect(func():
+		var t := WoldToast.notify(self, "The Ants offer 20 wood for 10 gold.", WoldToast.Tone.ACCENT, "Trade offer", 0.0)
+		t.action_text = "View offer"
+		t.action_pressed.connect(func(): WoldToast.notify(self, "Opening the trade screen…")))
+	row.add_child(sticky)
+	var place := OptionButton.new()
+	for p in WoldToaster.Place.keys():
+		place.add_item(p.capitalize())
+	place.item_selected.connect(func(i): WoldToaster.find_or_create(self).place = i)
+	row.add_child(place)
+	s.add_child(row)
+
+
+## tab through these to check pad/keyboard behaviour
+func _wold_tooltips() -> void:
+	var s := _section("WoldTooltip", "components/wold_tooltip. A node under any Control. Hover, or Tab to a control: keyboard and pad players see tooltips too.")
+	var row := _row(&"RowMd")
+	var units := [
+		["Spearman", "swords", "Cheap infantry. [b]Double damage[/b] against riders.", {"Attack": "6", "Defence": "4", "Move": "2"}],
+		["Archer", "crosshair", "Shoots from [b]2 hexes[/b] away; weak up close.", {"Attack": "5", "Range": "2", "Move": "2"}],
+		["Rider", "rabbit", "Fast. Takes [color=#d4564f]double damage[/color] from spearmen.", {"Attack": "7", "Move": "4"}],
+	]
+	for u in units:
+		var b: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+		b.text = u[0]
+		b.icon_start = u[1]
+		var tip: WoldTooltip = load("res://addons/woldui/components/wold_tooltip/wold_tooltip.tscn").instantiate()
+		tip.title = u[0]
+		tip.icon = u[1]
+		tip.body = u[2]
+		tip.rows.assign(u[3])
+		tip.hint = "Costs 30 food"
+		b.add_child(tip)
+		row.add_child(b)
+	var gold: WoldStat = load("res://addons/woldui/components/wold_stat/wold_stat.tscn").instantiate()
+	gold.icon = "coins"
+	gold.value = 610
+	gold.label = ""
+	gold.delta = 20
+	gold.show_delta = true
+	gold.focus_mode = Control.FOCUS_ALL
+	var gold_tip: WoldTooltip = load("res://addons/woldui/components/wold_tooltip/wold_tooltip.tscn").instantiate()
+	gold_tip.title = "Gold"
+	gold_tip.icon = "coins"
+	gold_tip.body = "Spent on trades, wonders and upkeep."
+	gold_tip.rows.assign({"Markets": "+14", "Trade routes": "+9", "Upkeep": "−3"})
+	gold_tip.hint = "+20 per turn"
+	gold.add_child(gold_tip)
+	row.add_child(gold)
+	s.add_child(row)
+
+
+## ButtonGroup so only one slot is selected
+func _wold_list_rows() -> void:
+	var s := _section("WoldListRow", "components/wold_list_row. Real buttons, so focus, pad and ButtonGroup selection work. Slots for your own content.")
+	var list := PanelContainer.new()
+	list.theme_type_variation = &"PanelRaised"
+	list.custom_minimum_size.x = 560
+	list.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var rows := _stack(&"StackXs")
+	list.add_child(rows)
+	var group := ButtonGroup.new()
+	var saves := [
+		["Rivers, turn 42", "Ants vs Spidobots, 2 hours ago", "Medium", "save", ""],
+		["Highlands, turn 17", "Four players, yesterday", "Large", "save", "Autosave"],
+		["Tutorial", "Chapter 3 of 5", "Small", "graduation-cap", ""],
+	]
+	var scene := load("res://addons/woldui/components/wold_list_row/wold_list_row.tscn")
+	for i in saves.size():
+		var r: WoldListRow = scene.instantiate()
+		r.title = saves[i][0]
+		r.subtitle = saves[i][1]
+		r.trailing_text = saves[i][2]
+		r.icon_name = saves[i][3]
+		r.button_group = group
+		r.disabled = show_disabled
+		if saves[i][4] != "":
+			var b: WoldBadge = load("res://addons/woldui/components/wold_badge/wold_badge.tscn").instantiate()
+			b.text = saves[i][4]
+			b.badge_size = WoldBadge.Size.SM
+			b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			r.get_node("%Trailing").add_child(b)
+		rows.add_child(r)
+		if i == 0:
+			r.button_pressed = true
+	s.add_child(list)
+
+
+func _wold_tabs() -> void:
+	var s := _section("WoldTabs", "components/wold_tabs. Pages are the node's children; page metadata adds icons and badges. The underline slides; LB / RB switch tabs.")
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"PanelRaised"
+	panel.custom_minimum_size = Vector2(560, 0)
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	panel.add_child(load("res://addons/woldui/gallery/examples/tabs_example.tscn").instantiate())
+	s.add_child(panel)
+	var bar: WoldTabs = load("res://addons/woldui/components/wold_tabs/wold_tabs.tscn").instantiate()
+	bar.tabs = PackedStringArray(["Small", "Medium", "Large"])
+	bar.stretch = true
+	bar.custom_minimum_size.x = 420
+	bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	s.add_child(bar)
+
+
+## TODO: the wold_demo_* actions are added to the InputMap and never removed.
+func _wold_prompts() -> void:
+	var s := _section("WoldButtonPrompt", "components/wold_button_prompt. Glyphs from the real bindings; switches live between keyboard, pad and mouse. Try it: press a key, then a pad button.")
+	var actions := {
+		&"wold_demo_confirm": ["Confirm", [_demo_key(KEY_ENTER), _demo_pad(JOY_BUTTON_A), _demo_mouse(MOUSE_BUTTON_LEFT)]],
+		&"wold_demo_back": ["Back", [_demo_key(KEY_ESCAPE), _demo_pad(JOY_BUTTON_B), _demo_mouse(MOUSE_BUTTON_RIGHT)]],
+		&"wold_demo_next_tab": ["Next tab", [_demo_key(KEY_E), _demo_pad(JOY_BUTTON_RIGHT_SHOULDER)]],
+		&"wold_demo_end_turn": ["End turn", [_demo_key(KEY_SPACE), _demo_pad(JOY_BUTTON_Y)]],
+	}
+	for action in actions:
+		if not InputMap.has_action(action):
+			InputMap.add_action(action)
+			for e in actions[action][1]:
+				InputMap.action_add_event(action, e)
+	var scene := load("res://addons/woldui/components/wold_button_prompt/wold_button_prompt.tscn")
+	var rows := [
+		["Live", WoldButtonPrompt.InputKind.AUTO, WoldButtonPrompt.PadFamily.AUTO],
+		["Keyboard", WoldButtonPrompt.InputKind.KEYBOARD, WoldButtonPrompt.PadFamily.AUTO],
+		["Xbox", WoldButtonPrompt.InputKind.PAD, WoldButtonPrompt.PadFamily.XBOX],
+		["PlayStation", WoldButtonPrompt.InputKind.PAD, WoldButtonPrompt.PadFamily.PLAYSTATION],
+		["Nintendo", WoldButtonPrompt.InputKind.PAD, WoldButtonPrompt.PadFamily.NINTENDO],
+	]
+	for r in rows:
+		var row := _row(&"RowXl")
+		var tag := _label(r[0], &"Caption")
+		tag.custom_minimum_size.x = 120
+		row.add_child(tag)
+		for action in actions:
+			var p: WoldButtonPrompt = scene.instantiate()
+			p.action = action
+			p.label = actions[action][0]
+			p.input_kind = r[1]
+			p.pad_family = r[2]
+			row.add_child(p)
+		s.add_child(row)
+
+
+func _demo_key(code: Key) -> InputEventKey:
+	var e := InputEventKey.new()
+	e.keycode = code
+	return e
+
+
+func _demo_pad(button: JoyButton) -> InputEventJoypadButton:
+	var e := InputEventJoypadButton.new()
+	e.button_index = button
+	return e
+
+
+func _demo_mouse(button: MouseButton) -> InputEventMouseButton:
+	var e := InputEventMouseButton.new()
+	e.button_index = button
+	return e
+
+
+## WoldScope: the same panel under three faction accents.
+func _wold_scopes() -> void:
+	var s := _section("WoldScope", "components/wold_scope. Token overrides for one subtree, like CSS variables on a wrapper. Same panel, three faction accents.")
+	var row := _row(&"RowLg")
+	var factions := [["Ants", Color("c0392b"), "bug"], ["Spidobots", Color("3a7bd5"), "bot"], ["Moles", Color("5da574"), "shovel"]]
+	for f in factions:
+		var scope: WoldScope = load("res://addons/woldui/components/wold_scope/wold_scope.tscn").instantiate()
+		scope.accent = f[1]
+		var panel := PanelContainer.new()
+		panel.theme_type_variation = &"PanelRaised"
+		var col := _stack(&"StackMd")
+		var head := _row(&"RowSm")
+		var badge: WoldBadge = load("res://addons/woldui/components/wold_badge/wold_badge.tscn").instantiate()
+		badge.text = f[0]
+		badge.icon = f[2]
+		badge.tone = WoldBadge.Tone.ACCENT
+		head.add_child(badge)
+		col.add_child(head)
+		var stat: WoldStat = load("res://addons/woldui/components/wold_stat/wold_stat.tscn").instantiate()
+		stat.icon = "castle"
+		stat.value = 4
+		stat.label = "Cities"
+		stat.tone = WoldStat.Tone.ACCENT
+		stat.surface = WoldStat.Surface.BARE
+		col.add_child(stat)
+		var b: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+		b.text = "Declare war"
+		b.shape = WoldButton.Shape.PRIMARY
+		b.icon_start = "swords"
+		col.add_child(b)
+		panel.add_child(col)
+		scope.add_child(panel)
+		row.add_child(scope)
+	s.add_child(row)
+
+
+## WoldScreen: push the example settings screen; Esc / B or Back pops it.
+func _wold_screens() -> void:
+	var s := _section("WoldScreen", "components/wold_screen. push() / pop() with transitions; Esc or B goes back; focus returns to what opened it.")
+	var b: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	b.text = "Push the settings screen"
+	b.icon_start = "settings"
+	b.icon_end = "arrow-right"
+	b.shape = WoldButton.Shape.SECONDARY
+	b.sound = "open"
+	b.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	b.pressed.connect(func(): WoldScreen.push(self, "res://addons/woldui/gallery/examples/settings_screen.tscn"))
+	s.add_child(b)
+
+
+func _motion() -> void:
+	var ui := WoldUIRuntime.instance()
+	var s := _section("Motion & feedback", "Every animation goes through WoldMotion and honours Reduce motion. Buttons get hover, press and sound from a WoldFeedback node.")
+
+	var prefs := _row(&"RowXl")
+	var reduce := CheckButton.new()
+	reduce.text = "Reduce motion"
+	reduce.button_pressed = ui.reduced_motion
+	reduce.toggled.connect(func(on): ui.reduced_motion = on)
+	prefs.add_child(reduce)
+	var sound := CheckButton.new()
+	sound.text = "Sound"
+	sound.button_pressed = ui.sound_enabled
+	sound.toggled.connect(func(on): ui.sound_enabled = on)
+	prefs.add_child(sound)
+	_mode_label = _label("", &"Muted")
+	_mode_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_on_input_mode(ui.input_mode)
+	if not ui.input_mode_changed.is_connected(_on_input_mode):
+		ui.input_mode_changed.connect(_on_input_mode)
+	prefs.add_child(_mode_label)
+	s.add_child(prefs)
+
+	var stage := PanelContainer.new()
+	stage.theme_type_variation = &"PanelSunken"
+	stage.custom_minimum_size = Vector2(0, 120)
+	var card := PanelContainer.new()
+	card.theme_type_variation = &"PanelOverlay"
+	card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	card.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var card_label := _label("Sample card", &"Subheading")
+	card.add_child(card_label)
+	stage.add_child(card)
+	var presets := HFlowContainer.new()
+	presets.theme_type_variation = &"FlowSm"
+	for preset_name in WoldMotion.preset_names():
+		var b := Button.new()
+		b.theme_type_variation = &"ButtonOutlineSm"
+		b.text = preset_name
+		b.icon = tokens.icon("play", "Sm")
+		b.pressed.connect(func():
+			card_label.text = preset_name
+			var p := WoldMotion.preset(preset_name)
+			if preset_name.contains("disappear") or preset_name.ends_with("_out") or preset_name.ends_with("_exit"):
+				await WoldMotion.disappear(card, p).finished
+				await get_tree().create_timer(0.35).timeout
+				WoldMotion.appear(card, WoldMotion.preset("appear_fade"))
+			else:
+				card.visible = false
+				WoldMotion.appear(card, p))
+		presets.add_child(b)
+	s.add_child(presets)
+	s.add_child(stage)
+
+	var demos := _row(&"RowXl")
+	var list := _stack(&"StackXs")
+	list.custom_minimum_size.x = 220
+	for i in 5:
+		var row := PanelContainer.new()
+		row.theme_type_variation = &"PanelRaised"
+		row.add_child(_label("List item %d" % (i + 1), &"Body"))
+		list.add_child(row)
+	var list_col := _stack(&"StackSm")
+	var list_play := Button.new()
+	list_play.theme_type_variation = &"ButtonSecondarySm"
+	list_play.text = "Stagger in"
+	list_play.icon = tokens.icon("list", "Sm")
+	list_play.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	list_play.pressed.connect(func(): WoldMotion.stagger(list.get_children()))
+	list_col.add_child(list_play)
+	list_col.add_child(list)
+	demos.add_child(list_col)
+
+	var counter_col := _stack(&"StackSm")
+	var gold := _label("0 gold", &"Title")
+	var total := [0]
+	var earn := Button.new()
+	earn.theme_type_variation = &"ButtonPrimarySm"
+	earn.text = "Earn 120"
+	earn.icon = tokens.icon("coins", "Sm")
+	earn.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	earn.set_meta("wold_sound", "confirm")
+	earn.pressed.connect(func():
+		WoldMotion.count_to(gold, total[0], total[0] + 120, "%d gold")
+		total[0] += 120)
+	counter_col.add_child(earn)
+	counter_col.add_child(gold)
+	var waiting := _label("Waiting for the other player…", &"Muted")
+	counter_col.add_child(waiting)
+	if not Engine.is_editor_hint():
+		WoldMotion.pulse.call_deferred(waiting)
+	demos.add_child(counter_col)
+
+	var sounds_col := _stack(&"StackSm")
+	sounds_col.add_child(_label("Button sounds (wold_sound metadata)", &"Caption"))
+	var sound_row := _row(&"RowSm")
+	for slot in ["click", "confirm", "back", "open", "close"]:
+		var b := Button.new()
+		b.theme_type_variation = &"ButtonSecondarySm"
+		b.text = slot.capitalize()
+		b.set_meta("wold_sound", slot)
+		sound_row.add_child(b)
+	sounds_col.add_child(sound_row)
+	var locked := Button.new()
+	locked.theme_type_variation = &"ButtonSecondarySm"
+	locked.text = "Locked (click me)"
+	locked.icon = tokens.icon("lock", "Sm")
+	locked.disabled = true
+	sounds_col.add_child(locked)
+	demos.add_child(sounds_col)
+	s.add_child(demos)
+
+
+func _colours() -> void:
+	var s := _section("Colour", "One seed per tone; every step and role is derived. Ratios are contrast on surface_raised.")
+	for tone in ["neutral", "accent", "success", "warning", "danger"]:
+		var row := _row(&"RowXs")
+		var name_label := _label(tone, &"Caption")
+		name_label.custom_minimum_size.x = 80
+		row.add_child(name_label)
+		var ramp := tokens.ramp(tone)
+		for step in WoldColor.STEPS:
+			var chip := ColorRect.new()
+			chip.color = ramp[step]
+			chip.custom_minimum_size = Vector2(44, 28)
+			chip.tooltip_text = "%s %d  #%s" % [tone, step, ramp[step].to_html(false)]
+			row.add_child(chip)
+		s.add_child(row)
+	var grid := GridContainer.new()
+	grid.theme_type_variation = &"GridSm"
+	grid.columns = 4
+	var bg := tokens.role("surface_raised")
+	for role in tokens.role_names():
+		var cell := _row(&"RowSm")
+		var chip := ColorRect.new()
+		chip.color = tokens.role(role)
+		chip.custom_minimum_size = Vector2(28, 20)
+		cell.add_child(chip)
+		cell.add_child(_label(role, &"Caption"))
+		cell.add_child(_label("%.1f" % WoldColor.contrast(tokens.role(role), bg), &"Muted"))
+		cell.custom_minimum_size.x = 240
+		grid.add_child(cell)
+	s.add_child(grid)
+
+
+func _type() -> void:
+	var s := _section("Type", "Size is picked by role. base_font_size %d, ratio %.3f." % [tokens.base_font_size, tokens.type_ratio])
+	for style in ["Display", "Title", "Heading", "Subheading", "Body", "Caption", "Overline", "Muted", "TextAccent", "TextSuccess", "TextWarning", "TextDanger", "TextOutlined"]:
+		var row := _row(&"RowLg")
+		var tag := _label(style, &"Caption")
+		tag.custom_minimum_size.x = 120
+		row.add_child(tag)
+		row.add_child(_label(SAMPLE if style != "Overline" else SAMPLE.to_upper(), style))
+		s.add_child(row)
+
+
+func _buttons() -> void:
+	var s := _section("Buttons", "Shape × size. A plain Button is ButtonSecondary. Tab / arrow keys move focus.")
+	var shape_icons := {"Primary": "swords", "Secondary": "castle", "Outline": "map", "Ghost": "eye", "Danger": "trash", "Icon": "settings"}
+	for shape in ["Primary", "Secondary", "Outline", "Ghost", "Danger", "Icon"]:
+		var row := _row(&"RowMd")
+		var tag := _label(shape, &"Caption")
+		tag.custom_minimum_size.x = 120
+		row.add_child(tag)
+		for size in ["Sm", "", "Lg"]:
+			var b := Button.new()
+			b.theme_type_variation = StringName("Button" + shape + size)
+			b.text = "" if shape == "Icon" else (shape + (" " + size if size != "" else " Md"))
+			b.icon = tokens.icon(shape_icons[shape], size)
+			b.disabled = show_disabled
+			b.tooltip_text = "Button" + shape + size
+			row.add_child(b)
+		var toggle := Button.new()
+		toggle.theme_type_variation = StringName("Button" + shape)
+		toggle.toggle_mode = true
+		toggle.button_pressed = true
+		toggle.text = "" if shape == "Icon" else "Toggled"
+		toggle.icon = tokens.icon("check") if shape == "Icon" else null
+		toggle.disabled = show_disabled
+		row.add_child(toggle)
+		s.add_child(row)
+
+
+func _inputs() -> void:
+	var s := _section("Inputs", "")
+	var fields := _row(&"RowMd")
+	for style in ["FieldSm", "LineEdit", "FieldLg"]:
+		var e := LineEdit.new()
+		e.theme_type_variation = StringName(style)
+		e.placeholder_text = style
+		e.custom_minimum_size.x = 200
+		e.editable = not show_disabled
+		fields.add_child(e)
+	s.add_child(fields)
+	var toggles := _row(&"RowXl")
+	var cb := CheckBox.new()
+	cb.text = "Check box"
+	cb.button_pressed = true
+	cb.disabled = show_disabled
+	toggles.add_child(cb)
+	var cb2 := CheckBox.new()
+	cb2.text = "Unchecked"
+	cb2.disabled = show_disabled
+	toggles.add_child(cb2)
+	var sw := CheckButton.new()
+	sw.text = "Switch"
+	sw.button_pressed = true
+	sw.disabled = show_disabled
+	toggles.add_child(sw)
+	var opt := OptionButton.new()
+	for item in ["Small map", "Medium map", "Large map"]:
+		opt.add_item(item)
+	opt.disabled = show_disabled
+	toggles.add_child(opt)
+	var spin := SpinBox.new()
+	spin.value = 4
+	spin.editable = not show_disabled
+	toggles.add_child(spin)
+	s.add_child(toggles)
+	var slider := HSlider.new()
+	slider.value = 40
+	slider.custom_minimum_size.x = 320
+	slider.editable = not show_disabled
+	s.add_child(slider)
+	var text := TextEdit.new()
+	text.placeholder_text = "TextEdit"
+	text.custom_minimum_size = Vector2(420, 90)
+	text.editable = not show_disabled
+	s.add_child(text)
+
+
+func _meters_and_tabs() -> void:
+	var s := _section("Meters", "Pair a meter with a label or icon: colour alone never carries meaning.")
+	for style in ["ProgressBar", "MeterAccent", "MeterSuccess", "MeterWarning", "MeterDanger", "MeterThin"]:
+		var row := _row(&"RowMd")
+		var tag := _label(style, &"Caption")
+		tag.custom_minimum_size.x = 120
+		row.add_child(tag)
+		var bar := ProgressBar.new()
+		bar.theme_type_variation = StringName(style)
+		bar.value = 65
+		bar.show_percentage = style == "ProgressBar"
+		bar.custom_minimum_size.x = 360
+		row.add_child(bar)
+		s.add_child(row)
+	var t := _section("Tabs", "")
+	var tabs := TabContainer.new()
+	tabs.custom_minimum_size = Vector2(480, 140)
+	for tab_name in ["Army", "Economy", "Research"]:
+		var page := MarginContainer.new()
+		page.name = tab_name
+		page.add_child(_label("%s tab content" % tab_name, &"Body"))
+		tabs.add_child(page)
+	t.add_child(tabs)
+
+
+## two values per mode: TILE / REVEAL keep the art's shape, STRETCH squashes it
+func _fills() -> void:
+	var s := _section("Textured fills", "WoldMeter and WoldSlider take a WoldFill. TILE and REVEAL keep the artwork's shape as the value moves; STRETCH squashes it.")
+	var stripes := _stripes()
+	var gradient := _gradient()
+	for mode in [WoldFill.Mode.TILE, WoldFill.Mode.REVEAL, WoldFill.Mode.STRETCH]:
+		var row := _row(&"RowLg")
+		var tag := _label(WoldFill.Mode.keys()[mode], &"Caption")
+		tag.custom_minimum_size.x = 120
+		row.add_child(tag)
+		for v in [30, 80]:
+			var f := WoldFill.new()
+			f.mode = mode
+			f.texture = stripes if mode == WoldFill.Mode.TILE else gradient
+			var meter := WoldMeter.new()
+			meter.fill = f
+			meter.value = v
+			meter.show_percentage = false
+			meter.custom_minimum_size = Vector2(260, 16)
+			meter.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			row.add_child(meter)
+		s.add_child(row)
+	var slider_row := _row(&"RowLg")
+	var tag := _label("WoldSlider", &"Caption")
+	tag.custom_minimum_size.x = 120
+	slider_row.add_child(tag)
+	var fill := WoldFill.new()
+	fill.texture = stripes
+	var slider := WoldSlider.new()
+	slider.fill = fill
+	slider.track_height = 10
+	slider.value = 60
+	slider.editable = not show_disabled
+	slider.custom_minimum_size = Vector2(540, 24)
+	slider_row.add_child(slider)
+	s.add_child(slider_row)
+
+
+## click an icon to copy its name
+func _icons() -> void:
+	var total := WoldIcons.names().size()
+	var s := _section("Icons", "%d Lucide icons (v%s) plus your own icon set. Click one to copy its name; use it as tokens.icon(\"name\")." % [total, WoldIcons.version()])
+	var bar := _row(&"RowMd")
+	var search := LineEdit.new()
+	search.placeholder_text = "Search icons…"
+	search.custom_minimum_size.x = 320
+	search.right_icon = tokens.icon("search", "Sm")
+	bar.add_child(search)
+	var note := _label("", &"Muted")
+	bar.add_child(note)
+	s.add_child(bar)
+	var grid := HFlowContainer.new()
+	grid.theme_type_variation = &"FlowXs"
+	s.add_child(grid)
+	var fill_grid := func(query: String) -> void:
+		for child in grid.get_children():
+			child.queue_free()
+		var names := PackedStringArray()
+		if tokens.icon_set:
+			for n in tokens.icon_set.custom_names():
+				if query == "" or n.contains(query.to_lower()):
+					names.append(n)
+		names.append_array(WoldIcons.search(query, 160))
+		for n in names:
+			var b := Button.new()
+			b.theme_type_variation = &"ButtonIcon"
+			b.icon = tokens.icon(n)
+			b.tooltip_text = n
+			b.pressed.connect(func():
+				DisplayServer.clipboard_set(n)
+				note.text = "Copied \"%s\"" % n)
+			grid.add_child(b)
+		note.text = "%d shown" % names.size()
+	search.text_changed.connect(fill_grid)
+	fill_grid.call("")
+
+
+func _panels() -> void:
+	var s := _section("Panels", "")
+	var flow := HFlowContainer.new()
+	flow.theme_type_variation = &"FlowLg"
+	for style in ["PanelRaised", "PanelOverlay", "PanelHud", "PanelSunken", "PanelCallout"]:
+		var panel := PanelContainer.new()
+		panel.theme_type_variation = StringName(style)
+		panel.custom_minimum_size.x = 240
+		var inner := _stack(&"StackXs")
+		inner.add_child(_label(style, &"Subheading"))
+		inner.add_child(_label("Body copy sits on this surface.", &"Muted"))
+		panel.add_child(inner)
+		flow.add_child(panel)
+	s.add_child(flow)
+
+
+func _layout() -> void:
+	var s := _section("Spacing", "Stack / Row / Inset / Grid / Flow + Xs…Xxl, one per space token.")
+	var row := _row(&"RowXl")
+	for size in ["Xs", "Sm", "Md", "Lg", "Xl", "Xxl"]:
+		var col := _stack(&"StackXs")
+		col.add_child(_label("Row" + size, &"Caption"))
+		var demo := _row(StringName("Row" + size))
+		for i in 3:
+			var chip := ColorRect.new()
+			chip.color = tokens.role("accent")
+			chip.custom_minimum_size = Vector2(14, 14)
+			demo.add_child(chip)
+		col.add_child(demo)
+		row.add_child(col)
+	s.add_child(row)
+
+
+func _game_styles() -> void:
+	var core := {}
+	for recipe in WoldThemeBuilder.CORE_RECIPES:
+		for style in recipe.STYLES:
+			core[style] = true
+	var extra := PackedStringArray()
+	for style in WoldThemeBuilder.variation_names(theme):
+		if not core.has(style):
+			extra.append(style)
+	if extra.is_empty():
+		return
+	var s := _section("Game styles", "From this tokens file's variants and extra recipes.")
+	var flow := HFlowContainer.new()
+	flow.theme_type_variation = &"FlowLg"
+	for style in extra:
+		flow.add_child(_sample_for(style))
+	s.add_child(flow)
+
+
+func _sample_for(style: String) -> Control:
+	var native := WoldThemeBuilder.native_base(theme, style)
+	var node: Control
+	if ClassDB.is_parent_class(native, "BaseButton"):
+		var b := Button.new()
+		b.text = style
+		b.disabled = show_disabled
+		node = b
+	elif ClassDB.is_parent_class(native, "Label"):
+		node = _label(style, &"")
+	elif ClassDB.is_parent_class(native, "Range"):
+		var bar := ProgressBar.new()
+		bar.value = 65
+		bar.custom_minimum_size.x = 200
+		node = bar
+	elif ClassDB.is_parent_class(native, "Container") and native != "PanelContainer":
+		node = ClassDB.instantiate(native)
+		for i in 3:
+			node.add_child(_label(style if i == 0 else "·", &"Caption"))
+	else:
+		var panel := PanelContainer.new()
+		panel.add_child(_label(style, &"Body"))
+		node = panel
+	node.theme_type_variation = StringName(style)
+	node.tooltip_text = "%s (on %s)" % [style, native]
+	return node
+
+
+# ------------------------------------------------------------------ helpers
+
+func _section(title: String, note: String) -> VBoxContainer:
+	var s := _stack(&"StackMd")
+	s.add_child(_label(title.to_upper(), &"Overline"))
+	if note != "":
+		# must wrap. one long note widens the page and the scroll container
+		# shoves the whole gallery off the left edge
+		var n := _label(note, &"Muted")
+		n.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		n.custom_minimum_size.x = 1
+		s.add_child(n)
+	_content.add_child(s)
+	var body := _stack(&"StackMd")
+	s.add_child(body)
+	return body
+
+
+func _stack(style: StringName) -> VBoxContainer:
+	var v := VBoxContainer.new()
+	v.theme_type_variation = style
+	return v
+
+
+func _row(style: StringName) -> HBoxContainer:
+	var h := HBoxContainer.new()
+	h.theme_type_variation = style
+	return h
+
+
+func _label(text: String, style: StringName) -> Label:
+	var l := Label.new()
+	l.text = text
+	if style != &"":
+		l.theme_type_variation = style
+	return l
+
+
+## demo art: stripes for TILE, gradient for REVEAL, colours from the tokens
+func _stripes() -> Texture2D:
+	var img := Image.create(12, 12, false, Image.FORMAT_RGBA8)
+	var a := tokens.tone("accent", 400)
+	var b := tokens.tone("accent", 600)
+	for y in 12:
+		for x in 12:
+			img.set_pixel(x, y, a if (x + y) % 12 < 6 else b)
+	return ImageTexture.create_from_image(img)
+
+
+func _gradient() -> Texture2D:
+	var g := Gradient.new()
+	g.set_color(0, tokens.tone("success", 500))
+	g.set_color(1, tokens.tone("danger", 500))
+	g.add_point(0.5, tokens.tone("warning", 500))
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.width = 256
+	tex.height = 8
+	return tex
+
+
+func _token_files() -> PackedStringArray:
+	var out := PackedStringArray()
+	for file in DirAccess.get_files_at(TOKEN_DIR):
+		if file.ends_with(".tres"):
+			out.append(TOKEN_DIR + file)
+	var project: String = ProjectSettings.get_setting("woldui/tokens", "")
+	if project != "" and not out.has(project):
+		out.append(project)
+	return out
+
+
+func _on_input_mode(mode: int) -> void:
+	if is_instance_valid(_mode_label):
+		_mode_label.text = "Input: %s" % WoldUIRuntime.InputMode.keys()[mode].capitalize()

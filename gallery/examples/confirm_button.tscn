@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_button/wold_button.tscn" id="1_base"]
+[ext_resource type="Script" path="res://addons/woldui/gallery/examples/confirm_button.gd" id="2_script"]
+
+[node name="ConfirmButton" instance=ExtResource("1_base")]
+text = "Continue"
+script = ExtResource("2_script")
+shape = 0
+icon_end = "arrow-right"
+sound = "confirm"

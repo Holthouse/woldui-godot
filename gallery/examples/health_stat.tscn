@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_stat/wold_stat.tscn" id="1_base"]
+[ext_resource type="Script" path="res://addons/woldui/gallery/examples/health_stat.gd" id="2_script"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_meter/wold_meter.tscn" id="3_meter"]
+
+[node name="HealthStat" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+icon = "heart"
+value = 64.0
+max_value = 100.0
+label = "Health"
+layout = 1
+tone = 4
+surface = 2
+
+[node name="Meter" parent="Row/Extra" instance=ExtResource("3_meter")]
+custom_minimum_size = Vector2(120, 10)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"MeterDanger"
+show_percentage = false

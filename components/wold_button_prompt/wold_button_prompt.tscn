@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_button_prompt/wold_button_prompt.gd" id="1_prompt"]
+[ext_resource type="Script" path="res://addons/woldui/components/wold_button_prompt/wold_prompt_glyph.gd" id="2_glyph"]
+
+[node name="WoldButtonPrompt" type="HBoxContainer"]
+theme_type_variation = &"RowXs"
+script = ExtResource("1_prompt")
+
+[node name="Glyph" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("2_glyph")
+
+[node name="Label" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"PromptLabel"
+text = "Confirm"

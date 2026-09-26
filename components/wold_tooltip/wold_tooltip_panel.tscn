@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[node name="WoldTooltipPanel" type="PanelContainer"]
+mouse_filter = 2
+theme_type_variation = &"PanelTooltip"
+
+[node name="Body" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"StackXs"
+
+[node name="Header" type="HBoxContainer" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"RowSm"
+
+[node name="Icon" type="TextureRect" parent="Body/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+custom_minimum_size = Vector2(16, 16)
+
+[node name="Title" type="Label" parent="Body/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TooltipTitle"
+text = "Spearman"
+
+[node name="Body" type="RichTextLabel" parent="Body"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(296, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"TooltipBody"
+bbcode_enabled = true
+text = "Cheap infantry. [b]Double damage[/b] against riders."
+fit_content = true
+scroll_active = false
+
+[node name="Rows" type="GridContainer" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"GridXs"
+columns = 2
+
+[node name="Extra" type="VBoxContainer" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"StackXs"
+
+[node name="Hint" type="Label" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TooltipHint"
+text = "Right-click for details"

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_meter/wold_meter.gd" id="1_c"]
+
+[node name="WoldMeter" type="ProgressBar"]
+custom_minimum_size = Vector2(240, 20)
+value = 60.0
+script = ExtResource("1_c")

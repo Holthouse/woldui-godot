@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_tabs/wold_tabs.tscn" id="1_tabs"]
+
+[node name="TabsExample" instance=ExtResource("1_tabs")]
+tabs = PackedStringArray()
+
+[node name="Army" type="Label" parent="."]
+layout_mode = 2
+text = "Your units and their orders."
+metadata/wold_icon = "swords"
+
+[node name="Economy" type="Label" parent="."]
+layout_mode = 2
+text = "Income per turn, by resource."
+metadata/wold_icon = "coins"
+metadata/wold_badge = 2
+
+[node name="Research" type="Label" parent="."]
+layout_mode = 2
+text = "What your scholars are working on."
+metadata/wold_icon = "flask-conical"
+metadata/wold_title = "Research tree"

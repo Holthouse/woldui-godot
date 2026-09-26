@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_dialog/wold_dialog.tscn" id="1_base"]
+[ext_resource type="Script" path="res://addons/woldui/gallery/examples/quit_dialog.gd" id="2_script"]
+
+[node name="QuitDialog" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+title = "Quit to the menu?"
+message = "Unsaved progress since the last turn is lost."
+icon = "triangle-alert"
+tone = 3
+confirm_text = "Quit"
+cancel_text = "Keep playing"
+destructive = true
+
+[node name="DontAsk" type="CheckBox" parent="Center/Panel/Body/Content"]
+layout_mode = 2
+text = "Don't ask again"

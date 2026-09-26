@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_slider/wold_slider.gd" id="1_c"]
+
+[node name="WoldSlider" type="HSlider"]
+custom_minimum_size = Vector2(240, 24)
+value = 60.0
+script = ExtResource("1_c")

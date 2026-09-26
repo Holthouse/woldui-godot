@@ -1,0 +1,81 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_list_row/wold_list_row.gd" id="1_row"]
+
+[node name="WoldListRow" type="Button"]
+theme_type_variation = &"ListRow"
+toggle_mode = true
+script = ExtResource("1_row")
+title = "Rivers, turn 42"
+subtitle = "Ants vs Spidobots, 2 hours ago"
+icon_name = "save"
+trailing_text = "Medium map"
+trailing_icon = "chevron-right"
+
+[node name="Content" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"RowMd"
+
+[node name="Leading" type="HBoxContainer" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"RowSm"
+
+[node name="Icon" type="TextureRect" parent="Content/Leading"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_type_variation = &"StackXs"
+
+[node name="Title" type="Label" parent="Content/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ListRowTitle"
+text = "Rivers, turn 42"
+text_overrun_behavior = 3
+
+[node name="Subtitle" type="Label" parent="Content/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ListRowSubtitle"
+text = "Ants vs Spidobots, 2 hours ago"
+text_overrun_behavior = 3
+
+[node name="Trailing" type="HBoxContainer" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_type_variation = &"RowSm"
+
+[node name="Meta" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"ListRowMeta"
+text = "Medium map"
+
+[node name="End" type="TextureRect" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
