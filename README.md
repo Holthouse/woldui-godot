@@ -254,6 +254,19 @@ card.get_node("%Footer").add_child(build_button)
 
 `card_size` is SM or MD. Set `selectable` and it becomes a choice: it takes focus, lights up on hover, and a click or accept emits `pressed`. Cards that share a `card_group` select one at a time, which is most of an upgrade picker. See `gallery/examples/upgrade_card.tscn`.
 
+### WoldCollapsible and WoldAccordion
+
+```gdscript
+var more: WoldCollapsible = preload("res://addons/woldui/components/wold_collapsible/wold_collapsible.tscn").instantiate()
+more.title = "How does trade work?"
+more.get_node("%Content").add_child(help_text)
+more.toggled.connect(func(open): print(open))
+```
+
+A collapsible is a trigger row that opens to show its `%Content`. The height slides open (reduced motion just opens it), and closed content is properly hidden so Tab and the d-pad can't land inside it. It keeps up when the content changes size while open.
+
+A WoldAccordion is collapsibles as children: they turn into flush rows with a line between them, and only one is open at a time unless `multiple`. Turn `collapsible` off to keep one section always open. `item_toggled(index, open)` reports changes. See `gallery/examples/unit_details.tscn` and `codex_accordion.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

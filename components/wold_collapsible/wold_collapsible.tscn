@@ -1,0 +1,39 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_collapsible/wold_collapsible.gd" id="1_coll"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_button/wold_button.tscn" id="2_button"]
+
+[node name="WoldCollapsible" type="VBoxContainer"]
+custom_minimum_size = Vector2(320, 0)
+theme_type_variation = &"StackNone"
+script = ExtResource("1_coll")
+title = "How does trade work?"
+
+[node name="Trigger" parent="." instance=ExtResource("2_button")]
+unique_name_in_owner = true
+layout_mode = 2
+text = "How does trade work?"
+alignment = 0
+variant = "CollapsibleTrigger"
+icon_end = "chevron-down"
+sound = "open"
+
+[node name="Clip" type="Control" parent="."]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 2
+mouse_filter = 1
+
+[node name="Body" type="MarginContainer" parent="Clip"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+theme_type_variation = &"CollapsibleBody"
+
+[node name="Content" type="VBoxContainer" parent="Clip/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"StackSm"

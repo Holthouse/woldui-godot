@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_collapsible/wold_collapsible.tscn" id="1_base"]
+[ext_resource type="Script" path="res://addons/woldui/gallery/examples/unit_details.gd" id="2_script"]
+
+[node name="UnitDetails" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+title = "Spearman"
+icon = "swords"
+stats = Dictionary[String, String]({
+"Attack": "6",
+"Defence": "4",
+"Move": "2"
+})

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_accordion/wold_accordion.tscn" id="1_base"]
+
+[node name="CodexAccordion" instance=ExtResource("1_base")]
+collapsible = false
+
+[node name="Economy" parent="." index="0"]
+open = true

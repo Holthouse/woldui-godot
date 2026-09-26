@@ -78,6 +78,7 @@ func rebuild() -> void:
 	_wold_fields()
 	_wold_button_strips()
 	_wold_cards()
+	_wold_disclosure()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -753,6 +754,32 @@ func _wold_cards() -> void:
 	small.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	small.custom_minimum_size.x = 220
 	row.add_child(small)
+	s.add_child(row)
+
+
+## CodexAccordion keeps one section open; UnitDetails fills itself
+func _wold_disclosure() -> void:
+	var s := _section("WoldCollapsible / WoldAccordion", "components/wold_collapsible, wold_accordion. The height slides open and closed content is really hidden, so focus can't land in it. An accordion is collapsibles as children, one open at a time unless multiple.")
+	var row := _row(&"RowXxl")
+	var codex: WoldAccordion = load("res://addons/woldui/gallery/examples/codex_accordion.tscn").instantiate()
+	codex.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	row.add_child(codex)
+	var col := _stack(&"StackSm")
+	col.custom_minimum_size.x = 320
+	col.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	var unit: WoldCollapsible = load("res://addons/woldui/gallery/examples/unit_details.tscn").instantiate()
+	unit.open = true
+	col.add_child(unit)
+	var rider: WoldCollapsible = load("res://addons/woldui/gallery/examples/unit_details.tscn").instantiate()
+	rider.title = "Rider"
+	rider.icon = "rabbit"
+	var st: Dictionary[String, String] = {}
+	st.assign({"Attack": "7", "Defence": "3", "Move": "4"})
+	rider.stats = st
+	col.add_child(rider)
+	row.add_child(col)
+	for c in [codex.items()[0].trigger(), codex.items()[1].trigger(), unit.trigger()]:
+		c.disabled = show_disabled
 	s.add_child(row)
 
 

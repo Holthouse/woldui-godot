@@ -11,6 +11,7 @@ const CORE_RECIPES: Array[Script] = [
 	preload("recipes/text_recipe.gd"),
 	preload("recipes/panel_recipe.gd"),
 	preload("recipes/card_recipe.gd"),
+	preload("recipes/disclosure_recipe.gd"),
 	preload("recipes/button_recipe.gd"),
 	preload("recipes/input_recipe.gd"),
 	preload("recipes/toggle_recipe.gd"),

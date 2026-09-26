@@ -1,0 +1,46 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_accordion/wold_accordion.gd" id="1_acc"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_collapsible/wold_collapsible.tscn" id="2_item"]
+
+[node name="WoldAccordion" type="VBoxContainer"]
+custom_minimum_size = Vector2(400, 0)
+theme_type_variation = &"StackNone"
+script = ExtResource("1_acc")
+
+[node name="Economy" parent="." instance=ExtResource("2_item")]
+layout_mode = 2
+title = "Economy"
+icon = "coins"
+
+[node name="Diplomacy" parent="." instance=ExtResource("2_item")]
+layout_mode = 2
+title = "Diplomacy"
+icon = "handshake"
+
+[node name="Warfare" parent="." instance=ExtResource("2_item")]
+layout_mode = 2
+title = "Warfare"
+icon = "swords"
+
+[node name="Text" type="Label" parent="Economy/Clip/Body/Content" index="0"]
+layout_mode = 2
+theme_type_variation = &"Muted"
+text = "Cities make gold from markets and trade routes."
+autowrap_mode = 3
+
+[node name="Text" type="Label" parent="Diplomacy/Clip/Body/Content" index="0"]
+layout_mode = 2
+theme_type_variation = &"Muted"
+text = "Open borders, trade deals and alliances."
+autowrap_mode = 3
+
+[node name="Text" type="Label" parent="Warfare/Clip/Body/Content" index="0"]
+layout_mode = 2
+theme_type_variation = &"Muted"
+text = "Spears beat riders, riders beat archers, archers beat spears."
+autowrap_mode = 3
+
+[editable path="Economy"]
+[editable path="Diplomacy"]
+[editable path="Warfare"]
