@@ -216,6 +216,19 @@ step.value_changed.connect(func(v): settings.difficulty = int(v))
 
 The whole row takes focus, so up and down still move between rows while left and right (keys, d-pad or the little arrows) step the value. Accept steps forward and goes round at the end. With no `options` it steps numbers from `min_value` to `max_value` by `step`, shown with `format` (`"%d%%"`). `wrap` makes both ends go round. The value box is as wide as its widest step, so the arrows stay put. See `gallery/examples/ui_volume.tscn`.
 
+### WoldField
+
+The wrapper for a form row: label, control, a hint under it and an error line.
+
+```gdscript
+var name_edit := LineEdit.new()
+var field := WoldField.make(name_edit, "Kingdom name", "Shown to other players.")
+field.max_length = 24                 # adds a "10 / 24" counter and caps the LineEdit
+field.error = "That name is taken."   # shows the line, gives the LineEdit a danger border
+```
+
+Any control goes in the `%Control` slot (in the editor: Editable Children, or an inherited scene). A click on the label focuses the control, and the label and hint become the control's accessibility name and description. LineEdit and TextEdit (and the Sm / Lg field styles) have an `...Invalid` style that the error switches on; other controls keep their look and just get the message. See `gallery/examples/name_field.tscn`, which checks itself as you type.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

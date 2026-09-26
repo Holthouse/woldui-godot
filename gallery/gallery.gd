@@ -75,6 +75,7 @@ func rebuild() -> void:
 	_wold_toggles()
 	_wold_selects()
 	_wold_steppers()
+	_wold_fields()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -647,6 +648,40 @@ func _wold_steppers() -> void:
 	for st in col.get_children():
 		st.disabled = show_disabled
 	s.add_child(panel)
+
+
+## NameField validates as you type; the others show each part
+func _wold_fields() -> void:
+	var s := _section("WoldField", "components/wold_field. Label, any control in the %Control slot, a hint and an error line. An error gives LineEdit and TextEdit a danger border. Clicking the label focuses the control. NameField checks itself as you type.")
+	var row := _row(&"RowXl")
+	var name_field: WoldField = load("res://addons/woldui/gallery/examples/name_field.tscn").instantiate()
+	name_field.custom_minimum_size.x = 300
+	row.add_child(name_field)
+	var col := _stack(&"StackLg")
+	var sel: WoldSelect = load("res://addons/woldui/components/wold_select/wold_select.tscn").instantiate()
+	sel.min_width = 300
+	var map := WoldField.make(sel, "Map size", "Bigger maps take longer.")
+	col.add_child(map)
+	var notes := TextEdit.new()
+	notes.custom_minimum_size = Vector2(300, 80)
+	notes.placeholder_text = "Anything the other players should know"
+	var notes_field := WoldField.make(notes, "Lobby notes")
+	notes_field.max_length = 80
+	col.add_child(notes_field)
+	row.add_child(col)
+	var bad := LineEdit.new()
+	bad.text = "12"
+	var port := WoldField.make(bad, "Port")
+	port.error = "Use a port between 1024 and 65535."
+	port.custom_minimum_size.x = 260
+	row.add_child(port)
+	for f in [name_field, map, notes_field, port]:
+		var c: Control = f.control()
+		if c is LineEdit or c is TextEdit:
+			c.editable = not show_disabled
+		elif c is BaseButton:
+			c.disabled = show_disabled
+	s.add_child(row)
 
 
 func _wold_tabs() -> void:
