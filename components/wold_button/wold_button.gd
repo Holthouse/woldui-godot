@@ -65,6 +65,13 @@ var _probe := Button.new()
 
 
 func _init() -> void:
+	# an inherited scene sets the script once per level, so this runs twice on
+	# one node: drop the probe the first script left behind
+	for child in get_children(true):
+		if child.name == &"WoldProbe":
+			remove_child(child)
+			child.free()
+	_probe.name = &"WoldProbe"
 	_probe.visible = false
 	add_child(_probe, false, Node.INTERNAL_MODE_FRONT)
 	set_meta("wold_sound", sound)

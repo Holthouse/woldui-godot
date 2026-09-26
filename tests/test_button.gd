@@ -17,7 +17,8 @@ func _run() -> void:
 	await _saved_scene()
 	await _theme_change()
 	await _extension()
-	finish(26)
+	await _one_probe()
+	finish(27)
 
 
 func _button() -> WoldButton:
@@ -156,3 +157,13 @@ func _extension() -> void:
 	c.busy = false
 	check(not c.disabled and c.icon_end == "arrow-right", "and switches back")
 	c.queue_free()
+
+
+# an inherited scene sets the script once per level, so _init runs twice
+func _one_probe() -> void:
+	var b: WoldButton = load("res://addons/woldui/gallery/examples/confirm_button.tscn").instantiate()
+	stage.add_child(b)
+	await process_frame
+	var hidden := b.get_child_count(true) - b.get_child_count()
+	check(hidden == 1, "an inherited button has one hidden probe, not one per script (%d)" % hidden)
+	b.queue_free()
