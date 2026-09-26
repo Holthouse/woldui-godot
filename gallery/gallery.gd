@@ -70,6 +70,8 @@ func rebuild() -> void:
 	_wold_list_rows()
 	_wold_switches()
 	_wold_checkboxes()
+	_wold_radio_groups()
+	_wold_segmented()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -491,6 +493,60 @@ func _wold_checkboxes() -> void:
 		radios.add_child(r)
 	row.add_child(radios)
 	s.add_child(row)
+
+
+## GameSpeed maps the pick to a value
+func _wold_radio_groups() -> void:
+	var s := _section("WoldRadioGroup", "components/wold_radio_group. Options and descriptions as props; arrows or the d-pad move the pick, and focus leaves at either end. GameSpeed turns the pick into a value.")
+	var row := _row(&"RowXxl")
+	var speed: WoldRadioGroup = load("res://addons/woldui/gallery/examples/game_speed.tscn").instantiate()
+	speed.disabled = show_disabled
+	row.add_child(speed)
+	var col := _stack(&"StackLg")
+	var sides: WoldRadioGroup = load("res://addons/woldui/components/wold_radio_group/wold_radio_group.tscn").instantiate()
+	sides.legend = "Play as"
+	sides.options = PackedStringArray(["Ants", "Spidobots", "Moles"])
+	sides.descriptions = PackedStringArray()
+	sides.horizontal = true
+	sides.selected = 0
+	sides.disabled = show_disabled
+	col.add_child(sides)
+	var note := _label("", &"Muted")
+	var show_speed := func(_i := 0): note.text = "speed = %.0f s" % speed.speed
+	speed.selected_changed.connect(show_speed)
+	show_speed.call()
+	col.add_child(note)
+	row.add_child(col)
+	s.add_child(row)
+
+
+## MapLayers is the multiple mode
+func _wold_segmented() -> void:
+	var s := _section("WoldSegmented", "components/wold_segmented. Joined toggle buttons: pick one and the raised thumb slides to it, or turn on any number with multiple. MapLayers is a set of layer toggles.")
+	var scene := load("res://addons/woldui/components/wold_segmented/wold_segmented.tscn")
+	var row := _row(&"RowXl")
+	var views: WoldSegmented = scene.instantiate()
+	row.add_child(views)
+	var range_pick: WoldSegmented = scene.instantiate()
+	range_pick.options = PackedStringArray(["10 turns", "50 turns", "All"])
+	range_pick.icons = PackedStringArray()
+	range_pick.segment_size = WoldSegmented.Size.SM
+	range_pick.selected = 2
+	range_pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(range_pick)
+	var layers: WoldSegmented = load("res://addons/woldui/gallery/examples/map_layers.tscn").instantiate()
+	layers.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(layers)
+	for seg in [views, range_pick, layers]:
+		for i in seg.item_count():
+			seg.item(i).disabled = show_disabled
+	s.add_child(row)
+	var wide: WoldSegmented = scene.instantiate()
+	wide.options = PackedStringArray(["Ants", "Spidobots", "Moles", "Random"])
+	wide.icons = PackedStringArray()
+	wide.stretch = true
+	wide.custom_minimum_size.x = 520
+	s.add_child(wide)
 
 
 func _wold_tabs() -> void:

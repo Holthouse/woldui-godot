@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_radio_group/wold_radio_group.gd" id="1_radio"]
+
+[node name="WoldRadioGroup" type="VBoxContainer"]
+theme_type_variation = &"StackSm"
+script = ExtResource("1_radio")
+legend = "Map size"
+options = PackedStringArray("Small", "Medium", "Large")
+descriptions = PackedStringArray("Two to four players.", "", "Long games, up to eight players.")
+selected = 1
+
+[node name="Legend" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"Caption"
+text = "Map size"
+
+[node name="Items" type="BoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"StackXs"
+vertical = true

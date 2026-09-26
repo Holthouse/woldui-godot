@@ -155,6 +155,31 @@ sw.toggled.connect(func(on): settings.hex_grid = on)
 
 It's a toggle Button, so `button_pressed` is the state and `toggled` the signal. Disabled dims the label and description too. Plain CheckBox and CheckButton controls get matching drawn icons from the theme, so they fit in even if you don't use the component. `gallery/examples/motion_switch.tscn` binds one to the Reduce motion preference.
 
+### WoldCheckbox and WoldRadioGroup
+
+```gdscript
+box.label = "Show damage numbers"
+box.indeterminate = true          # the dash, for "some of these"
+
+radios.options = PackedStringArray(["Small", "Medium", "Large"])
+radios.selected = 1
+radios.selected_changed.connect(func(i): settings.map_size = i)
+```
+
+WoldCheckbox has the same `label` / `description` as the switch. Put a few in one `ButtonGroup` and they draw as radios. WoldRadioGroup builds those radios from `options` (and optional `descriptions`), lays them out in a column or a row (`horizontal`), and moves the pick with the arrow keys or d-pad; at either end focus moves on out of the group, so pad players don't get stuck in it. See `gallery/examples/check_all.tscn` and `game_speed.tscn`.
+
+### WoldSegmented
+
+Joined toggle buttons, for view modes and filters where radios would take too much room.
+
+```gdscript
+seg.options = PackedStringArray(["Map", "Cities", "Units"])
+seg.icons = PackedStringArray(["map", "castle", "swords"])
+seg.selected_changed.connect(func(i): show_view(i))
+```
+
+With one pick, a raised thumb slides to the chosen segment. Set `multiple` and any number can be on instead (`pressed_items()`, `item_toggled`). `segment_size` is SM or MD, and `stretch` shares the width equally. An option with an icon and no text gets the icon name as its tooltip; set a better one through `item(i)`. See `gallery/examples/map_layers.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

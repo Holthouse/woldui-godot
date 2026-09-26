@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_radio_group/wold_radio_group.tscn" id="1_base"]
+[ext_resource type="Script" path="res://addons/woldui/gallery/examples/game_speed.gd" id="2_script"]
+
+[node name="GameSpeed" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+legend = "Turn timer"
+options = PackedStringArray("Off", "Relaxed", "Blitz")
+descriptions = PackedStringArray("", "90 seconds a turn.", "45 seconds a turn.")
+selected = 1
+
+[node name="Legend" parent="." index="0"]
+text = "Turn timer"

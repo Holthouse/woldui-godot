@@ -20,6 +20,8 @@ const CONTRAST_PAIRS := [
 	["field_border", "surface_base", 3.0], ["field_border", "surface_raised", 3.0],
 	["field_border", "surface_overlay", 3.0], ["field_border", "field", 3.0],
 	["text", "field", 4.5], ["text_muted", "field", 4.5],
+	# segmented controls: unpicked labels sit on the sunken track
+	["text_muted", "surface_sunken", 4.5],
 ]
 
 

@@ -144,7 +144,8 @@ func _roles() -> Dictionary:
 	r.surface_base = n[950] if dark else n[100]
 	r.surface_raised = n[900] if dark else n[50]
 	r.surface_overlay = n[800] if dark else Color.WHITE
-	r.surface_sunken = n[950].darkened(0.25) if dark else n[200]
+	# light: halfway to 200, at 200 muted text drops under 4.5:1
+	r.surface_sunken = n[950].darkened(0.25) if dark else n[100].lerp(n[200], 0.5)
 	# fields need a 3:1 edge on every surface (WCAG 1.4.11) or they vanish
 	# into the panel
 	r.field = n[950].darkened(0.25) if dark else Color.WHITE
