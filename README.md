@@ -279,6 +279,19 @@ The picture is cropped to a circle or a rounded square (`shape`) and covers the 
 
 WoldAvatarGroup builds overlapping avatars from `names` (and optional `textures`), each with a ring in the surface colour, and folds anything past `max_visible` into a "+N" whose tooltip lists who's in it. See `gallery/examples/faction_leader.tscn` and `lobby_players.tscn`.
 
+### WoldAlert
+
+A banner that sits in the layout, for things that should stay put until dealt with (a toast goes away on its own).
+
+```gdscript
+alert.tone = WoldAlert.Tone.WARNING
+alert.title = "Low food"
+alert.description = "Your population stops growing next turn."
+alert.dismissible = true
+```
+
+The tone picks the fill, the edge and a default icon, the same icons WoldToast uses; `icon` overrides it. Buttons go in `%Action`. `close()` fades it out and emits `closed`; `free_on_close` frees it afterwards. See `gallery/examples/treaty_alert.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

@@ -80,6 +80,7 @@ func rebuild() -> void:
 	_wold_cards()
 	_wold_disclosure()
 	_wold_avatars()
+	_wold_alerts()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -828,6 +829,34 @@ func _gradient_portrait() -> Texture2D:
 	tex.width = 64
 	tex.height = 64
 	return tex
+
+
+## TreatyAlert: danger, an action and a close button
+func _wold_alerts() -> void:
+	var s := _section("WoldAlert", "components/wold_alert. A banner in the layout, unlike a toast. Tone picks the colour and a default icon; buttons go in %Action; dismissible adds a close button.")
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.theme_type_variation = &"GridMd"
+	var scene := load("res://addons/woldui/components/wold_alert/wold_alert.tscn")
+	var samples := [[WoldAlert.Tone.NEUTRAL, "Autosave is on", "Every 5 turns, the last 3 are kept."], [WoldAlert.Tone.ACCENT, "New wonder available", ""], [WoldAlert.Tone.SUCCESS, "Treaty signed", "The Ants will trade wood for gold for 20 turns."], [WoldAlert.Tone.WARNING, "Low food", "Your population stops growing next turn."]]
+	for sample in samples:
+		var a: WoldAlert = scene.instantiate()
+		a.tone = sample[0]
+		a.title = sample[1]
+		a.description = sample[2]
+		a.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_child(a)
+	var treaty: WoldAlert = load("res://addons/woldui/gallery/examples/treaty_alert.tscn").instantiate()
+	treaty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_child(treaty)
+	var again: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	again.text = "Show it again"
+	again.shape = WoldButton.Shape.GHOST
+	again.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	again.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	again.pressed.connect(func(): WoldMotion.appear(treaty))
+	grid.add_child(again)
+	s.add_child(grid)
 
 
 func _wold_tabs() -> void:
