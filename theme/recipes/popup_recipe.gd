@@ -19,6 +19,8 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 	theme.set_color("font_disabled_color", "PopupMenu", t.role("text_disabled"))
 	theme.set_color("font_accelerator_color", "PopupMenu", t.role("text_muted"))
 	theme.set_color("font_separator_color", "PopupMenu", t.role("text_muted"))
+	# not an engine item: WoldMenu tints danger items' icons with it
+	theme.set_color("font_danger_color", "PopupMenu", t.role("danger_text"))
 	theme.set_constant("v_separation", "PopupMenu", t.space_sm)
 	theme.set_constant("h_separation", "PopupMenu", t.space_sm)
 	theme.set_constant("item_start_padding", "PopupMenu", t.space_md)
@@ -26,6 +28,7 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 	theme.set_font_size("font_size", "PopupMenu", t.font_size(0))
 	theme.set_stylebox("panel", "PopupPanel", WoldStyle.raised(t.role("surface_overlay"), t.radius_md, Vector2i(t.space_md, t.space_md), t, t.role("border")))
 	_menu_icons(theme, t)
+	_menu_bar(theme, t)
 	_select(theme, t)
 
 
@@ -51,6 +54,21 @@ static func _menu_icons(theme: Theme, t: WoldTokens) -> void:
 	var img := left.get_image()
 	img.flip_x()
 	theme.set_icon("submenu_mirrored", "PopupMenu", ImageTexture.create_from_image(img))
+
+
+# MenuBar: flat titles, the open one tinted like a hovered menu item
+static func _menu_bar(theme: Theme, t: WoldTokens) -> void:
+	var pad := Vector2i(t.space_sm, t.space_xs)
+	var clear := Color(0, 0, 0, 0)
+	theme.set_stylebox("normal", "MenuBar", WoldStyle.flat(clear, t.radius_sm, pad))
+	theme.set_stylebox("hover", "MenuBar", WoldStyle.flat(t.role("surface_hover"), t.radius_sm, pad))
+	theme.set_stylebox("pressed", "MenuBar", WoldStyle.flat(t.role("accent_soft"), t.radius_sm, pad))
+	theme.set_stylebox("disabled", "MenuBar", WoldStyle.flat(clear, t.radius_sm, pad))
+	for item in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
+		theme.set_color(item, "MenuBar", t.role("text"))
+	theme.set_color("font_disabled_color", "MenuBar", t.role("text_disabled"))
+	theme.set_constant("h_separation", "MenuBar", t.space_xs)
+	theme.set_font_size("font_size", "MenuBar", t.font_size(0))
 
 
 # WoldSelect: the trigger looks like a field, the list marks the current
@@ -85,7 +103,8 @@ static func _select(theme: Theme, t: WoldTokens) -> void:
 		theme.set_color("font_color", hint, t.role("text_muted"))
 	theme.set_type_variation("SelectPopup", "PopupMenu")
 	var px := t.icon_size_sm
-	theme.set_icon("radio_checked", "SelectPopup", Toggle.mark(px, Toggle.check_path(px), t.role("accent_text")))
+	# white: WoldSelect tints every row with the text colour, the mark included
+	theme.set_icon("radio_checked", "SelectPopup", Toggle.mark(px, Toggle.check_path(px), Color.WHITE))
 	theme.set_icon("radio_unchecked", "SelectPopup", Toggle.blank(px))
 	theme.set_icon("radio_checked_disabled", "SelectPopup", Toggle.mark(px, Toggle.check_path(px), t.role("text_disabled")))
 	theme.set_icon("radio_unchecked_disabled", "SelectPopup", Toggle.blank(px))

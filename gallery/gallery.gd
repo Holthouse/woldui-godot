@@ -83,6 +83,7 @@ func rebuild() -> void:
 	_wold_alerts()
 	_wold_status()
 	_wold_carousels()
+	_wold_menus()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -918,6 +919,47 @@ func _wold_carousels() -> void:
 	show.call(dots.current)
 	col.add_child(note)
 	row.add_child(col)
+	s.add_child(row)
+
+
+## UnitMenu builds itself; right-click the panel for a context menu
+func _wold_menus() -> void:
+	var s := _section("WoldMenu", "components/wold_menu. A PopupMenu you fill in code, one callback per item: icons, shortcuts, checks, radio groups, submenus, danger items. open_at(control) for a dropdown, open_at_mouse() for a context menu. Focus goes back when it closes.")
+	var row := _row(&"RowXl")
+	var unit: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	unit.text = "Spearman"
+	unit.icon_start = "swords"
+	unit.icon_end = "chevron-down"
+	unit.disabled = show_disabled
+	var menu: WoldMenu = load("res://addons/woldui/gallery/examples/unit_menu.tscn").instantiate()
+	unit.add_child(menu)
+	var said := _label("", &"Muted")
+	menu.command.connect(func(what): said.text = "command: %s" % what)
+	unit.pressed.connect(func(): menu.open_at(unit))
+	row.add_child(unit)
+	var area := PanelContainer.new()
+	area.theme_type_variation = &"PanelSunken"
+	area.custom_minimum_size = Vector2(240, 60)
+	area.add_child(_label("Right-click here", &"Muted"))
+	var ctx := WoldMenu.new()
+	ctx.item("Copy", func(): said.text = "copied", "copy", "Ctrl+C")
+	ctx.item("Paste", func(): said.text = "pasted", "clipboard", "Ctrl+V")
+	area.add_child(ctx)
+	area.gui_input.connect(func(e):
+		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_RIGHT:
+			ctx.open_at_mouse())
+	row.add_child(area)
+	var bar := MenuBar.new()
+	for title in ["Game", "View"]:
+		var pm := WoldMenu.new()
+		pm.name = title
+		pm.item("New", Callable(), "plus")
+		pm.item("Load", Callable(), "folder-open")
+		bar.add_child(pm)
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(bar)
+	said.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(said)
 	s.add_child(row)
 
 

@@ -94,11 +94,12 @@ func open() -> void:
 	for i in options.size():
 		if i < icons.size() and icons[i] != "":
 			_menu.add_icon_radio_check_item(t.icon(icons[i], "Sm"), options[i])
-			# PopupMenu draws item icons as they are: white, gone on a light theme
-			if t.icon_tint == WoldTokens.IconTint.INHERIT:
-				_menu.set_item_icon_modulate(i, _menu.get_theme_color("font_color"))
 		else:
 			_menu.add_radio_check_item(options[i])
+		# PopupMenu draws icons untinted (white, gone on a light theme). The
+		# modulate also hits the check mark, which is white for this reason
+		if t.icon_tint == WoldTokens.IconTint.INHERIT or i >= icons.size() or icons[i] == "":
+			_menu.set_item_icon_modulate(i, _menu.get_theme_color("font_color"))
 		_menu.set_item_checked(i, i == selected)
 	var r := dropdown_rect()
 	# same dance as OptionButton: place and size first, then popup() keeps them

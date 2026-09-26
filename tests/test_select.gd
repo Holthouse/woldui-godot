@@ -26,7 +26,7 @@ func _run() -> void:
 	f.selected = 1
 	check(none.a == 0.0 and f.accent() == Color("3a7bd5") and f.value() == "Spidobots", "FactionSelect hands back the picked faction's colour")
 	f.queue_free()
-	finish(27)
+	finish(28)
 
 
 func _select() -> WoldSelect:
@@ -128,6 +128,7 @@ func _icons_tinted() -> void:
 	await process_frame
 	var tint := s.menu().get_item_icon_modulate(0)
 	check(tint == tokens("res://addons/woldui/tokens/default_light.tres").role("text"), "list icons take the text colour, so they show on a light theme (%s)" % tint)
+	check(s.menu().item_count > 1 and s.menu().get_item_icon_modulate(1) == tint, "rows without an icon too, so the white check mark reads as text")
 	s.close()
 	host.queue_free()
 

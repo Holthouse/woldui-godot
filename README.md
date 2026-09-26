@@ -204,6 +204,25 @@ sel.item_selected.connect(func(i): settings.map_size = i)
 
 `selected = -1` shows the placeholder. `icons` puts an icon next to each option (and in the field once picked), `select_size` is SM, MD or LG, and `min_width` stops it being narrower than you want. It sizes itself to the longest option, so picking one never resizes it. Accept opens the list on keyboard or pad, the list takes up / down / accept / cancel, and focus comes back to the field when it closes. It isn't an OptionButton: that one saves its generated items into your scene. Plain PopupMenus also get drawn check boxes, radio dots and a submenu arrow from the theme. See `gallery/examples/faction_select.tscn`.
 
+### WoldMenu
+
+A PopupMenu you fill in code, one callback per item, for dropdowns and context menus.
+
+```gdscript
+var m := WoldMenu.new()
+m.item("Rename", rename, "pencil", "F2")          # label, callback, icon, shortcut
+m.check("Auto-explore", true, func(on): auto = on)
+m.radio("Line", &"formation", true, set_line)
+var send := m.submenu("Send to", "send")
+send.item("Rivermouth", send_to.bind("rivermouth"))
+m.separator()
+m.danger("Disband", disband, "trash", "Delete")
+add_child(m)
+m.open_at(button)        # or m.open_at_mouse() for a context menu
+```
+
+Keyboard, pad, submenus and type-to-search are PopupMenu's own. Shortcuts are shown on the right (and work while the menu is open). Icons take the text colour, danger items get a red icon, and focus goes back to whatever had it when the menu closes. `open_at` takes a side and an alignment; `anchor_position()` tells you where it will ask to go. Plain PopupMenus and MenuBars pick up the same look from the theme. See `gallery/examples/unit_menu.tscn`.
+
 ### WoldStepper
 
 The console-style `< Normal >` setting, for settings screens you drive with a pad.
