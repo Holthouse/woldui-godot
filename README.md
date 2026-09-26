@@ -432,7 +432,7 @@ scope.accent = Color("c0392b")                    # this faction's panel goes re
 scope.token_overrides = {"radius_md": 0, "base_font_size": 15}
 ```
 
-Everything inside follows the overrides, components included, and nothing outside changes. Scopes nest (nearest wins), rebuild when their props change or when the game swaps tokens with `WoldUI.apply_tokens`, and never save their generated theme into the scene.
+Everything inside follows the overrides, components included, and nothing outside changes. Scopes nest and stack: an inner one starts from the outer one's overrides and adds its own (nearest wins), rebuild when their props change or when the game swaps tokens with `WoldUI.apply_tokens`, and never save their generated theme into the scene.
 
 ### WoldScreen
 
@@ -508,7 +508,6 @@ The gallery shows your own styles under "Game styles" without you doing anything
 - `WoldSlider` is horizontal only.
 - The built-in sounds are placeholders.
 - Nothing touch-specific yet.
-- Nested `WoldScope`s don't stack: an inner scope starts from the global tokens, not the outer scope's overrides.
 
 ## Development
 

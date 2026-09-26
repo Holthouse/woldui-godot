@@ -15,7 +15,7 @@ func _run() -> void:
 	await _inside_and_outside()
 	await _nesting_and_changes()
 	await _runtime_swap_and_saving()
-	finish(12)
+	finish(14)
 
 
 func _fill(b: Button) -> Color:
@@ -63,7 +63,16 @@ func _nesting_and_changes() -> void:
 	inner.add_child(deep)
 	await process_frame
 	check(_fill(deep) == Color("27ae60"), "the nearest scope wins")
-	check((deep.get_theme_stylebox("normal") as StyleBoxFlat).corner_radius_top_left == tokens().radius_md, "an inner scope starts from the game's tokens, not the outer scope's")
+	check((deep.get_theme_stylebox("normal") as StyleBoxFlat).corner_radius_top_left == 0, "an inner scope stacks on the outer one (its radius_md 0 still applies)")
+	outer.token_overrides = {"radius_md": 3}
+	await process_frame
+	check((deep.get_theme_stylebox("normal") as StyleBoxFlat).corner_radius_top_left == 3 and _fill(deep) == Color("27ae60"), "changing the outer scope reaches the inner one, which keeps its own accent")
+	outer.token_overrides = {"radius_md": 0}
+	inner.reparent(stage)
+	await process_frame
+	check((deep.get_theme_stylebox("normal") as StyleBoxFlat).corner_radius_top_left == tokens().radius_md, "moved out of the outer scope, it drops what it inherited")
+	inner.reparent(outer)
+	await process_frame
 	var b := _primary()
 	outer.remove_child(inner)
 	inner.queue_free()
