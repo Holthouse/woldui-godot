@@ -7,8 +7,9 @@ func _run() -> void:
 	_every_icon_renders()
 	_sizes_and_cache()
 	_icon_sets()
+	_aliases()
 	_tokens_icon()
-	finish(20)
+	finish(27)
 
 
 func _library() -> void:
@@ -93,3 +94,14 @@ func _ink_colour(img: Image) -> Color:
 			if c.a > 0.9:
 				return c
 	return Color.BLACK
+
+
+# a game names its icons by meaning ("food") before it has art for them
+func _aliases() -> void:
+	var set := WoldIconSet.new()
+	set.aliases = {"food": "wheat", "gold": "coins"}
+	check(set.has_icon("food") and set.get_icon("food", 20) == WoldIcons.texture("wheat", 20), "an alias stands in for a library icon")
+	var art := ImageTexture.create_from_image(Image.create(8, 8, false, Image.FORMAT_RGBA8))
+	set.icons = {"food": art}
+	check(set.get_icon("food") == art, "real art under the same name replaces the stand-in")
+	check(set.custom_names().has("gold"), "aliases count as the game's own names")

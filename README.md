@@ -498,7 +498,7 @@ WoldIcons.texture("coins", 32, 1.5)        # explicit px and stroke
 
 Browse them in the dock's Icons tab or in the gallery; clicking one copies its name. `icon_stroke` in the tokens sets the line weight for the whole game. An unknown name is an error, not a blank icon.
 
-To add your own, make a `WoldIconSet`, add name -> texture entries, and set it as the tokens' `icon_set`. New names get added to the library, and a name that matches a Lucide icon replaces it. Import SVGs as DPITexture so they stay sharp. White artwork tints like the built-in ones; for full-colour art set `icon_tint` to `ORIGINAL`.
+To add your own, make a `WoldIconSet`, add name -> texture entries, and set it as the tokens' `icon_set`. New names get added to the library, and a name that matches a Lucide icon replaces it. Import SVGs as DPITexture so they stay sharp. White artwork tints like the built-in ones; for full-colour art set `icon_tint` to `ORIGINAL`. Before there's art, `aliases` lets you name icons by meaning and point them at a Lucide stand-in (`"food" -> "wheat"`); art added under the same name later takes over.
 
 To update Lucide: `node tools/build_lucide.mjs <path to node_modules/lucide-react>`.
 
