@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_popover/wold_popover.gd" id="1_pop"]
+
+[node name="WoldPopover" type="Control"]
+layout_mode = 3
+mouse_filter = 2
+script = ExtResource("1_pop")
+title = "Rivermouth"
+description = "Pop 12. Builds a granary in 3 turns."
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 0
+theme_type_variation = &"Popover"
+
+[node name="Body" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_type_variation = &"StackSm"
+
+[node name="Title" type="Label" parent="Panel/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PopoverTitle"
+text = "Rivermouth"
+
+[node name="Description" type="Label" parent="Panel/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PopoverDescription"
+text = "Pop 12. Builds a granary in 3 turns."
+autowrap_mode = 3
+
+[node name="Content" type="VBoxContainer" parent="Panel/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"StackSm"

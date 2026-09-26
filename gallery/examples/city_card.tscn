@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_popover/wold_popover.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_meter/wold_meter.tscn" id="2_meter"]
+
+[node name="CityCard" instance=ExtResource("1_base")]
+title = "Rivermouth"
+description = "Pop 12, +4 gold a turn. Building a granary."
+trigger = 1
+
+[node name="Growth" type="Label" parent="Panel/Body/Content" index="0"]
+layout_mode = 2
+theme_type_variation = &"Caption"
+text = "Growth, 3 turns"
+
+[node name="Meter" parent="Panel/Body/Content" index="1" instance=ExtResource("2_meter")]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+value = 60.0
+show_percentage = false

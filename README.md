@@ -223,6 +223,19 @@ m.open_at(button)        # or m.open_at_mouse() for a context menu
 
 Keyboard, pad, submenus and type-to-search are PopupMenu's own. Shortcuts are shown on the right (and work while the menu is open). Icons take the text colour, danger items get a red icon, and focus goes back to whatever had it when the menu closes. `open_at` takes a side and an alignment; `anchor_position()` tells you where it will ask to go. Plain PopupMenus and MenuBars pick up the same look from the theme. See `gallery/examples/unit_menu.tscn`.
 
+### WoldPopover
+
+A panel that floats next to the Control it's a child of: a unit's details, a rename form, a filter.
+
+```gdscript
+var pop: WoldPopover = preload("res://addons/woldui/components/wold_popover/wold_popover.tscn").instantiate()
+pop.title = "Rename army"
+pop.get_node("%Content").add_child(name_edit)
+rename_button.add_child(pop)     # the button now opens it
+```
+
+`trigger` is CLICK (the anchor's press or a click toggles it), HOVER (a hover card, which keyboard and pad focus on the anchor open too) or MANUAL (`open()` / `close()`). `placement` and `align` say where it goes; it flips if there's no room and stays on screen. Esc, a click outside or focus moving elsewhere closes it, and focus goes back to the anchor. Opened from the keyboard or pad, focus lands inside. While open it lives on its own CanvasLayer (above dialogs) and borrows the theme it sat under, so a WoldScope still applies. Use `content()` to reach `%Content` while it's open. See `gallery/examples/city_card.tscn`.
+
 ### WoldStepper
 
 The console-style `< Normal >` setting, for settings screens you drive with a pad.

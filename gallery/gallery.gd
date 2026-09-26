@@ -84,6 +84,7 @@ func rebuild() -> void:
 	_wold_status()
 	_wold_carousels()
 	_wold_menus()
+	_wold_popovers()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -960,6 +961,38 @@ func _wold_menus() -> void:
 	row.add_child(bar)
 	said.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(said)
+	s.add_child(row)
+
+
+## click for a small form, hover (or focus) the city for CityCard
+func _wold_popovers() -> void:
+	var s := _section("WoldPopover", "components/wold_popover. A panel that floats next to the Control it's under, flipped and kept on screen. CLICK opens from the anchor, HOVER is a hover card that keyboard and pad focus open too. Esc, a click outside or focus leaving closes it.")
+	var row := _row(&"RowXl")
+	var rename: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	rename.text = "Rename army"
+	rename.icon_start = "pencil"
+	rename.disabled = show_disabled
+	var pop: WoldPopover = load("res://addons/woldui/components/wold_popover/wold_popover.tscn").instantiate()
+	pop.title = "Rename army"
+	pop.description = "Shown on the map and in reports."
+	var name_edit := LineEdit.new()
+	name_edit.text = "First Spears"
+	pop.get_node("%Content").add_child(name_edit)
+	var save: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	save.text = "Save"
+	save.shape = WoldButton.Shape.PRIMARY
+	save.button_size = WoldButton.Size.SM
+	save.size_flags_horizontal = Control.SIZE_SHRINK_END
+	save.pressed.connect(pop.close)
+	pop.get_node("%Content").add_child(save)
+	rename.add_child(pop)
+	row.add_child(rename)
+	var city: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	city.text = "Rivermouth"
+	city.icon_start = "castle"
+	city.shape = WoldButton.Shape.GHOST
+	city.add_child(load("res://addons/woldui/gallery/examples/city_card.tscn").instantiate())
+	row.add_child(city)
 	s.add_child(row)
 
 

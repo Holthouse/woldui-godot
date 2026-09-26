@@ -11,7 +11,7 @@ extends PopupMenu
 ##   add_child(m)
 ##   m.open_at(button)
 
-enum Side { BOTTOM, TOP, RIGHT, LEFT }
+enum Placement { BOTTOM, TOP, RIGHT, LEFT }
 enum Align { START, CENTER, END }
 
 # item id -> Callable
@@ -88,21 +88,21 @@ func submenu(label: String, icon_name := "") -> WoldMenu:
 
 ## Where the menu asks to go next to `anchor`. The popup adds its shadow round
 ## that and gets pushed back on screen if it won't fit.
-func anchor_position(anchor: Control, side := Side.BOTTOM, align := Align.START) -> Vector2i:
+func anchor_position(anchor: Control, placement := Placement.BOTTOM, align := Align.START) -> Vector2i:
 	var r := Rect2(anchor.get_screen_position(), anchor.size)
 	var s := Vector2(get_contents_minimum_size())
 	var gap := float(WoldUIRuntime.instance().tokens.space_xs)
 	var p := Vector2.ZERO
-	match side:
-		Side.BOTTOM:
+	match placement:
+		Placement.BOTTOM:
 			p.y = r.end.y + gap
-		Side.TOP:
+		Placement.TOP:
 			p.y = r.position.y - gap - s.y
-		Side.RIGHT:
+		Placement.RIGHT:
 			p.x = r.end.x + gap
-		Side.LEFT:
+		Placement.LEFT:
 			p.x = r.position.x - gap - s.x
-	var vertical := side == Side.BOTTOM or side == Side.TOP
+	var vertical := placement == Placement.BOTTOM or placement == Placement.TOP
 	var along := r.position.x if vertical else r.position.y
 	var length := r.size.x if vertical else r.size.y
 	var own := s.x if vertical else s.y
@@ -120,10 +120,10 @@ func anchor_position(anchor: Control, side := Side.BOTTOM, align := Align.START)
 
 
 ## Dropdown: open next to `anchor`.
-func open_at(anchor: Control, side := Side.BOTTOM, align := Align.START) -> void:
+func open_at(anchor: Control, placement := Placement.BOTTOM, align := Align.START) -> void:
 	_remember_focus(anchor)
 	reset_size()
-	position = anchor_position(anchor, side, align)
+	position = anchor_position(anchor, placement, align)
 	popup()
 
 
