@@ -55,6 +55,8 @@ func _ready() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_THEME_CHANGED:
 		_fit.call_deferred()
+		# deferred: the labels hear about the new theme after we do
+		_refresh.call_deferred()
 
 
 ## Subclass hook, before each restyle.
@@ -75,16 +77,22 @@ func _refresh() -> void:
 	lead.texture = t.icon(icon_name) if icon_name != "" else null
 	lead.visible = icon_name != ""
 	lead.custom_minimum_size = Vector2(t.icon_size_md, t.icon_size_md)
-	lead.self_modulate = t.role("text_muted")
+	lead.self_modulate = _tint()
 	(%Meta as Label).text = trailing_text
 	%Meta.visible = trailing_text != ""
 	var end := %End as TextureRect
 	end.texture = t.icon(trailing_icon, "Sm") if trailing_icon != "" else null
 	end.visible = trailing_icon != ""
 	end.custom_minimum_size = Vector2(t.icon_size_sm, t.icon_size_sm)
-	end.self_modulate = t.role("text_muted")
+	end.self_modulate = _tint()
 	_refreshing = false
 	_fit()
+
+
+# the muted colour of the theme we sit in (a WoldScope may differ from the
+# global tokens)
+func _tint() -> Color:
+	return (%Meta as Label).get_theme_color(&"font_color")
 
 
 func _fit() -> void:

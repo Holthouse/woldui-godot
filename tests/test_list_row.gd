@@ -16,7 +16,8 @@ func _run() -> void:
 	await _selection()
 	await _slots_and_feedback()
 	await _saved_scene()
-	finish(20)
+	await _theme_tint()
+	finish(21)
 
 
 func _row() -> WoldListRow:
@@ -112,3 +113,19 @@ func _saved_scene() -> void:
 	check(copy.title == "Lobby 3" and copy.toggle_mode and copy.custom_minimum_size.y > 0.0, "it rebuilds from its props on load")
 	host.queue_free()
 	again.queue_free()
+
+
+# icons used to take the global tokens' colour, so a WoldScope or a second
+# theme left them behind
+func _theme_tint() -> void:
+	var light := WoldThemeBuilder.build(tokens("res://addons/woldui/tokens/default_light.tres"))
+	var host := VBoxContainer.new()
+	host.theme = light
+	stage.add_child(host)
+	var r: WoldListRow = load(SCENE).instantiate()
+	host.add_child(r)
+	await process_frame
+	await process_frame
+	var want := light.get_color("font_color", "ListRowMeta")
+	check(r.get_node("%Icon").self_modulate == want and r.get_node("%End").self_modulate == want, "icons take their colour from the theme the row sits in")
+	host.queue_free()
