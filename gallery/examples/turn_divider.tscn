@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_separator/wold_separator.tscn" id="1_base"]
+
+[node name="TurnDivider" instance=ExtResource("1_base")]
+text = "Turn 12"
+place = 1
+
+[node name="Label" parent="." index="0"]
+text = "Turn 12"

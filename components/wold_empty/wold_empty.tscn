@@ -1,0 +1,48 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_empty/wold_empty.gd" id="1_empty"]
+
+[node name="WoldEmpty" type="VBoxContainer"]
+custom_minimum_size = Vector2(320, 0)
+theme_type_variation = &"StackMd"
+alignment = 1
+script = ExtResource("1_empty")
+icon = "scroll-text"
+title = "No saved games"
+description = "Games you save show up here."
+
+[node name="Media" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"EmptyMedia"
+
+[node name="Icon" type="TextureRect" parent="Media"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"EmptyTitle"
+text = "No saved games"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Description" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"EmptyBody"
+text = "Games you save show up here."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Actions" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"RowSm"
+alignment = 1

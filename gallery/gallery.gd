@@ -81,6 +81,7 @@ func rebuild() -> void:
 	_wold_disclosure()
 	_wold_avatars()
 	_wold_alerts()
+	_wold_status()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -857,6 +858,44 @@ func _wold_alerts() -> void:
 	again.pressed.connect(func(): WoldMotion.appear(treaty))
 	grid.add_child(again)
 	s.add_child(grid)
+
+
+## the quiet ones: NoSaves, TextSkeleton, SavingSpinner, TurnDivider
+func _wold_status() -> void:
+	var s := _section("WoldEmpty / WoldSkeleton / WoldSpinner / WoldSeparator", "Nothing here yet, still loading, working on it, and a line with an optional label. The skeleton breathes and the spinner turns; under Reduce motion both hold still.")
+	var row := _row(&"RowXxl")
+	var empty: WoldEmpty = load("res://addons/woldui/gallery/examples/no_saves.tscn").instantiate()
+	empty.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	row.add_child(empty)
+	var loading := _stack(&"StackMd")
+	loading.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	var person := _row(&"RowMd")
+	var face: WoldSkeleton = load("res://addons/woldui/components/wold_skeleton/wold_skeleton.tscn").instantiate()
+	face.shape = WoldSkeleton.Shape.ROUND
+	face.custom_minimum_size = Vector2(40, 40)
+	person.add_child(face)
+	person.add_child(load("res://addons/woldui/gallery/examples/text_skeleton.tscn").instantiate())
+	loading.add_child(person)
+	loading.add_child(load("res://addons/woldui/components/wold_skeleton/wold_skeleton.tscn").instantiate())
+	var spinners := _row(&"RowLg")
+	for z in [WoldSpinner.Size.SM, WoldSpinner.Size.MD]:
+		var sp: WoldSpinner = load("res://addons/woldui/components/wold_spinner/wold_spinner.tscn").instantiate()
+		sp.spinner_size = z
+		spinners.add_child(sp)
+	spinners.add_child(load("res://addons/woldui/gallery/examples/saving_spinner.tscn").instantiate())
+	spinners.add_child(_label("Saving...", &"Muted"))
+	loading.add_child(spinners)
+	row.add_child(loading)
+	var lines := _stack(&"StackLg")
+	lines.custom_minimum_size.x = 280
+	lines.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	var plain: WoldSeparator = load("res://addons/woldui/components/wold_separator/wold_separator.tscn").instantiate()
+	plain.text = ""
+	lines.add_child(plain)
+	lines.add_child(load("res://addons/woldui/components/wold_separator/wold_separator.tscn").instantiate())
+	lines.add_child(load("res://addons/woldui/gallery/examples/turn_divider.tscn").instantiate())
+	row.add_child(lines)
+	s.add_child(row)
 
 
 func _wold_tabs() -> void:

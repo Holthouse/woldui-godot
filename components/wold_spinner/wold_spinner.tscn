@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_spinner/wold_spinner.gd" id="1_spin"]
+
+[node name="WoldSpinner" type="Control"]
+layout_mode = 3
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_type_variation = &"Spinner"
+script = ExtResource("1_spin")

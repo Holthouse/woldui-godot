@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_separator/wold_separator.gd" id="1_sep"]
+
+[node name="WoldSeparator" type="Control"]
+layout_mode = 3
+size_flags_horizontal = 3
+theme_type_variation = &"Divider"
+script = ExtResource("1_sep")
+text = "or"
+
+[node name="Label" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+theme_type_variation = &"DividerLabel"
+text = "or"

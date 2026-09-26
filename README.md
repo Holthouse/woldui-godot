@@ -292,6 +292,17 @@ alert.dismissible = true
 
 The tone picks the fill, the edge and a default icon, the same icons WoldToast uses; `icon` overrides it. Buttons go in `%Action`. `close()` fades it out and emits `closed`; `free_on_close` frees it afterwards. See `gallery/examples/treaty_alert.tscn`.
 
+### WoldEmpty, WoldSkeleton, WoldSpinner, WoldSeparator
+
+The quiet ones.
+
+- **WoldEmpty** is what a list or inventory shows with nothing in it: an `icon` in a soft circle, a `title`, a `description`, and buttons in `%Actions`, all centred. See `gallery/examples/no_saves.tscn`.
+- **WoldSkeleton** stands in for something still loading. Size it like the real thing, or set `lines` for a block of text (the last line comes out shorter). `shape = ROUND` is for portraits. It breathes while `active`. See `text_skeleton.tscn`.
+- **WoldSpinner** is a turning loader icon (`icon`, `spinner_size`). It only turns while visible, and the icon turns inside its drawing, not the node, so it's fine in containers. See `saving_spinner.tscn`.
+- **WoldSeparator** is a line that can carry a label ("or", "Turn 12"), in the middle or near the start (`place`), and can be `vertical`. See `turn_divider.tscn`.
+
+Under Reduce motion the skeleton and spinner hold still.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.

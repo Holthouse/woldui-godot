@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_skeleton/wold_skeleton.gd" id="1_skel"]
+
+[node name="WoldSkeleton" type="Panel"]
+custom_minimum_size = Vector2(240, 16)
+size_flags_vertical = 0
+theme_type_variation = &"Skeleton"
+script = ExtResource("1_skel")
