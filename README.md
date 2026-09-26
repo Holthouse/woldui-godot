@@ -466,7 +466,7 @@ Presets are `.tres` files in `motion/presets/` (appear, disappear, dialog_in, to
 
 For buttons, drop a `WoldFeedback` node into a scene. Every button under its parent then gets a hover/focus lift, a press dip, sounds, and a shake plus error sound when someone clicks it while it's disabled. Buttons added later are picked up too. Per button you can set metadata `wold_sound` (`confirm`, `back`, `open`, `close` or `none`) or `wold_feedback = false`.
 
-There are eight sound slots (hover, click, confirm, back, error, open, close, focus), set through a `WoldSoundSet` on the tokens. Empty slots fall back to built-in synthesised sounds while `use_builtin_sounds` is on, so a prototype isn't silent.
+There are eight sound slots (hover, click, confirm, back, error, open, close, focus), set through a `WoldSoundSet` on the tokens. Empty slots fall back to built-in synthesised sounds while `use_builtin_sounds` is on: soft mallet notes (confirm goes up, back comes down), a wooden tick for clicks, a low double knock for errors and quiet whooshes for open and close. They're made on first use, so there are no audio files, and `WoldSounds.mallet()`, `tick()`, `knock()`, `whoosh()` and `mix()` are there if you want to make your own the same way.
 
 Enabling the plugin adds a `WoldUI` autoload. It holds the player preferences (`reduced_motion`, `sound_enabled`, `sound_volume_db`) and tracks the input device in `input_mode` (MOUSE, KEYBOARD, PAD or TOUCH), with `input_mode_changed` when it switches. Focus sounds only play on keyboard and pad.
 
@@ -506,7 +506,6 @@ The gallery shows your own styles under "Game styles" without you doing anything
 
 ## Known gaps
 
-- The built-in sounds are placeholders.
 
 ## Development
 
