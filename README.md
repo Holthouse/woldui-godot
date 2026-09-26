@@ -2,7 +2,7 @@
 
 A design system for Godot 4.7 games, driven by one tokens file. You pick a handful of colours, fonts and sizes, and every Control in the game restyles from them. Motion, sound and icons come with the components, and anything you can tweak, you can tweak in the editor.
 
-It's the Godot port of my web UI kit of the same name. Current version: 0.4.0.
+It's the Godot port of my web UI kit of the same name. Current version: 0.5.0.
 
 ## Install
 
