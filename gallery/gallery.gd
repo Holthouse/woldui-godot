@@ -498,7 +498,7 @@ func _wold_checkboxes() -> void:
 	var radios := _stack(&"StackXs")
 	radios.add_child(_label("Difficulty", &"Caption"))
 	var group := ButtonGroup.new()
-	for level in [["Settler", "For learning the ropes."], ["Chieftain", "The AI plays fair."], ["Deity", "The AI gets a head start."]]:
+	for level in [["Settler", "For learning the ropes."], ["Chieftain", "Opponents play fair."], ["Deity", "Opponents get a head start."]]:
 		var r: WoldCheckbox = scene.instantiate()
 		r.label = level[0]
 		r.description = level[1]
