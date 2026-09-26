@@ -1,9 +1,9 @@
 @tool
 class_name WoldSlider
 extends HSlider
-## HSlider with an optional textured fill left of the grabber.
+## HSlider with an optional textured fill left of the grabber. WoldVSlider is
+## the upright one.
 ## No fill texture = plain HSlider in its theme style.
-# TODO: horizontal only, there's no VSlider version.
 
 const FillLayers := preload("../shared/wold_fill_layers.gd")
 
@@ -27,11 +27,22 @@ var _probe := HSlider.new()
 
 
 func _init() -> void:
+	# an inherited scene runs _init once per script level; keep one of each
+	for child in get_children(true):
+		if child.name in [&"WoldProbe", &"WoldFillLayers"]:
+			remove_child(child)
+			child.free()
+	_probe.name = &"WoldProbe"
 	_probe.visible = false
 	add_child(_probe, false, Node.INTERNAL_MODE_FRONT)
 	add_child(_layers, false, Node.INTERNAL_MODE_FRONT)
-	value_changed.connect(func(_v): _place())
-	changed.connect(_place)
+	if not value_changed.is_connected(_on_value):
+		value_changed.connect(_on_value)
+		changed.connect(_place)
+
+
+func _on_value(_v: float) -> void:
+	_place()
 
 
 func _ready() -> void:

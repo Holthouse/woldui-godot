@@ -1,14 +1,13 @@
 @tool
-class_name WoldMeter
-extends ProgressBar
-## ProgressBar that can draw a texture as its fill (health bar with a pattern,
-## a wood-grain XP bar...). Without a textured WoldFill it's just a normal
-## ProgressBar in whatever Meter* style you give it.
-# TODO: left-to-right only. fill_mode is ignored once a texture is in play.
+class_name WoldVSlider
+extends VSlider
+## WoldSlider standing up: a volume fader, a zoom level. Same props; the fill
+## grows from the bottom up to the grabber.
+## No fill texture = plain VSlider in its theme style.
 
 const FillLayers := preload("../shared/wold_fill_layers.gd")
 
-## Needs a texture to kick in. Clipped to the track's rounded corners.
+## Only used if it has a texture.
 @export var fill: WoldFill:
 	set(value):
 		if fill and fill.changed.is_connected(_refresh):
@@ -17,10 +16,14 @@ const FillLayers := preload("../shared/wold_fill_layers.gd")
 		if fill:
 			fill.changed.connect(_refresh)
 		_refresh()
+## Rail thickness in px, 0 = from the style. Textures look better thick.
+@export_range(0, 64) var track_width := 0:
+	set(value):
+		track_width = value
+		_refresh()
 
 var _layers := FillLayers.new()
-# same trick as WoldButton: a hidden twin to read the un-overridden styleboxes
-var _probe := ProgressBar.new()
+var _probe := VSlider.new()
 
 
 func _init() -> void:
@@ -31,6 +34,7 @@ func _init() -> void:
 			child.free()
 	_probe.name = &"WoldProbe"
 	_probe.visible = false
+	_layers.vertical = true
 	add_child(_probe, false, Node.INTERNAL_MODE_FRONT)
 	add_child(_layers, false, Node.INTERNAL_MODE_FRONT)
 	if not value_changed.is_connected(_on_value):
@@ -55,9 +59,17 @@ func uses_fill() -> bool:
 	return fill != null and fill.texture != null
 
 
-## Where the texture goes. Handy for tests or drawing on top.
 func filled_rect() -> Rect2:
 	return _layers.filled_rect()
+
+
+## Grabber centre in local y (min at the bottom). The fill ends here.
+func grabber_center_y() -> float:
+	var grabber := get_theme_icon("grabber")
+	var gh := grabber.get_height() if grabber else 0.0
+	var span := max_value - min_value
+	var ratio := clampf((value - min_value) / span, 0.0, 1.0) if span > 0.0 else 0.0
+	return size.y - (ratio * (size.y - gh) + gh / 2.0)
 
 
 func _refresh() -> void:
@@ -66,25 +78,21 @@ func _refresh() -> void:
 	_layers.visible = on
 	_layers.fill = fill
 	if on:
-		_layers.track_style = _probe.get_theme_stylebox("background")
-		# blank out the native track + fill, FillLayers draws both instead
-		for item in ["background", "fill"]:
+		_layers.track_style = _probe.get_theme_stylebox("slider")
+		for item in ["slider", "grabber_area", "grabber_area_highlight"]:
 			if not has_theme_stylebox_override(item):
 				add_theme_stylebox_override(item, StyleBoxEmpty.new())
 	else:
-		for item in ["background", "fill"]:
+		for item in ["slider", "grabber_area", "grabber_area_highlight"]:
 			if has_theme_stylebox_override(item):
 				remove_theme_stylebox_override(item)
 	_place()
 
 
 func _place() -> void:
-	var span := max_value - min_value
-	var ratio := clampf((value - min_value) / span, 0.0, 1.0) if span > 0.0 else 0.0
-	_layers.track_rect = Rect2(Vector2.ZERO, size)
-	var inner_start := 0.0
-	if _layers.track_style is StyleBoxFlat:
-		inner_start = (_layers.track_style as StyleBoxFlat).border_width_left
-	var inner_width := size.x - inner_start * 2.0
-	_layers.fill_end = inner_start + inner_width * ratio
+	var w := float(track_width)
+	if w <= 0.0 and _layers.track_style:
+		w = maxf(_layers.track_style.get_minimum_size().x, 4.0)
+	_layers.track_rect = Rect2((size.x - w) / 2.0, 0.0, w, size.y)
+	_layers.fill_end = grabber_center_y()
 	_layers.refresh()

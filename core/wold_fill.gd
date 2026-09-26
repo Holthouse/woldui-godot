@@ -21,12 +21,17 @@ enum Mode { TILE, REVEAL, STRETCH }
 
 
 ## The draw as data {dest, src, tile, scale}, so tests can check it headless.
-## `src` only matters when not tiling.
-func plan(track: Rect2, filled: Rect2) -> Dictionary:
+## `src` only matters when not tiling. `vertical` fills bottom-up (WoldVSlider).
+func plan(track: Rect2, filled: Rect2, vertical := false) -> Dictionary:
 	var tex_size := texture.get_size() if texture else Vector2.ONE
 	match mode:
 		Mode.TILE:
 			return {dest = filled, src = Rect2(Vector2.ZERO, tex_size), tile = true, scale = tile_scale}
+		Mode.REVEAL when vertical:
+			# uncover the bottom of the image first
+			var part := filled.size.y / track.size.y if track.size.y > 0.0 else 0.0
+			return {dest = filled, src = Rect2(0, tex_size.y * (1.0 - part), tex_size.x, tex_size.y * part), tile = false,
+				scale = track.size.y / tex_size.y}
 		Mode.REVEAL:
 			var ratio := filled.size.x / track.size.x if track.size.x > 0.0 else 0.0
 			return {dest = filled, src = Rect2(0, 0, tex_size.x * ratio, tex_size.y), tile = false,
@@ -34,10 +39,10 @@ func plan(track: Rect2, filled: Rect2) -> Dictionary:
 	return {dest = filled, src = Rect2(Vector2.ZERO, tex_size), tile = false, scale = filled.size.x / tex_size.x}
 
 
-func draw_into(ci: CanvasItem, track: Rect2, filled: Rect2) -> void:
+func draw_into(ci: CanvasItem, track: Rect2, filled: Rect2, vertical := false) -> void:
 	if texture == null or filled.size.x <= 0.0 or filled.size.y <= 0.0:
 		return
-	var p := plan(track, filled)
+	var p := plan(track, filled, vertical)
 	var dest: Rect2 = p.dest
 	if p.tile:
 		var s: float = p.scale

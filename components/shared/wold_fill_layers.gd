@@ -7,8 +7,10 @@ extends Control
 
 var track_style: StyleBox
 var track_rect := Rect2()
-## x where the fill stops, host coords. Left-to-right only.
+## Where the fill stops, host coords: x left-to-right, or y when `vertical`
+## (it fills bottom-up to there).
 var fill_end := 0.0
+var vertical := false
 var fill: WoldFill
 
 var _mask := Control.new()
@@ -57,7 +59,7 @@ func _draw_mask() -> void:
 
 func _draw_fill() -> void:
 	if fill:
-		fill.draw_into(_fill_node, _inner_rect(), filled_rect())
+		fill.draw_into(_fill_node, _inner_rect(), filled_rect(), vertical)
 
 
 # minus the border, so the fill sits inside the outline
@@ -71,5 +73,8 @@ func _inner_rect() -> Rect2:
 ## Inside of the track, clamped to fill_end.
 func filled_rect() -> Rect2:
 	var inner := _inner_rect()
+	if vertical:
+		var top := clampf(fill_end, inner.position.y, inner.end.y)
+		return Rect2(inner.position.x, top, inner.size.x, inner.end.y - top)
 	inner.size.x = clampf(fill_end - inner.position.x, 0.0, inner.size.x)
 	return inner

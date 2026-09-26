@@ -1495,6 +1495,32 @@ func _fills() -> void:
 	slider.custom_minimum_size = Vector2(540, 24)
 	slider_row.add_child(slider)
 	s.add_child(slider_row)
+	var upright := _row(&"RowXl")
+	var vtag := _label("WoldVSlider", &"Caption")
+	vtag.custom_minimum_size.x = 120
+	upright.add_child(vtag)
+	var upward := _gradient()
+	upward.fill_from = Vector2(0, 1)
+	upward.fill_to = Vector2(0, 0)
+	upward.width = 8
+	upward.height = 256
+	for pair in [[stripes, WoldFill.Mode.TILE, 30.0], [upward, WoldFill.Mode.REVEAL, 70.0]]:
+		var vf := WoldFill.new()
+		vf.texture = pair[0]
+		vf.mode = pair[1]
+		var v := WoldVSlider.new()
+		v.fill = vf
+		v.track_width = 10
+		v.value = pair[2]
+		v.editable = not show_disabled
+		v.custom_minimum_size = Vector2(24, 160)
+		upright.add_child(v)
+	var plain := WoldVSlider.new()
+	plain.value = 50
+	plain.custom_minimum_size = Vector2(24, 160)
+	upright.add_child(plain)
+	upright.add_child(load("res://addons/woldui/gallery/examples/ui_fader.tscn").instantiate())
+	s.add_child(upright)
 
 
 ## click an icon to copy its name
@@ -1665,7 +1691,7 @@ func _stripes() -> Texture2D:
 	return ImageTexture.create_from_image(img)
 
 
-func _gradient() -> Texture2D:
+func _gradient() -> GradientTexture2D:
 	var g := Gradient.new()
 	g.set_color(0, tokens.tone("success", 500))
 	g.set_color(1, tokens.tone("danger", 500))

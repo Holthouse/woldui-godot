@@ -6,7 +6,9 @@ func _run() -> void:
 	_geometry()
 	await _meter()
 	await _slider()
-	finish(22)
+	await _vslider()
+	await _subclassed()
+	finish(31)
 
 
 func _texture(w: int, h: int) -> Texture2D:
@@ -97,4 +99,67 @@ func _slider() -> void:
 	slider.value = 75
 	await process_frame
 	check(slider.filled_rect().end.x > before, "moving the slider moves the end of the fill")
+	root.queue_free()
+
+
+func _vslider() -> void:
+	var root := Control.new()
+	root.theme = WoldThemeBuilder.build(tokens())
+	get_root().add_child(root)
+	var s: WoldVSlider = load("res://addons/woldui/components/wold_vslider/wold_vslider.tscn").instantiate()
+	s.size = Vector2(24, 300)
+	s.value = 25
+	root.add_child(s)
+	var f := WoldFill.new()
+	f.texture = _texture(16, 16)
+	s.fill = f
+	s.track_width = 10
+	await process_frame
+	check(s is VSlider and s.uses_fill() and s.get_theme_stylebox("grabber_area") is StyleBoxEmpty, "a vertical slider takes a fill the same way")
+	check(is_equal_approx(s._layers.track_rect.size.x, 10.0) and is_equal_approx(s._layers.track_rect.size.y, 300.0), "track_width sets the rail's thickness, it runs the full height")
+	var r := s.filled_rect()
+	check(is_equal_approx(r.position.y, s.grabber_center_y()) and is_equal_approx(r.end.y, s._layers._inner_rect().end.y), "the fill runs from the bottom up to the grabber")
+	check(s.grabber_center_y() > 150.0, "a low value sits near the bottom (%.0f)" % s.grabber_center_y())
+	var before := r.size.y
+	s.value = 75
+	await process_frame
+	check(s.filled_rect().size.y > before, "raising it grows the fill upward")
+	var reveal := WoldFill.new()
+	reveal.texture = _texture(8, 100)
+	reveal.mode = WoldFill.Mode.REVEAL
+	var track := Rect2(0, 0, 10, 200)
+	var p := reveal.plan(track, Rect2(0, 150, 10, 50), true)
+	var src: Rect2 = p.src
+	check(is_equal_approx(src.position.y, 75.0) and is_equal_approx(src.size.y, 25.0), "vertical REVEAL uncovers the bottom of the image first (%s)" % src)
+	var ui := WoldUIRuntime.instance()
+	ui.sound_volume_db = linear_to_db(0.5)
+	var fader: WoldVSlider = load("res://addons/woldui/gallery/examples/ui_fader.tscn").instantiate()
+	root.add_child(fader)
+	await process_frame
+	var hidden := fader.get_child_count(true) - fader.get_child_count()
+	check(hidden == 2 and is_equal_approx(fader.value, 50.0), "UiFader starts from the saved volume, with one set of hidden layers (%d)" % hidden)
+	fader.value = 25
+	check(is_equal_approx(ui.sound_volume_db, linear_to_db(0.25)), "and moving it writes the volume back")
+	ui.sound_volume_db = 0.0
+	root.queue_free()
+
+
+# a script on top of the component's (what an inherited scene with its own
+# script does) runs _init again on the same node
+func _subclassed() -> void:
+	var root := Control.new()
+	root.theme = WoldThemeBuilder.build(tokens())
+	get_root().add_child(root)
+	var counts := []
+	for pair in [["WoldMeter", "res://addons/woldui/components/wold_meter/wold_meter.tscn"], ["WoldSlider", "res://addons/woldui/components/wold_slider/wold_slider.tscn"], ["WoldVSlider", "res://addons/woldui/components/wold_vslider/wold_vslider.tscn"]]:
+		var sub := GDScript.new()
+		sub.source_code = "@tool\nextends %s\n" % pair[0]
+		sub.reload()
+		var n: Range = load(pair[1]).instantiate()
+		n.set_script(sub)
+		root.add_child(n)
+		await process_frame
+		n.value = 30
+		counts.append(n.get_child_count(true) - n.get_child_count())
+	check(counts == [2, 2, 2], "meter, slider and vertical slider keep one set of hidden layers when subclassed (%s)" % [counts])
 	root.queue_free()

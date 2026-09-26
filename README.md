@@ -408,7 +408,7 @@ It follows whatever the player is using right now (keyboard, pad or mouse) unles
 
 ### WoldMeter and WoldSlider
 
-`WoldMeter` is a ProgressBar and `WoldSlider` an HSlider. Both take a `WoldFill`, which is a texture plus a mode:
+`WoldMeter` is a ProgressBar, `WoldSlider` an HSlider and `WoldVSlider` a VSlider. Both take a `WoldFill`, which is a texture plus a mode:
 
 - `TILE` repeats the artwork at a fixed scale (`tile_scale`), so the value never squashes it. Good for stripes and pips.
 - `REVEAL` spreads one image across the whole track and the value uncovers it.
@@ -421,7 +421,7 @@ f.mode = WoldFill.Mode.TILE
 meter.fill = f
 ```
 
-The fill is clipped to the track's rounded shape and drawn under the grabber and the percentage text. `WoldSlider.track_height` makes the rail thicker if your texture needs the room.
+The fill is clipped to the track's rounded shape and drawn under the grabber and the percentage text. `WoldSlider.track_height` makes the rail thicker if your texture needs the room. `WoldVSlider` is the upright one (a volume fader, say): same props, with `track_width` for the rail, and the fill grows from the bottom up. See `gallery/examples/ui_fader.tscn`.
 
 ### WoldScope
 
@@ -505,7 +505,6 @@ The gallery shows your own styles under "Game styles" without you doing anything
 ## Known gaps
 
 - WoldMenu and WoldSelect's list are PopupMenus, which are windows, so they open without WoldMotion's animation.
-- `WoldSlider` is horizontal only.
 - The built-in sounds are placeholders.
 - Nothing touch-specific yet.
 
