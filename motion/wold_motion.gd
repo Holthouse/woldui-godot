@@ -41,6 +41,24 @@ static func reduced() -> bool:
 
 # ------------------------------------------------------------------ enter / leave
 
+## Popup windows (PopupMenu, OptionButton lists) have no modulate of their
+## own, but they draw everything, shadow included, in an internal
+## PanelContainer. This animates that in. Call it from about_to_popup.
+static func popup_in(popup: Window, p: WoldMotionPreset = null) -> Tween:
+	var panel := popup_panel(popup)
+	if panel == null:
+		return null
+	return appear(panel, p if p else preset("tooltip_in"))
+
+
+## The internal panel popup_in() animates, or null.
+static func popup_panel(popup: Window) -> Control:
+	for child in popup.get_children(true):
+		if child is PanelContainer:
+			return child
+	return null
+
+
 ## Makes it visible and animates from the preset's from-state to rest.
 static func appear(node: Control, p: WoldMotionPreset = null, extra_delay := 0.0) -> Tween:
 	p = p if p else preset("appear")

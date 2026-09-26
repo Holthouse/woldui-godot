@@ -203,6 +203,7 @@ func _remember_focus(fallback: Control) -> void:
 
 func _on_about_to_popup() -> void:
 	_tint()
+	WoldMotion.popup_in(self)
 	WoldUIRuntime.instance().play("open")
 
 

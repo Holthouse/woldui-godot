@@ -55,6 +55,7 @@ func _ready() -> void:
 		add_child(_menu, false, Node.INTERNAL_MODE_FRONT)
 		_menu.index_pressed.connect(_on_picked)
 		_menu.popup_hide.connect(_on_closed)
+		_menu.about_to_popup.connect(func(): WoldMotion.popup_in(_menu))
 	if not pressed.is_connected(open):
 		pressed.connect(open)
 	text = ""

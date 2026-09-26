@@ -15,6 +15,7 @@ func _run() -> void:
 	await _placement()
 	await _focus()
 	_styling()
+	await _animated()
 	var um: WoldMenu = load("res://addons/woldui/gallery/examples/unit_menu.tscn").instantiate()
 	stage.add_child(um)
 	await process_frame
@@ -24,7 +25,7 @@ func _run() -> void:
 	um.id_pressed.emit(um.get_item_id(um.item_count - 1))
 	check(got == [&"fortify", &"disband"] and um.is_danger(um.get_item_id(um.item_count - 1)), "UnitMenu reports picks through one signal (%s)" % [got])
 	um.queue_free()
-	finish(18)
+	finish(21)
 
 
 func _menu() -> WoldMenu:
@@ -119,3 +120,28 @@ func _styling() -> void:
 	var th := stage.theme
 	check((th.get_stylebox("hover", "PopupMenu") as StyleBoxFlat).bg_color == t.role("accent_soft") and th.get_color("font_danger_color", "PopupMenu") == t.role("danger_text"), "menus: accent hover, a danger colour")
 	check((th.get_stylebox("pressed", "MenuBar") as StyleBoxFlat).bg_color == t.role("accent_soft") and th.get_color("font_color", "MenuBar") == t.role("text"), "a MenuBar's open title is tinted the same way")
+
+
+func _animated() -> void:
+	var ui := WoldUIRuntime.instance()
+	ui.reduced_motion = false
+	var b := Button.new()
+	stage.add_child(b)
+	var m := _menu()
+	m.item("One")
+	await process_frame
+	m.open_at(b)
+	await process_frame
+	var panel := WoldMotion.popup_panel(m)
+	check(panel != null and panel.modulate.a < 1.0, "the menu fades in (alpha %.2f one frame in)" % (panel.modulate.a if panel else -1.0))
+	await create_timer(0.4).timeout
+	check(panel.modulate.a == 1.0 and panel.offset_transform_position == Vector2.ZERO, "and settles")
+	m.hide()
+	ui.reduced_motion = true
+	m.open_at(b)
+	await process_frame
+	check(panel.modulate.a == 1.0, "reduced motion: it just opens")
+	m.hide()
+	ui.reduced_motion = false
+	m.queue_free()
+	b.queue_free()

@@ -26,7 +26,7 @@ func _run() -> void:
 	f.selected = 1
 	check(none.a == 0.0 and f.accent() == Color("3a7bd5") and f.value() == "Spidobots", "FactionSelect hands back the picked faction's colour")
 	f.queue_free()
-	finish(28)
+	finish(29)
 
 
 func _select() -> WoldSelect:
@@ -79,6 +79,7 @@ func _dropdown() -> void:
 	var r := s.dropdown_rect()
 	check(r.size.x == int(s.size.x) and not m.shrink_width, "the list asks to be as wide as the field, and won't shrink")
 	check(r.position.y > int(s.global_position.y + s.size.y), "and to drop below it (%s)" % [r])
+	check(WoldMotion.popup_panel(m) != null and WoldMotion.popup_panel(m).modulate.a < 1.0, "the list fades in")
 	m.index_pressed.emit(3)
 	await process_frame
 	check(s.selected == 3 and s.value() == "Huge", "picking an option selects it")

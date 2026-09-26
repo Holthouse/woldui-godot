@@ -239,7 +239,7 @@ add_child(m)
 m.open_at(button)        # or m.open_at_mouse() for a context menu
 ```
 
-Keyboard, pad, submenus and type-to-search are PopupMenu's own. Shortcuts are shown on the right (and work while the menu is open). Icons take the text colour, danger items get a red icon, and focus goes back to whatever had it when the menu closes. `open_at` takes a side and an alignment; `anchor_position()` tells you where it will ask to go. Plain PopupMenus and MenuBars pick up the same look from the theme. See `gallery/examples/unit_menu.tscn`.
+Keyboard, pad, submenus and type-to-search are PopupMenu's own. Shortcuts are shown on the right (and work while the menu is open). Icons take the text colour, danger items get a red icon, and focus goes back to whatever had it when the menu closes. `open_at` takes a side and an alignment; `anchor_position()` tells you where it will ask to go. Plain PopupMenus and MenuBars pick up the same look from the theme. Menus fade in like the other popups; `WoldMotion.popup_in(popup)` does the same for any popup window of your own. See `gallery/examples/unit_menu.tscn`.
 
 ### WoldPopover
 
@@ -504,7 +504,6 @@ The gallery shows your own styles under "Game styles" without you doing anything
 
 ## Known gaps
 
-- WoldMenu and WoldSelect's list are PopupMenus, which are windows, so they open without WoldMotion's animation.
 - The built-in sounds are placeholders.
 - Nothing touch-specific yet.
 
