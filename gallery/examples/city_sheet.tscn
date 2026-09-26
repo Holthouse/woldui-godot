@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_sheet/wold_sheet.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_list_row/wold_list_row.tscn" id="2_row"]
+
+[node name="CitySheet" instance=ExtResource("1_base")]
+free_on_close = true
+
+[node name="Granary" parent="Panel/Body/Content" index="0" instance=ExtResource("2_row")]
+layout_mode = 2
+title = "Granary"
+subtitle = "+2 food"
+icon_name = "wheat"
+trailing_text = "Built"
+selectable = false
+
+[node name="Market" parent="Panel/Body/Content" index="1" instance=ExtResource("2_row")]
+layout_mode = 2
+title = "Market"
+subtitle = "+3 gold"
+icon_name = "coins"
+trailing_text = "3 turns"
+selectable = false
+
+[node name="Walls" parent="Panel/Body/Content" index="2" instance=ExtResource("2_row")]
+layout_mode = 2
+title = "Walls"
+subtitle = "+50% defence"
+icon_name = "castle"
+trailing_text = "Not started"
+selectable = false

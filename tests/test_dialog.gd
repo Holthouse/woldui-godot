@@ -20,7 +20,9 @@ func _run() -> void:
 	await _props()
 	await _ask()
 	await _extension()
-	finish(29)
+	await _small()
+	await _freed_while_open()
+	finish(33)
 
 
 func _dialog() -> WoldDialog:
@@ -164,3 +166,44 @@ func _extension() -> void:
 	(q.get_node("%Confirm") as Button).pressed.emit()
 	check(q.dont_ask_again, "the hook reads the slot content on close")
 	q.queue_free()
+
+
+func _small() -> void:
+	ui.reduced_motion = true
+	var d := _dialog()
+	d.dialog_size = WoldDialog.Size.SM
+	await process_frame
+	d.open()
+	await process_frame
+	await process_frame
+	var panel := d.get_node("%Panel") as Control
+	check(panel.size.x <= 340.0 + 1.0 and not d.get_node("%Close").visible, "SM: narrow, and no X")
+	check((d.get_node("%Title") as Label).horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and (d.get_node("%Message") as Label).horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "the text is centred")
+	var confirm := d.get_node("%Confirm") as Control
+	var cancel := d.get_node("%Cancel") as Control
+	check(absf(confirm.size.x - cancel.size.x) < 1.0 and confirm.size.x > 100.0, "and the buttons share the width")
+	d.close()
+	ui.reduced_motion = false
+	d.queue_free()
+
+
+func _freed_while_open() -> void:
+	ui.reduced_motion = true
+	var gone := _dialog()
+	var next := _dialog()
+	await process_frame
+	next.open()
+	await process_frame
+	# opened last, so it was on top
+	gone.open()
+	await process_frame
+	gone.free()
+	await process_frame
+	var e := InputEventAction.new()
+	e.action = &"ui_cancel"
+	e.pressed = true
+	get_root().push_input(e)
+	await process_frame
+	check(not next.is_open, "a dialog freed while open doesn't block the next one")
+	ui.reduced_motion = false
+	next.queue_free()

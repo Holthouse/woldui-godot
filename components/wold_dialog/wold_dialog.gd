@@ -14,6 +14,7 @@ signal cancelled
 signal closed(result: String)
 
 enum Tone { NEUTRAL, ACCENT, SUCCESS, WARNING, DANGER }
+enum Size { MD, SM }
 const _TONE_STYLES := ["Muted", "TextAccent", "TextSuccess", "TextWarning", "TextDanger"]
 const SCENE := "res://addons/woldui/components/wold_dialog/wold_dialog.tscn"
 
@@ -62,12 +63,21 @@ const SCENE := "res://addons/woldui/components/wold_dialog/wold_dialog.tscn"
 	set(v):
 		width = v
 		_refresh()
+## SM is the quick yes / no: narrower, centred, buttons share the width.
+## Not `size`, Control has one.
+@export var dialog_size: Size = Size.MD:
+	set(v):
+		dialog_size = v
+		_refresh()
 @export var free_on_close := false
 ## Open on start in-game. The editor always shows it anyway.
 @export var start_open := false
 
 var is_open := false
 var _return_focus: Control
+# open dialogs, newest last. Only the top one traps focus and takes Esc, so a
+# confirm opened from a sheet doesn't fight it for focus
+static var _stack: Array[WoldDialog] = []
 var _refreshing := false
 
 
@@ -98,6 +108,15 @@ func _wold_on_close(_result: String) -> void:
 	pass
 
 
+## How the panel comes in and goes out. WoldSheet slides from its edge.
+func _wold_panel_in() -> WoldMotionPreset:
+	return WoldMotion.preset("dialog_in")
+
+
+func _wold_panel_out() -> WoldMotionPreset:
+	return WoldMotion.preset("dialog_out")
+
+
 ## Await this. Builds a throwaway dialog on its own CanvasLayer (100) and
 ## returns "confirm" or "cancel".
 static func ask(host: Node, ask_title: String, ask_message := "", confirm := "OK", cancel := "Cancel", is_destructive := false) -> String:
@@ -122,11 +141,12 @@ func open() -> void:
 	if is_open:
 		return
 	is_open = true
+	_stack.append(self)
 	var focused := get_viewport().gui_get_focus_owner()
 	_return_focus = focused if focused and not is_ancestor_of(focused) else null
 	visible = true
 	WoldMotion.appear(%Scrim, WoldMotion.preset("appear_fade"))
-	WoldMotion.appear(%Panel, WoldMotion.preset("dialog_in"))
+	WoldMotion.appear(%Panel, _wold_panel_in())
 	WoldUIRuntime.instance().play("open")
 	if not get_viewport().gui_focus_changed.is_connected(_on_focus_changed):
 		get_viewport().gui_focus_changed.connect(_on_focus_changed)
@@ -135,11 +155,22 @@ func open() -> void:
 	opened.emit()
 
 
+# freed while open (a scene change, say): don't block the ones left behind
+func _exit_tree() -> void:
+	_stack.erase(self)
+
+
+## True when no other open dialog sits over this one.
+func is_top() -> bool:
+	return not _stack.is_empty() and _stack.back() == self
+
+
 ## Any string works as a result; only "confirm"/"cancel" fire their own signal.
 func close(result := "cancel") -> void:
 	if not is_open:
 		return
 	is_open = false
+	_stack.erase(self)
 	if get_viewport().gui_focus_changed.is_connected(_on_focus_changed):
 		get_viewport().gui_focus_changed.disconnect(_on_focus_changed)
 	_wold_on_close(result)
@@ -149,7 +180,7 @@ func close(result := "cancel") -> void:
 		cancelled.emit()
 	WoldUIRuntime.instance().play("close")
 	WoldMotion.disappear(%Scrim, WoldMotion.preset("disappear"))
-	var tw := WoldMotion.disappear(%Panel, WoldMotion.preset("dialog_out"))
+	var tw := WoldMotion.disappear(%Panel, _wold_panel_out())
 	if is_instance_valid(_return_focus) and _return_focus.is_visible_in_tree():
 		_return_focus.grab_focus(not WoldUIRuntime.instance().is_focus_navigating())
 	closed.emit(result)
@@ -163,7 +194,7 @@ func close(result := "cancel") -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not is_open:
+	if not is_open or not is_top():
 		return
 	if event.is_action_pressed("ui_cancel") and closable:
 		close("cancel")
@@ -179,7 +210,7 @@ func _on_scrim_input(event: InputEvent) -> void:
 # Focus trap.
 # NOTE: refocus is deferred, so focus can sit outside the dialog for a frame.
 func _on_focus_changed(node: Control) -> void:
-	if is_open and node and not is_ancestor_of(node):
+	if is_open and is_top() and node and not is_ancestor_of(node):
 		_focus_first.call_deferred()
 
 
@@ -225,6 +256,14 @@ func _refresh() -> void:
 	var cancel := %Cancel as WoldButton
 	cancel.text = cancel_text
 	cancel.visible = cancel_text != ""
-	%Close.visible = closable
-	%Panel.custom_minimum_size.x = width
+	# the small one is a straight question: no X, Esc still cancels
+	%Close.visible = closable and dialog_size == Size.MD
+	var small := dialog_size == Size.SM
+	%Panel.custom_minimum_size.x = mini(width, 340) if small else width
+	var middle := HORIZONTAL_ALIGNMENT_CENTER if small else HORIZONTAL_ALIGNMENT_LEFT
+	(%Title as Label).horizontal_alignment = middle
+	(%Title as Label).size_flags_horizontal = SIZE_EXPAND_FILL
+	(%Message as Label).horizontal_alignment = middle
+	for b in [confirm, cancel]:
+		b.size_flags_horizontal = SIZE_EXPAND_FILL if small else SIZE_FILL
 	_refreshing = false

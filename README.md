@@ -111,6 +111,24 @@ Focus starts on confirm, can't wander off to the screen behind, and goes back wh
 
 Signals are `opened`, `confirmed`, `cancelled` and `closed(result)`. Put your own nodes in `%Content`, extra buttons in `%Actions`, and use `_wold_on_open()` / `_wold_on_close(result)` if you need to. `gallery/examples/quit_dialog.tscn` adds a "Don't ask again" box.
 
+`dialog_size = SM` is the quick yes / no: narrower, centred text, no X, and the two buttons share the width. Dialogs stack: when one opens over another (a confirm from inside a sheet), only the top one keeps focus and answers Esc.
+
+### WoldSheet
+
+A WoldDialog that slides in from an edge instead of popping up in the middle: an inventory, a city screen, a drawer of options.
+
+```gdscript
+var sheet: WoldSheet = preload("res://addons/woldui/components/wold_sheet/wold_sheet.tscn").instantiate()
+sheet.edge = WoldSheet.Edge.RIGHT
+sheet.extent = 380            # width for a side sheet, height for top / bottom
+sheet.title = "Rivermouth"
+sheet.get_node("%Content").add_child(buildings)
+layer.add_child(sheet)
+sheet.open()
+```
+
+Everything else is the dialog's: `%Content` and `%Actions`, the focus trap, Esc and scrim clicks, `closed(result)`. The edge it comes in from stays square and the open side rounds off. See `gallery/examples/city_sheet.tscn`.
+
 ### WoldToast and WoldToaster
 
 Short notifications that stack in a corner and go away on their own.

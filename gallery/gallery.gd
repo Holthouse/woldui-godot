@@ -85,6 +85,7 @@ func rebuild() -> void:
 	_wold_carousels()
 	_wold_menus()
 	_wold_popovers()
+	_wold_sheets()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -994,6 +995,51 @@ func _wold_popovers() -> void:
 	city.add_child(load("res://addons/woldui/gallery/examples/city_card.tscn").instantiate())
 	row.add_child(city)
 	s.add_child(row)
+
+
+## sheets open on their own layer, like WoldDialog.ask()
+func _wold_sheets() -> void:
+	var s := _section("WoldSheet / small WoldDialog", "components/wold_sheet. A WoldDialog that slides in from an edge: the same props, focus trap, Esc and scrim. dialog_size SM is the quick yes / no: narrow, centred, buttons share the width.")
+	var row := _row(&"RowSm")
+	for e in [["Right", WoldSheet.Edge.RIGHT, "panel-right"], ["Left", WoldSheet.Edge.LEFT, "panel-left"], ["Bottom", WoldSheet.Edge.BOTTOM, "panel-bottom"]]:
+		var b: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+		b.text = e[0]
+		b.icon_start = e[2]
+		b.shape = WoldButton.Shape.OUTLINE
+		var edge: int = e[1]
+		b.pressed.connect(func(): _open_layered(func():
+			var sheet: WoldSheet = load("res://addons/woldui/gallery/examples/city_sheet.tscn").instantiate()
+			sheet.edge = edge
+			sheet.extent = 300 if edge == WoldSheet.Edge.BOTTOM else 380
+			return sheet))
+		row.add_child(b)
+	var small: WoldButton = load("res://addons/woldui/components/wold_button/wold_button.tscn").instantiate()
+	small.text = "Small dialog"
+	small.icon_start = "message-circle-question-mark"
+	small.pressed.connect(func(): _open_layered(func():
+		var d: WoldDialog = load("res://addons/woldui/components/wold_dialog/wold_dialog.tscn").instantiate()
+		d.dialog_size = WoldDialog.Size.SM
+		d.title = "End your turn?"
+		d.message = "Two units still have moves left."
+		d.icon = ""
+		d.confirm_text = "End turn"
+		d.cancel_text = "Keep playing"
+		d.free_on_close = true
+		return d))
+	row.add_child(small)
+	s.add_child(row)
+
+
+# a dialog or sheet on its own top layer, gone when it closes
+func _open_layered(make: Callable) -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 100
+	add_child(layer)
+	var d: WoldDialog = make.call()
+	d.free_on_close = true
+	d.tree_exited.connect(layer.queue_free)
+	layer.add_child(d)
+	d.open()
 
 
 func _wold_tabs() -> void:
