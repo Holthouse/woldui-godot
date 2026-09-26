@@ -14,6 +14,7 @@ const STYLES: PackedStringArray = [
 	"ButtonGhost", "ButtonGhostSm", "ButtonGhostLg",
 	"ButtonDanger", "ButtonDangerSm", "ButtonDangerLg",
 	"ButtonIcon", "ButtonIconSm", "ButtonIconLg",
+	"ButtonStrip",
 ]
 
 
@@ -25,6 +26,9 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 			# Sm/Lg inherit from the medium one, medium from Button
 			theme.set_type_variation(style, "Button" + shape if size != "" else "Button")
 			_paint(theme, style, shape, size, t)
+	# WoldButtonStrip: neighbours overlap by one border so seams are a single line
+	theme.set_type_variation("ButtonStrip", "BoxContainer")
+	theme.set_constant("separation", "ButtonStrip", -t.border_width)
 
 
 static func _palette(shape: String, t: WoldTokens) -> Dictionary:

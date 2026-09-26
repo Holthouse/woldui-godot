@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_button_strip/wold_button_strip.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://addons/woldui/components/wold_button/wold_button.tscn" id="2_button"]
+
+[node name="MapZoom" instance=ExtResource("1_base")]
+vertical = true
+
+[node name="ZoomIn" parent="." instance=ExtResource("2_button")]
+layout_mode = 2
+tooltip_text = "Zoom in"
+text = ""
+shape = 1
+icon_start = "zoom-in"
+
+[node name="ZoomOut" parent="." instance=ExtResource("2_button")]
+layout_mode = 2
+tooltip_text = "Zoom out"
+text = ""
+shape = 1
+icon_start = "zoom-out"
+
+[node name="Fit" parent="." instance=ExtResource("2_button")]
+layout_mode = 2
+tooltip_text = "Fit the map"
+text = ""
+shape = 1
+icon_start = "maximize"

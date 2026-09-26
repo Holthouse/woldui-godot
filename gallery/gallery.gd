@@ -76,6 +76,7 @@ func rebuild() -> void:
 	_wold_selects()
 	_wold_steppers()
 	_wold_fields()
+	_wold_button_strips()
 	_wold_tabs()
 	_wold_prompts()
 	_wold_scopes()
@@ -681,6 +682,30 @@ func _wold_fields() -> void:
 			c.editable = not show_disabled
 		elif c is BaseButton:
 			c.disabled = show_disabled
+	s.add_child(row)
+
+
+## joins whatever buttons you put under it
+func _wold_button_strips() -> void:
+	var s := _section("WoldButtonStrip", "components/wold_button_strip. Joins the buttons under it into one strip: outer corners stay round, seams are a single line. Any Button, any shape. MapZoom is a vertical one.")
+	var row := _row(&"RowXl")
+	var scene := load("res://addons/woldui/components/wold_button_strip/wold_button_strip.tscn")
+	var button := load("res://addons/woldui/components/wold_button/wold_button.tscn")
+	for spec in [[WoldButton.Shape.SECONDARY, [["Undo", "undo-2"], ["Redo", "redo-2"], ["", "clock"]]], [WoldButton.Shape.OUTLINE, [["Day", ""], ["Week", ""], ["Month", ""]]], [WoldButton.Shape.PRIMARY, [["Save", "save"], ["", "chevron-down"]]]]:
+		var strip: WoldButtonStrip = scene.instantiate()
+		strip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		for b_spec in spec[1]:
+			var b: WoldButton = button.instantiate()
+			b.shape = spec[0]
+			b.text = b_spec[0]
+			b.icon_start = b_spec[1]
+			b.disabled = show_disabled
+			if b.text == "":
+				b.tooltip_text = b_spec[1]
+			strip.add_child(b)
+		row.add_child(strip)
+	var zoom: WoldButtonStrip = load("res://addons/woldui/gallery/examples/map_zoom.tscn").instantiate()
+	row.add_child(zoom)
 	s.add_child(row)
 
 

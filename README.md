@@ -229,6 +229,18 @@ field.error = "That name is taken."   # shows the line, gives the LineEdit a dan
 
 Any control goes in the `%Control` slot (in the editor: Editable Children, or an inherited scene). A click on the label focuses the control, and the label and hint become the control's accessibility name and description. LineEdit and TextEdit (and the Sm / Lg field styles) have an `...Invalid` style that the error switches on; other controls keep their look and just get the message. See `gallery/examples/name_field.tscn`, which checks itself as you type.
 
+### WoldButtonStrip
+
+Put buttons under it and they join into one strip: only the outer corners stay round and the borders overlap into single seams. `vertical` stacks them.
+
+```gdscript
+var strip: WoldButtonStrip = preload("res://addons/woldui/components/wold_button_strip/wold_button_strip.tscn").instantiate()
+strip.add_child(undo_button)
+strip.add_child(redo_button)
+```
+
+Any Button works, WoldButtons included, and it keeps up when a button changes shape, hides, or the tokens change. It's only looks: for pick-one behaviour give the buttons a `ButtonGroup` as usual. The joins are stylebox overrides on your buttons, taken off right before the editor saves so they never end up in your scene. See `gallery/examples/map_zoom.tscn`.
+
 ### WoldTabs
 
 Tabs with an underline that slides to the current one.
