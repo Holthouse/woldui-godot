@@ -20,7 +20,8 @@ func _run() -> void:
 	await _indicator()
 	await _metadata_and_live_pages()
 	await _pad()
-	finish(25)
+	await _saved_past_three()
+	finish(26)
 
 
 func _bar_only() -> void:
@@ -133,3 +134,32 @@ func _pad() -> void:
 	get_root().push_input(lb)
 	check(t.current == 1, "pad_shoulders off ignores them")
 	t.queue_free()
+
+
+# the scene's default `tabs` has 3 names; a saved current past that used to
+# get clamped while loading, before the pages were back
+func _saved_past_three() -> void:
+	var host := VBoxContainer.new()
+	get_root().add_child(host)
+	var tabs: WoldTabs = load("res://addons/woldui/components/wold_tabs/wold_tabs.tscn").instantiate()
+	host.add_child(tabs)
+	tabs.owner = host
+	for i in 5:
+		var page := Label.new()
+		page.name = "Page%d" % i
+		page.text = str(i)
+		tabs.add_child(page)
+		page.owner = host
+	await process_frame
+	tabs.current = 4
+	await process_frame
+	var packed := PackedScene.new()
+	packed.pack(host)
+	var again := packed.instantiate()
+	get_root().add_child(again)
+	await process_frame
+	await process_frame
+	var copy := again.get_child(0) as WoldTabs
+	check(copy.current == 4 and copy.pages()[4].visible, "a saved tab past the third comes back (got %d)" % copy.current)
+	host.queue_free()
+	again.queue_free()

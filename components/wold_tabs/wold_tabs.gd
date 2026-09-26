@@ -11,6 +11,10 @@ signal tab_changed(index: int)
 
 @export var current := 0:
 	set(v):
+		# while loading the pages aren't there yet; _rebuild clamps it later
+		if not is_node_ready():
+			current = v
+			return
 		var count := tab_count()
 		var clamped := clampi(v, 0, maxi(count - 1, 0))
 		var changed := clamped != current
