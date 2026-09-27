@@ -5,7 +5,7 @@ extends RefCounted
 ## Icons are SVG (DPITexture) so they stay sharp at any UI scale.
 
 const STYLES: PackedStringArray = [
-	"Switch", "Checkbox", "ToggleLabel", "ToggleLabelDisabled", "ToggleDescription", "ToggleDescriptionDisabled", "Segmented", "SegmentedButton", "SegmentedThumb",
+	"Switch", "SwitchSm", "SwitchLg", "Checkbox", "CheckboxSm", "CheckboxLg", "ToggleLabel", "ToggleLabelDisabled", "ToggleDescription", "ToggleDescriptionDisabled", "Segmented", "SegmentedButton", "SegmentedThumb",
 	"SegmentedSm", "SegmentedButtonSm", "SegmentedOutline", "SegmentedOutlineSm",
 	"Toggle", "ToggleSm", "ToggleLg", "ToggleOutline", "ToggleOutlineSm", "ToggleOutlineLg",
 	"ToggleIcon", "ToggleIconSm", "ToggleIconLg", "ToggleOutlineIcon", "ToggleOutlineIconSm", "ToggleOutlineIconLg",
@@ -66,10 +66,13 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 	theme.set_type_variation("ToggleDescriptionDisabled", "ToggleDescription")
 	theme.set_color("font_color", "ToggleDescriptionDisabled", t.role("text_disabled"))
 
-	_switch_style(theme, t, w, h, knob)
-	_labelled(theme, t, "Checkbox", px)
-	theme.set_constant("check_size", "Checkbox", px)
-	theme.set_color("halo", "Checkbox", t.role("surface_hover"))
+	# WoldSwitch / WoldCheckbox toggle_size: the indicator follows the icon sizes
+	for pair in [["Sm", t.icon_size_sm], ["", t.icon_size_md], ["Lg", t.icon_size_lg]]:
+		var ipx: int = pair[1]
+		_switch_style(theme, t, int(round(ipx * 1.8)), ipx, knob, pair[0])
+		_labelled(theme, t, "Checkbox" + pair[0], ipx)
+		theme.set_constant("check_size", "Checkbox" + pair[0], ipx)
+		theme.set_color("halo", "Checkbox" + pair[0], t.role("surface_hover"))
 	_segmented(theme, t, "", t.control_size(""))
 	_segmented(theme, t, "Sm", t.control_size("Sm"))
 	for outline in [false, true]:
@@ -101,20 +104,21 @@ static func _labelled(theme: Theme, t: WoldTokens, style: String, indicator_w: i
 	theme.set_font_size("font_size", style, t.font_size(0))
 
 
-static func _switch_style(theme: Theme, t: WoldTokens, w: int, h: int, knob: Color) -> void:
-	_labelled(theme, t, "Switch", w)
-	theme.set_color("track_on", "Switch", t.role("accent"))
-	theme.set_color("track_on_hover", "Switch", t.role("accent_hover"))
-	theme.set_color("track_off", "Switch", t.role("control_pressed"))
-	theme.set_color("track_off_hover", "Switch", t.role("control_hover"))
-	theme.set_color("track_border", "Switch", t.role("field_border"))
-	theme.set_color("track_disabled", "Switch", t.role("control_disabled"))
-	theme.set_color("knob", "Switch", knob)
-	theme.set_color("knob_on", "Switch", t.role("on_accent"))
-	theme.set_color("knob_disabled", "Switch", t.role("text_disabled"))
-	theme.set_constant("track_width", "Switch", w)
-	theme.set_constant("track_height", "Switch", h)
-	theme.set_constant("border_width", "Switch", t.border_width)
+static func _switch_style(theme: Theme, t: WoldTokens, w: int, h: int, knob: Color, size := "") -> void:
+	var style := "Switch" + size
+	_labelled(theme, t, style, w)
+	theme.set_color("track_on", style, t.role("accent"))
+	theme.set_color("track_on_hover", style, t.role("accent_hover"))
+	theme.set_color("track_off", style, t.role("control_pressed"))
+	theme.set_color("track_off_hover", style, t.role("control_hover"))
+	theme.set_color("track_border", style, t.role("field_border"))
+	theme.set_color("track_disabled", style, t.role("control_disabled"))
+	theme.set_color("knob", style, knob)
+	theme.set_color("knob_on", style, t.role("on_accent"))
+	theme.set_color("knob_disabled", style, t.role("text_disabled"))
+	theme.set_constant("track_width", style, w)
+	theme.set_constant("track_height", style, h)
+	theme.set_constant("border_width", style, t.border_width)
 
 
 static func _segmented(theme: Theme, t: WoldTokens, size: String, dims: Dictionary) -> void:

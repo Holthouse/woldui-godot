@@ -8,6 +8,9 @@ extends Button
 
 const Content := preload("../shared/wold_button_content.gd")
 
+enum Look { PLAIN, OUTLINE, MUTED }
+enum Size { SM, MD }
+
 @export var title := "Row title":
 	set(v):
 		title = v
@@ -35,6 +38,16 @@ const Content := preload("../shared/wold_button_content.gd")
 	set(v):
 		selectable = v
 		toggle_mode = v
+## PLAIN is quiet until hovered, OUTLINE has an edge, MUTED a soft fill.
+@export var look: Look = Look.PLAIN:
+	set(v):
+		look = v
+		_refresh()
+## Not `size`, Control has one.
+@export var row_size: Size = Size.MD:
+	set(v):
+		row_size = v
+		_refresh()
 @export_range(0, 200) var min_height := 0:
 	set(v):
 		min_height = v
@@ -44,7 +57,6 @@ var _refreshing := false
 
 
 func _ready() -> void:
-	theme_type_variation = &"ListRow"
 	toggle_mode = selectable
 	text = ""
 	alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -70,13 +82,17 @@ func _refresh() -> void:
 	_refreshing = true
 	_wold_refresh()
 	var t := WoldUIRuntime.instance().tokens
+	var sm := row_size == Size.SM
+	theme_type_variation = StringName("ListRow" + ["", "Outline", "Muted"][look] + ("Sm" if sm else ""))
+	(%Title as Label).theme_type_variation = &"ListRowTitleSm" if sm else &"ListRowTitle"
 	(%Title as Label).text = title
 	(%Subtitle as Label).text = subtitle
 	%Subtitle.visible = subtitle != ""
 	var lead := %Icon as TextureRect
-	lead.texture = t.icon(icon_name) if icon_name != "" else null
+	lead.texture = t.icon(icon_name, "Sm" if sm else "") if icon_name != "" else null
 	lead.visible = icon_name != ""
-	lead.custom_minimum_size = Vector2(t.icon_size_md, t.icon_size_md)
+	var px := t.icon_size_sm if sm else t.icon_size_md
+	lead.custom_minimum_size = Vector2(px, px)
 	lead.self_modulate = _tint()
 	(%Meta as Label).text = trailing_text
 	%Meta.visible = trailing_text != ""

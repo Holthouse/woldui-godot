@@ -4,7 +4,8 @@ extends ProgressBar
 ## ProgressBar that can draw a texture as its fill (health bar with a pattern,
 ## a wood-grain XP bar...). Without a textured WoldFill it's just a normal
 ## ProgressBar in whatever Meter* style you give it.
-# TODO: left-to-right only. fill_mode is ignored once a texture is in play.
+# The texture fill follows fill_mode like the native one: set
+# FILL_BOTTOM_TO_TOP (and a tall size) for an upright bar.
 
 const FillLayers := preload("../shared/wold_fill_layers.gd")
 
@@ -19,6 +20,7 @@ const FillLayers := preload("../shared/wold_fill_layers.gd")
 		_refresh()
 
 var _layers := FillLayers.new()
+var _placed_mode := -1
 # same trick as WoldButton: a hidden twin to read the un-overridden styleboxes
 var _probe := ProgressBar.new()
 
@@ -49,6 +51,9 @@ func _ready() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_THEME_CHANGED or what == NOTIFICATION_RESIZED:
 		_refresh()
+	# fill_mode has no signal, but setting it redraws
+	elif what == NOTIFICATION_DRAW and fill_mode != _placed_mode and uses_fill():
+		_place.call_deferred()
 
 
 func uses_fill() -> bool:
@@ -82,9 +87,20 @@ func _place() -> void:
 	var span := max_value - min_value
 	var ratio := clampf((value - min_value) / span, 0.0, 1.0) if span > 0.0 else 0.0
 	_layers.track_rect = Rect2(Vector2.ZERO, size)
-	var inner_start := 0.0
+	var edge := Rect2(Vector2.ZERO, size)
 	if _layers.track_style is StyleBoxFlat:
-		inner_start = (_layers.track_style as StyleBoxFlat).border_width_left
-	var inner_width := size.x - inner_start * 2.0
-	_layers.fill_end = inner_start + inner_width * ratio
+		var flat := _layers.track_style as StyleBoxFlat
+		edge = edge.grow_individual(-flat.border_width_left, -flat.border_width_top, -flat.border_width_right, -flat.border_width_bottom)
+	_placed_mode = fill_mode
+	_layers.vertical = fill_mode == FILL_BOTTOM_TO_TOP or fill_mode == FILL_TOP_TO_BOTTOM
+	_layers.reverse = fill_mode == FILL_END_TO_BEGIN or fill_mode == FILL_TOP_TO_BOTTOM
+	match fill_mode:
+		FILL_END_TO_BEGIN:
+			_layers.fill_end = edge.end.x - edge.size.x * ratio
+		FILL_BOTTOM_TO_TOP:
+			_layers.fill_end = edge.end.y - edge.size.y * ratio
+		FILL_TOP_TO_BOTTOM:
+			_layers.fill_end = edge.position.y + edge.size.y * ratio
+		_:
+			_layers.fill_end = edge.position.x + edge.size.x * ratio
 	_layers.refresh()

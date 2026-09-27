@@ -26,7 +26,8 @@ func _run() -> void:
 	check(how.pages().size() == 3 and how.pages()[0].visible and steps.count == 4 and steps.current == 1, "HowToPlay has its three pages, StepDots its four")
 	how.queue_free()
 	steps.queue_free()
-	finish(19)
+	await _flow_down()
+	finish(27)
 
 
 func _frames() -> void:
@@ -149,3 +150,57 @@ func _saved_scene() -> void:
 	check(copy.current == 2 and copy.pages().size() == 3 and copy.pages()[2].visible and not copy.pages()[0].visible, "saved with its pages, on the same page")
 	host.queue_free()
 	again.queue_free()
+
+
+func _flow_down() -> void:
+	WoldUIRuntime.instance().reduced_motion = false
+	var c: WoldCarousel = load(SCENE).instantiate()
+	c.flow = WoldCarousel.Flow.DOWN
+	for i in 3:
+		var p := Label.new()
+		p.name = "P%d" % i
+		p.text = str(i)
+		c.add_child(p)
+	stage.add_child(c)
+	await process_frame
+	await process_frame
+	var controls := c.get_node("%Controls") as BoxContainer
+	check(not c.vertical and controls.vertical and controls.global_position.x > c.pages()[0].global_position.x, "DOWN: the controls stand in a column beside the pages")
+	check((c.get_node("%Prev") as WoldButton).icon_start == "chevron-up" and (c.get_node("%Dots") as WoldPageDots).vertical, "with up / down arrows and upright dots")
+	c.step(1)
+	await process_frame
+	var page := c.pages()[1]
+	check(page.offset_transform_position.y > 0.0 and page.offset_transform_position.x == 0.0, "the next page comes up from below")
+	# ACROSS sets vertical = true, which isn't BoxContainer's default, so it
+	# would be saved if it could be
+	var across: WoldCarousel = load(SCENE).instantiate()
+	stage.add_child(across)
+	await process_frame
+	var packed := PackedScene.new()
+	packed.pack(across)
+	var state := packed.get_state()
+	var props := []
+	for i in state.get_node_property_count(0):
+		props.append(state.get_node_property_name(0, i))
+	check(across.vertical and not props.has("vertical"), "the vertical that flow drives isn't saved (%s)" % [props])
+	across.queue_free()
+	c.queue_free()
+	var d: WoldPageDots = load(DOTS).instantiate()
+	d.count = 4
+	d.vertical = true
+	stage.add_child(d)
+	await process_frame
+	var m := d.get_combined_minimum_size()
+	check(m.y > m.x, "upright dots are taller than wide (%s)" % m)
+	var rects := d.dot_rects()
+	check(rects[1].position.y > rects[0].position.y and is_equal_approx(rects[1].position.x, rects[0].position.x), "one under the other")
+	check(rects[0].size.y > rects[0].size.x, "the current one stretches downwards")
+	var seen := []
+	d.page_selected.connect(func(i): seen.append(i))
+	var click := InputEventMouseButton.new()
+	click.pressed = true
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.position = rects[2].get_center()
+	d._gui_input(click)
+	check(seen == [2], "clicking an upright dot picks it")
+	d.queue_free()

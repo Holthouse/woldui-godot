@@ -80,6 +80,9 @@ static func _field_text(theme: Theme, t: WoldTokens) -> void:
 		theme.set_type_variation(style, "Label")
 		theme.set_font_size("font_size", style, styles[style][0])
 		theme.set_color("font_color", style, styles[style][1])
+	# WoldField.horizontal: the label column and the gap after it
+	theme.set_constant("label_width", "FieldLabel", t.space_xxl * 4)
+	theme.set_constant("label_gap", "FieldLabel", t.space_md)
 
 
 static func _field(theme: Theme, style: String, t: WoldTokens, dims: Dictionary) -> void:

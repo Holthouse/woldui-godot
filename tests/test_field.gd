@@ -19,7 +19,8 @@ func _run() -> void:
 	await _other_controls()
 	await _saved_scene()
 	await _example()
-	finish(20)
+	await _horizontal()
+	finish(26)
 
 
 func _field(c: Control = null) -> WoldField:
@@ -158,4 +159,30 @@ func _example() -> void:
 		edit.text_changed.emit(text)
 		said.append(f.error != "")
 	check(said == [true, true, false] and edit.max_length == 24, "NameField: too short, taken, then fine (%s)" % [said])
+	f.queue_free()
+
+
+func _horizontal() -> void:
+	var edit := LineEdit.new()
+	var f := WoldField.make(edit, "Kingdom name", "Shown to other players.")
+	f.custom_minimum_size.x = 460
+	stage.add_child(f)
+	await process_frame
+	var lab := f.get_node("%Label") as Control
+	check(lab.global_position.y < edit.global_position.y, "stacked by default: label above the control")
+	f.horizontal = true
+	await process_frame
+	await process_frame
+	var desc := f.get_node("%Description") as Control
+	check(lab.global_position.x + lab.size.x <= edit.global_position.x and edit.global_position.x > f.global_position.x + 50, "horizontal: the label has a column on the left")
+	var mid_l := lab.global_position.y + lab.size.y / 2.0
+	var mid_c := edit.global_position.y + edit.size.y / 2.0
+	check(absf(mid_l - mid_c) <= 2.0, "centred on the control's row (%.1f vs %.1f)" % [mid_l, mid_c])
+	check(is_equal_approx(desc.global_position.x, edit.global_position.x) and desc.global_position.y > edit.global_position.y, "the hint sits under the control, not under the label")
+	var col := edit.global_position.x - f.global_position.x
+	f.label_width = 220
+	await process_frame
+	await process_frame
+	check(edit.global_position.x - f.global_position.x > col, "label_width widens the column")
+	check(f.get_minimum_size().x >= 220 + edit.get_combined_minimum_size().x, "and the minimum size makes room for it (%s)" % f.get_minimum_size())
 	f.queue_free()

@@ -35,7 +35,7 @@ func track_rect() -> Rect2:
 
 
 func _style() -> StringName:
-	return &"Switch"
+	return StringName("Switch" + SIZE_SUFFIX[toggle_size])
 
 
 func _indicator_size() -> Vector2:

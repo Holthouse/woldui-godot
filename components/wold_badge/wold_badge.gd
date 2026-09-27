@@ -7,12 +7,12 @@ extends PanelContainer
 # theme types: Badge{Tone}{Fill}{Size}, BadgeLabel{...}, BadgeDot{Tone}
 
 enum Tone { NEUTRAL, ACCENT, SUCCESS, WARNING, DANGER }
-enum Fill { SOFT, SOLID, OUTLINE }
+enum Fill { SOFT, SOLID, OUTLINE, GHOST }
 enum Size { SM, MD }
 enum Pin { NONE, TOP_RIGHT, TOP_LEFT }
 
 const _TONES := ["Neutral", "Accent", "Success", "Warning", "Danger"]
-const _FILLS := ["Soft", "Solid", "Outline"]
+const _FILLS := ["Soft", "Solid", "Outline", "Ghost"]
 const _SIZES := ["Sm", ""]
 
 ## Ignored while count is on.

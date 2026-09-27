@@ -8,7 +8,8 @@ func _run() -> void:
 	await _slider()
 	await _vslider()
 	await _subclassed()
-	finish(31)
+	await _meter_directions()
+	finish(34)
 
 
 func _texture(w: int, h: int) -> Texture2D:
@@ -163,3 +164,35 @@ func _subclassed() -> void:
 		counts.append(n.get_child_count(true) - n.get_child_count())
 	check(counts == [2, 2, 2], "meter, slider and vertical slider keep one set of hidden layers when subclassed (%s)" % [counts])
 	root.queue_free()
+
+
+func _meter_directions() -> void:
+	var host := Control.new()
+	get_root().add_child(host)
+	var fill := WoldFill.new()
+	var img := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	img.fill(Color.WHITE)
+	fill.texture = ImageTexture.create_from_image(img)
+	var m := WoldMeter.new()
+	m.fill = fill
+	m.value = 25
+	m.show_percentage = false
+	m.size = Vector2(20, 200)
+	host.add_child(m)
+	m.fill_mode = ProgressBar.FILL_BOTTOM_TO_TOP
+	await process_frame
+	await process_frame
+	var r := m.filled_rect()
+	check(r.end.y >= 198.0 and r.size.y > 40.0 and r.size.y < 60.0, "FILL_BOTTOM_TO_TOP: the texture fills a quarter from the bottom (%s)" % r)
+	m.fill_mode = ProgressBar.FILL_TOP_TO_BOTTOM
+	await process_frame
+	await process_frame
+	r = m.filled_rect()
+	check(r.position.y <= 2.0 and r.size.y > 40.0 and r.size.y < 60.0, "FILL_TOP_TO_BOTTOM: from the top (%s)" % r)
+	m.size = Vector2(200, 20)
+	m.fill_mode = ProgressBar.FILL_END_TO_BEGIN
+	await process_frame
+	await process_frame
+	r = m.filled_rect()
+	check(r.end.x >= 198.0 and r.size.x > 40.0 and r.size.x < 60.0, "FILL_END_TO_BEGIN: from the right (%s)" % r)
+	host.queue_free()

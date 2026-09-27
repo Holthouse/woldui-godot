@@ -1,12 +1,16 @@
 @tool
 class_name WoldCarousel
-extends VBoxContainer
+extends BoxContainer
 ## One page at a time, with arrows and page dots under it: a tutorial, a
 ## codex entry's pictures, a pick-your-leader screen. Pages are the node's
 ## children, like WoldTabs. The new page slides in from the side you went.
+## flow DOWN stacks the pages vertically: they slide up and down and the
+## controls stand in a column on the right.
 ## LB / RB flip pages while focus is inside it.
 
 signal page_changed(index: int)
+
+enum Flow { ACROSS, DOWN }
 
 @export var current := 0:
 	set(v):
@@ -25,6 +29,11 @@ signal page_changed(index: int)
 	set(v):
 		wrap = v
 		_apply(0)
+## Not `vertical`: that's BoxContainer's own, and this sets it.
+@export var flow: Flow = Flow.ACROSS:
+	set(v):
+		flow = v
+		_arrange()
 ## LB / RB flip pages while focus is inside. Reads the pad directly.
 @export var pad_shoulders := true
 
@@ -37,6 +46,7 @@ func _ready() -> void:
 	%Prev.pressed.connect(func(): step(-1))
 	%Next.pressed.connect(func(): step(1))
 	%Dots.page_selected.connect(func(i): self.current = i)
+	_arrange()
 	_apply(0)
 
 
@@ -95,7 +105,8 @@ func _slide_in(dir: int) -> void:
 	var list := pages()
 	if current >= list.size() or not is_inside_tree() or Engine.is_editor_hint():
 		return
-	WoldMotion.nudge(list[current], Vector2(48.0 * dir, 0))
+	var from := Vector2(0, 48.0 * dir) if flow == Flow.DOWN else Vector2(48.0 * dir, 0)
+	WoldMotion.nudge(list[current], from)
 
 
 func _focus_inside() -> bool:
@@ -112,3 +123,25 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		elif jb.button_index == JOY_BUTTON_LEFT_SHOULDER and step(-1):
 			get_viewport().set_input_as_handled()
+
+
+func _arrange() -> void:
+	if not is_node_ready():
+		return
+	var down := flow == Flow.DOWN
+	vertical = not down
+	var controls := %Controls as BoxContainer
+	controls.vertical = down
+	controls.size_flags_vertical = Control.SIZE_SHRINK_CENTER if down else Control.SIZE_FILL
+	(%Prev as WoldButton).icon_start = "chevron-up" if down else "chevron-left"
+	(%Next as WoldButton).icon_start = "chevron-down" if down else "chevron-right"
+	var dots := %Dots as WoldPageDots
+	dots.vertical = down
+	dots.size_flags_horizontal = Control.SIZE_SHRINK_CENTER if down else Control.SIZE_EXPAND | Control.SIZE_SHRINK_CENTER
+	dots.size_flags_vertical = Control.SIZE_EXPAND | Control.SIZE_SHRINK_CENTER if down else Control.SIZE_FILL
+
+
+func _validate_property(property: Dictionary) -> void:
+	# `flow` sets it
+	if property.name == "vertical":
+		property.usage &= ~PROPERTY_USAGE_STORAGE

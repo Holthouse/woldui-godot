@@ -18,7 +18,8 @@ func _run() -> void:
 	await _radios()
 	await _saved_scene()
 	await _check_all()
-	finish(22)
+	await _sizes_prop()
+	finish(24)
 
 
 func _box() -> WoldCheckbox:
@@ -137,3 +138,17 @@ func _check_all() -> void:
 	all.queue_free()
 	for b in boxes:
 		b.queue_free()
+
+
+func _sizes_prop() -> void:
+	var sizes := []
+	for z in [WoldCheckbox.Size.SM, WoldCheckbox.Size.MD, WoldCheckbox.Size.LG]:
+		var c: WoldCheckbox = load(SCENE).instantiate()
+		c.toggle_size = z
+		stage.add_child(c)
+		await process_frame
+		sizes.append(c.indicator_rect().size.x)
+		if z == WoldCheckbox.Size.SM:
+			check(c.theme_type_variation == &"CheckboxSm", "toggle_size SM picks CheckboxSm")
+		c.queue_free()
+	check(sizes[0] < sizes[1] and sizes[1] < sizes[2], "SM < MD < LG boxes (%s)" % [sizes])

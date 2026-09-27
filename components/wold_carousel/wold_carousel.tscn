@@ -4,12 +4,13 @@
 [ext_resource type="PackedScene" path="res://addons/woldui/components/wold_button/wold_button.tscn" id="2_button"]
 [ext_resource type="PackedScene" path="res://addons/woldui/components/wold_page_dots/wold_page_dots.tscn" id="3_dots"]
 
-[node name="WoldCarousel" type="VBoxContainer"]
+[node name="WoldCarousel" type="BoxContainer"]
 custom_minimum_size = Vector2(360, 0)
 theme_type_variation = &"StackMd"
+vertical = true
 script = ExtResource("1_car")
 
-[node name="Controls" type="HBoxContainer" parent="."]
+[node name="Controls" type="BoxContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"RowSm"

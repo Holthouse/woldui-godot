@@ -20,7 +20,8 @@ func _run() -> void:
 	await _engine_icons()
 	await _saved_scene()
 	await _example()
-	finish(26)
+	await _sizes_prop()
+	finish(29)
 
 
 func _switch() -> WoldSwitch:
@@ -166,3 +167,23 @@ func _example() -> void:
 	s.button_pressed = false
 	check(not ui.reduced_motion, "flipping it writes the preference back")
 	s.queue_free()
+
+
+func _sizes_prop() -> void:
+	var widths := []
+	for z in [WoldSwitch.Size.SM, WoldSwitch.Size.MD, WoldSwitch.Size.LG]:
+		var sw: WoldSwitch = load(SCENE).instantiate()
+		sw.toggle_size = z
+		stage.add_child(sw)
+		await process_frame
+		widths.append(sw.track_rect().size.x)
+		if z == WoldSwitch.Size.LG:
+			check(sw.theme_type_variation == &"SwitchLg", "toggle_size LG picks SwitchLg")
+		sw.queue_free()
+	check(widths[0] < widths[1] and widths[1] < widths[2], "SM < MD < LG tracks (%s)" % [widths])
+	var live: WoldSwitch = load(SCENE).instantiate()
+	stage.add_child(live)
+	await process_frame
+	live.toggle_size = WoldSwitch.Size.SM
+	check(live.theme_type_variation == &"SwitchSm", "changing toggle_size on a live switch restyles it")
+	live.queue_free()

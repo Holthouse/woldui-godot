@@ -18,6 +18,12 @@ signal page_selected(index: int)
 		var from := current
 		current = clampi(v, 0, maxi(count - 1, 0))
 		_slide(from)
+## Dots top to bottom; the pill stretches downwards.
+@export var vertical := false:
+	set(v):
+		vertical = v
+		update_minimum_size()
+		queue_redraw()
 
 # where the pill is, as a float index; slides between pages
 var _at := 0.0
@@ -40,7 +46,8 @@ func _get_minimum_size() -> Vector2:
 	var dot := float(get_theme_constant(&"dot"))
 	if count <= 0:
 		return Vector2(0, dot)
-	return Vector2((count - 1) * (dot + get_theme_constant(&"gap")) + get_theme_constant(&"pill"), dot)
+	var run := (count - 1) * (dot + get_theme_constant(&"gap")) + get_theme_constant(&"pill")
+	return Vector2(dot, run) if vertical else Vector2(run, dot)
 
 
 ## Each dot's rect right now, in our own space.
@@ -49,7 +56,16 @@ func dot_rects() -> Array[Rect2]:
 	var dot := float(get_theme_constant(&"dot"))
 	var pill := float(get_theme_constant(&"pill"))
 	var gap := float(get_theme_constant(&"gap"))
-	var x := (size.x - get_combined_minimum_size().x) / 2.0
+	var m := get_combined_minimum_size()
+	if vertical:
+		var vx := (size.x - dot) / 2.0
+		var vy := (size.y - m.y) / 2.0
+		for i in count:
+			var h := lerpf(dot, pill, _weight(i))
+			out.append(Rect2(vx, vy, dot, h))
+			vy += h + gap
+		return out
+	var x := (size.x - m.x) / 2.0
 	var y := (size.y - dot) / 2.0
 	for i in count:
 		var w := lerpf(dot, pill, _weight(i))
@@ -108,8 +124,12 @@ func _dot_at(p: Vector2) -> int:
 	var rects := dot_rects()
 	for i in rects.size():
 		# at least 44 px tall: a dot is far smaller than a fingertip
-		var tall := maxf(4.0, (44.0 - rects[i].size.y) / 2.0)
-		if rects[i].grow_individual(gap / 2.0 + 4.0, tall, gap / 2.0 + 4.0, tall).has_point(p):
+		var r := rects[i]
+		var hit := r.grow_individual(gap / 2.0 + 4.0, maxf(4.0, (44.0 - r.size.y) / 2.0), gap / 2.0 + 4.0, maxf(4.0, (44.0 - r.size.y) / 2.0))
+		if vertical:
+			var wide := maxf(4.0, (44.0 - r.size.x) / 2.0)
+			hit = r.grow_individual(wide, gap / 2.0 + 4.0, wide, gap / 2.0 + 4.0)
+		if hit.has_point(p):
 			return i
 	return -1
 
@@ -122,7 +142,7 @@ func _draw() -> void:
 		var base := idle.lerp(get_theme_color(&"dot_hover"), _lit[i] if i < _lit.size() else 0.0)
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = base.lerp(active, _weight(i))
-		sb.set_corner_radius_all(int(rects[i].size.y / 2.0))
+		sb.set_corner_radius_all(int(minf(rects[i].size.x, rects[i].size.y) / 2.0))
 		sb.anti_aliasing = true
 		sb.corner_detail = 8
 		draw_style_box(sb, rects[i])

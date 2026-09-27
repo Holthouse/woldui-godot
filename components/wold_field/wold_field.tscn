@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://addons/woldui/components/wold_field/wold_field.gd" id="1_field"]
 
-[node name="WoldField" type="VBoxContainer"]
+[node name="WoldField" type="Container"]
 custom_minimum_size = Vector2(320, 0)
 theme_type_variation = &"StackXs"
 script = ExtResource("1_field")
@@ -10,6 +10,7 @@ label = "Kingdom name"
 description = "Shown to other players."
 
 [node name="Header" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"RowSm"
 

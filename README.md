@@ -123,7 +123,7 @@ badge.pin = WoldBadge.Pin.TOP_RIGHT   # sit on the parent's corner (a count on a
 badge.pulse = true            # breathe (a turn indicator)
 ```
 
-Mix `tone` (neutral, accent, success, warning, danger), `fill` (soft, solid, outline) and `badge_size` (sm, md) however you like. The tests check every combination for 4.5:1 text contrast with both the dark and light tokens. A rising count bumps the badge. A text badge never un-hides itself if your game hid it; only a count shows or hides on its own.
+Mix `tone` (neutral, accent, success, warning, danger), `fill` (soft, solid, outline, ghost: just the coloured text) and `badge_size` (sm, md) however you like. The tests check every combination for 4.5:1 text contrast with both the dark and light tokens. A rising count bumps the badge. A text badge never un-hides itself if your game hid it; only a count shows or hides on its own.
 
 ### WoldDialog
 
@@ -191,7 +191,7 @@ row.icon_name = "save"
 row.trailing_icon = "chevron-right"
 ```
 
-There's also `trailing_text`, and `%Leading` / `%Trailing` slots (a WoldBadge fits nicely). It's a Button, so focus, pad activation, disabled and WoldFeedback all work. Give a set of rows one `ButtonGroup` and they select one at a time; the selected one gets an accent tint and an accent bar on its leading edge.
+There's also `trailing_text`, and `%Leading` / `%Trailing` slots (a WoldBadge fits nicely). It's a Button, so focus, pad activation, disabled and WoldFeedback all work. Give a set of rows one `ButtonGroup` and they select one at a time; the selected one gets an accent tint and an accent bar on its leading edge. `look` is PLAIN (quiet until hovered), OUTLINE (an edge at rest) or MUTED (a soft fill), and `row_size` SM makes a tighter row with a smaller title.
 
 ### WoldSwitch
 
@@ -204,6 +204,8 @@ sw.toggled.connect(func(on): settings.hex_grid = on)
 ```
 
 It's a toggle Button, so `button_pressed` is the state and `toggled` the signal. Disabled dims the label and description too. Plain CheckBox and CheckButton controls get matching drawn icons from the theme, so they fit in even if you don't use the component. `gallery/examples/motion_switch.tscn` binds one to the Reduce motion preference.
+
+`toggle_size` (SM, MD, LG) scales the switch, and the check box the same way; the label stays the same size.
 
 ### WoldCheckbox and WoldRadioGroup
 
@@ -311,6 +313,8 @@ field.error = "That name is taken."   # shows the line, gives the LineEdit a dan
 
 Any control goes in the `%Control` slot (in the editor: Editable Children, or an inherited scene). A click on the label focuses the control, and the label and hint become the control's accessibility name and description. LineEdit and TextEdit (and the Sm / Lg field styles) have an `...Invalid` style that the error switches on; other controls keep their look and just get the message. See `gallery/examples/name_field.tscn`, which checks itself as you type.
 
+`horizontal` puts the label in a column on the left, centred on the control, with the hint and error under the control. The column is the theme's width unless you set `label_width`.
+
 ### WoldButtonStrip
 
 Put buttons under it and they join into one strip: only the outer corners stay round and the borders overlap into single seams. `vertical` stacks them.
@@ -396,7 +400,9 @@ carousel.page_changed.connect(func(i): print("page ", i))
 
 One page at a time with arrows and page dots under it. The new page slides in from the side you went, `wrap` goes round at the ends, and LB / RB flip pages while focus is somewhere inside the carousel (so two on one screen don't fight). With a single page the controls hide.
 
-WoldPageDots is the dots on their own: `count`, `current`, and `page_selected` when one is clicked. The current dot stretches into a pill that slides along. See `gallery/examples/how_to_play.tscn` and `step_dots.tscn`.
+`flow = DOWN` stacks it the other way: pages slide up and down, and the arrows and dots stand in a column on the right. (Not `vertical`, which is BoxContainer's own and gets set for you.)
+
+WoldPageDots is the dots on their own: `count`, `current`, and `page_selected` when one is clicked. The current dot stretches into a pill that slides along. `vertical` stands them upright. See `gallery/examples/how_to_play.tscn` and `step_dots.tscn`.
 
 ### WoldBubble, WoldMessage, WoldMessageLog
 
@@ -461,6 +467,8 @@ meter.fill = f
 ```
 
 The fill is clipped to the track's rounded shape and drawn under the grabber and the percentage text. `WoldSlider.track_height` makes the rail thicker if your texture needs the room. `WoldVSlider` is the upright one (a volume fader, say): same props, with `track_width` for the rail, and the fill grows from the bottom up. See `gallery/examples/ui_fader.tscn`.
+
+WoldMeter's texture fill follows `fill_mode` like the plain bar does, so `FILL_BOTTOM_TO_TOP` on a tall meter gives you an upright gauge, textured or not.
 
 ### WoldScope
 

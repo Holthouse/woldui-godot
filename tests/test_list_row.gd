@@ -17,7 +17,8 @@ func _run() -> void:
 	await _slots_and_feedback()
 	await _saved_scene()
 	await _theme_tint()
-	finish(21)
+	await _looks_and_sizes()
+	finish(26)
 
 
 func _row() -> WoldListRow:
@@ -129,3 +130,21 @@ func _theme_tint() -> void:
 	var want := light.get_color("font_color", "ListRowMeta")
 	check(r.get_node("%Icon").self_modulate == want and r.get_node("%End").self_modulate == want, "icons take their colour from the theme the row sits in")
 	host.queue_free()
+
+
+func _looks_and_sizes() -> void:
+	var r: WoldListRow = load(SCENE).instantiate()
+	stage.add_child(r)
+	await process_frame
+	var plain_pad := r.get_theme_stylebox("normal").get_margin(SIDE_TOP)
+	r.look = WoldListRow.Look.OUTLINE
+	check(r.theme_type_variation == &"ListRowOutline" and (r.get_theme_stylebox("normal") as StyleBoxFlat).border_width_top > 0, "OUTLINE: ListRowOutline, with an edge at rest")
+	r.look = WoldListRow.Look.MUTED
+	check(r.theme_type_variation == &"ListRowMuted" and (r.get_theme_stylebox("normal") as StyleBoxFlat).bg_color.a > 0.0, "MUTED: a soft fill at rest")
+	var muted_hover := (r.get_theme_stylebox("hover") as StyleBoxFlat).bg_color.a
+	check(muted_hover > (r.get_theme_stylebox("normal") as StyleBoxFlat).bg_color.a, "and hover is still a step up from it")
+	r.row_size = WoldListRow.Size.SM
+	await process_frame
+	check(r.theme_type_variation == &"ListRowMutedSm" and r.get_theme_stylebox("normal").get_margin(SIDE_TOP) < plain_pad, "SM: tighter padding")
+	check((r.get_node("%Title") as Label).theme_type_variation == &"ListRowTitleSm", "and a smaller title")
+	r.queue_free()

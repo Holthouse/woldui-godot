@@ -18,7 +18,7 @@ func _run() -> void:
 	_contrast()
 	await _corner()
 	await _bump()
-	finish(50)
+	finish(60)
 
 
 func _badge() -> WoldBadge:

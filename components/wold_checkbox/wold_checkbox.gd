@@ -44,7 +44,7 @@ func icon_name() -> String:
 
 
 func _style() -> StringName:
-	return &"Checkbox"
+	return StringName("Checkbox" + SIZE_SUFFIX[toggle_size])
 
 
 func _indicator_size() -> Vector2:

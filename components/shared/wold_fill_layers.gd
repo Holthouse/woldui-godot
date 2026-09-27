@@ -8,9 +8,11 @@ extends Control
 var track_style: StyleBox
 var track_rect := Rect2()
 ## Where the fill stops, host coords: x left-to-right, or y when `vertical`
-## (it fills bottom-up to there).
+## (it fills bottom-up to there). `reverse` flips both: right-to-left, or
+## top-down.
 var fill_end := 0.0
 var vertical := false
+var reverse := false
 var fill: WoldFill
 
 var _mask := Control.new()
@@ -74,7 +76,12 @@ func _inner_rect() -> Rect2:
 func filled_rect() -> Rect2:
 	var inner := _inner_rect()
 	if vertical:
-		var top := clampf(fill_end, inner.position.y, inner.end.y)
-		return Rect2(inner.position.x, top, inner.size.x, inner.end.y - top)
-	inner.size.x = clampf(fill_end - inner.position.x, 0.0, inner.size.x)
+		var edge := clampf(fill_end, inner.position.y, inner.end.y)
+		if reverse:
+			return Rect2(inner.position.x, inner.position.y, inner.size.x, edge - inner.position.y)
+		return Rect2(inner.position.x, edge, inner.size.x, inner.end.y - edge)
+	var x := clampf(fill_end, inner.position.x, inner.end.x)
+	if reverse:
+		return Rect2(x, inner.position.y, inner.end.x - x, inner.size.y)
+	inner.size.x = x - inner.position.x
 	return inner

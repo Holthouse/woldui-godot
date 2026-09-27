@@ -5,13 +5,14 @@ extends RefCounted
 ## Size is "Sm" or nothing.
 
 const TONES: PackedStringArray = ["Neutral", "Accent", "Success", "Warning", "Danger"]
-const FILLS: PackedStringArray = ["Soft", "Solid", "Outline"]
+const FILLS: PackedStringArray = ["Soft", "Solid", "Outline", "Ghost"]
 const SIZES: PackedStringArray = ["Sm", ""]
 
 const STYLES: PackedStringArray = [
 	"BadgeNeutralSoft", "BadgeAccentSoft", "BadgeSuccessSoft", "BadgeWarningSoft", "BadgeDangerSoft",
 	"BadgeNeutralSolid", "BadgeAccentSolid", "BadgeSuccessSolid", "BadgeWarningSolid", "BadgeDangerSolid",
 	"BadgeNeutralOutline", "BadgeAccentOutline", "BadgeSuccessOutline", "BadgeWarningOutline", "BadgeDangerOutline",
+	"BadgeAccentGhost", "BadgeLabelAccentGhost",
 	"BadgeLabelAccentSoft", "BadgeLabelDangerSolid", "BadgeAccentSoftSm", "BadgeLabelAccentSoftSm",
 	"BadgeDotNeutral", "BadgeDotAccent", "BadgeDotSuccess", "BadgeDotWarning", "BadgeDotDanger",
 ]
@@ -23,11 +24,13 @@ static func colors(t: WoldTokens, tone: String, fill: String) -> Dictionary:
 		match fill:
 			"Solid": return {bg = t.role("text_muted"), fg = t.role("surface_base"), border = clear}
 			"Outline": return {bg = clear, fg = t.role("text_muted"), border = t.role("border_strong")}
+			"Ghost": return {bg = clear, fg = t.role("text_muted"), border = clear}
 		return {bg = t.role("control"), fg = t.role("text"), border = clear}
 	var r := tone.to_lower()
 	match fill:
 		"Solid": return {bg = t.role(r), fg = t.role("on_" + r), border = clear}
 		"Outline": return {bg = clear, fg = t.role(r + "_text"), border = t.role(r + "_text")}
+		"Ghost": return {bg = clear, fg = t.role(r + "_text"), border = clear}
 	# soft tint eats contrast, push the text one step further than _text
 	var strong := t.tone(r, 200 if t.mode == WoldTokens.Mode.DARK else 800)
 	return {bg = t.role(r + "_soft"), fg = strong, border = clear}

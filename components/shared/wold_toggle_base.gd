@@ -6,6 +6,9 @@ extends Button
 
 const Content := preload("wold_button_content.gd")
 
+enum Size { SM, MD, LG }
+const SIZE_SUFFIX: PackedStringArray = ["Sm", "", "Lg"]
+
 @export var label := "Label":
 	set(v):
 		label = v
@@ -13,6 +16,11 @@ const Content := preload("wold_button_content.gd")
 @export_multiline var description := "":
 	set(v):
 		description = v
+		_refresh()
+## How big the box or switch is. Not `size`, Control has one.
+@export var toggle_size: Size = Size.MD:
+	set(v):
+		toggle_size = v
 		_refresh()
 
 var _refreshing := false
@@ -80,6 +88,7 @@ func _refresh() -> void:
 		return
 	_refreshing = true
 	_wold_refresh()
+	theme_type_variation = _style()
 	(%Label as Label).text = label
 	%Label.visible = label != ""
 	(%Description as Label).text = description

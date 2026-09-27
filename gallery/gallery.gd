@@ -84,6 +84,7 @@ func rebuild() -> void:
 	_wold_alerts()
 	_wold_status()
 	_wold_carousels()
+	_more_looks()
 	_wold_menus()
 	_wold_popovers()
 	_wold_sheets()
@@ -312,7 +313,7 @@ func _wold_badges() -> void:
 	var s := _section("WoldBadge", "components/wold_badge. Tone × fill, a count (99+), a dot, or pinned to a corner of its parent.")
 	var scene := load("res://addons/woldui/components/wold_badge/wold_badge.tscn")
 	var tones := ["Neutral", "Accent", "Success", "Warning", "Danger"]
-	for fill in [WoldBadge.Fill.SOFT, WoldBadge.Fill.SOLID, WoldBadge.Fill.OUTLINE]:
+	for fill in [WoldBadge.Fill.SOFT, WoldBadge.Fill.SOLID, WoldBadge.Fill.OUTLINE, WoldBadge.Fill.GHOST]:
 		var row := _row(&"RowSm")
 		var tag := _label(WoldBadge.Fill.keys()[fill].capitalize(), &"Caption")
 		tag.custom_minimum_size.x = 120
@@ -985,6 +986,79 @@ func _wold_carousels() -> void:
 	col.add_child(note)
 	row.add_child(col)
 	s.add_child(row)
+
+
+func _more_looks() -> void:
+	var s := _section("More looks", "List rows (plain, outline, muted; SM), switch and checkbox sizes, a horizontal field, a carousel that flows down, upright page dots and a meter filling bottom to top.")
+	var row := _row(&"RowXl")
+	var rows := _stack(&"StackXs")
+	rows.custom_minimum_size.x = 300
+	var row_scene := load("res://addons/woldui/components/wold_list_row/wold_list_row.tscn")
+	for pair in [["Plain", WoldListRow.Look.PLAIN, WoldListRow.Size.MD], ["Outline", WoldListRow.Look.OUTLINE, WoldListRow.Size.MD], ["Muted", WoldListRow.Look.MUTED, WoldListRow.Size.MD], ["Outline, SM", WoldListRow.Look.OUTLINE, WoldListRow.Size.SM]]:
+		var r: WoldListRow = row_scene.instantiate()
+		r.title = pair[0]
+		r.subtitle = ""
+		r.trailing_text = ""
+		r.trailing_icon = ""
+		r.icon_name = "scroll"
+		r.look = pair[1]
+		r.row_size = pair[2]
+		r.disabled = show_disabled
+		rows.add_child(r)
+	row.add_child(rows)
+	var toggles := _stack(&"StackSm")
+	for z in [WoldSwitch.Size.SM, WoldSwitch.Size.MD, WoldSwitch.Size.LG]:
+		var sw: WoldSwitch = load("res://addons/woldui/components/wold_switch/wold_switch.tscn").instantiate()
+		sw.toggle_size = z
+		sw.label = ["Small", "Medium", "Large"][z]
+		sw.description = ""
+		sw.button_pressed = z != 0
+		sw.disabled = show_disabled
+		toggles.add_child(sw)
+		var cb: WoldCheckbox = load("res://addons/woldui/components/wold_checkbox/wold_checkbox.tscn").instantiate()
+		cb.toggle_size = z
+		cb.label = ["Small", "Medium", "Large"][z]
+		cb.description = ""
+		cb.button_pressed = true
+		cb.disabled = show_disabled
+		toggles.add_child(cb)
+	row.add_child(toggles)
+	s.add_child(row)
+	var edit := LineEdit.new()
+	edit.placeholder_text = "Rivermouth"
+	var side := WoldField.make(edit, "Kingdom name", "Shown to other players.")
+	side.horizontal = true
+	side.custom_minimum_size.x = 460
+	side.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	s.add_child(side)
+	var down_row := _row(&"RowXl")
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = &"PanelRaised"
+	var car: WoldCarousel = load("res://addons/woldui/components/wold_carousel/wold_carousel.tscn").instantiate()
+	car.flow = WoldCarousel.Flow.DOWN
+	car.custom_minimum_size = Vector2(320, 120)
+	for text in ["Build a city on the river.", "Recruit spearmen to hold the ford.", "Trade grain for stone."]:
+		var page := _label(text, &"")
+		page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		page.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		car.add_child(page)
+	panel.add_child(car)
+	down_row.add_child(panel)
+	var dots: WoldPageDots = load("res://addons/woldui/components/wold_page_dots/wold_page_dots.tscn").instantiate()
+	dots.vertical = true
+	dots.count = 4
+	dots.current = 1
+	down_row.add_child(dots)
+	var tall := WoldMeter.new()
+	tall.fill_mode = ProgressBar.FILL_BOTTOM_TO_TOP
+	tall.value = 65
+	tall.show_percentage = false
+	tall.custom_minimum_size = Vector2(16, 120)
+	var grain := WoldFill.new()
+	grain.texture = _stripes()
+	tall.fill = grain
+	down_row.add_child(tall)
+	s.add_child(down_row)
 
 
 ## UnitMenu builds itself; right-click the panel for a context menu
