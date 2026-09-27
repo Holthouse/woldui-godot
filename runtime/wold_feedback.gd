@@ -2,10 +2,13 @@
 class_name WoldFeedback
 extends Node
 ## Add as a child and every button under the parent gets hover/press motion
-## and sounds. Also catches buttons added later.
+## and sounds. Also catches buttons added later. With fade_states the plain
+## controls ease between their theme states too (buttons, tabs, focus rings),
+## and PopupMenus fade in.
 ##
 ## Per-button metadata: wold_sound = "confirm"/"back"/"open"/"close"/"none"
-## (default "click"), wold_feedback = false to skip a button.
+## (default "click"), wold_feedback = false to skip a node and whatever is
+## inside it.
 
 @export var motion := true
 @export var sound := true
@@ -13,8 +16,20 @@ extends Node
 @export var hover_sound := true
 ## Empty = tokens' sounds.
 @export var sounds: WoldSoundSet
+## Crossfade buttons, tabs and focus rings between theme states instead of
+## the engine's hard swap. wold_fade = false on a node skips it.
+@export var fade_states := true
+## Fade popups in: PopupMenus (OptionButton lists, MenuButton, context
+## menus) and PopupPanels, which includes the engine's tooltips.
+@export var animate_popups := true
 
 const _WIRED := &"_wold_feedback"
+const _FADE := &"_wold_fade"
+const ButtonFade := preload("res://addons/woldui/runtime/fade/button_fade.gd")
+const TabFade := preload("res://addons/woldui/runtime/fade/tab_fade.gd")
+const FocusFade := preload("res://addons/woldui/runtime/fade/focus_fade.gd")
+const PopupFade := preload("res://addons/woldui/runtime/fade/popup_fade.gd")
+const PanelFade := preload("res://addons/woldui/runtime/fade/panel_fade.gd")
 
 
 func _ready() -> void:
@@ -29,15 +44,48 @@ func _ready() -> void:
 
 func _on_node_added(node: Node) -> void:
 	var host := get_parent()
-	if node is BaseButton and host and host.is_ancestor_of(node):
-		_wire(node)
+	if host and host.is_ancestor_of(node):
+		_wire_node(node)
 
 
+# internal children too: an OptionButton's list is one
 func _wire_tree(node: Node) -> void:
+	_wire_node(node)
+	for child in node.get_children(true):
+		_wire_tree(child)
+
+
+func _wire_node(node: Node) -> void:
+	if node.get_meta("wold_feedback", true) == false:
+		return
+	# an opted-out node's insides stay out too
+	var parent := node.get_parent()
+	if parent and parent.get_meta("wold_feedback", true) == false:
+		node.set_meta("wold_feedback", false)
+		return
 	if node is BaseButton:
 		_wire(node)
-	for child in node.get_children():
-		_wire_tree(child)
+	if node.has_meta(_FADE) or node.get_meta("wold_fade", true) == false:
+		return
+	var fade: RefCounted
+	if node is PopupMenu:
+		if animate_popups or fade_states:
+			fade = PopupFade.new(node, animate_popups, fade_states)
+	elif node is PopupPanel:
+		if animate_popups:
+			fade = PanelFade.new(node)
+	elif not fade_states:
+		return
+	elif node is Button:
+		fade = ButtonFade.new(node)
+	elif node is TabContainer:
+		fade = TabFade.new(node)
+	elif node is TabBar and not (node.get_parent() and node.get_parent().get_parent() is TabContainer):
+		fade = TabFade.new(node)
+	elif node is LineEdit or node is TextEdit or node is Slider or node is ItemList or node is Tree:
+		fade = FocusFade.new(node)
+	if fade:
+		node.set_meta(_FADE, fade)
 
 
 func _wire(b: BaseButton) -> void:

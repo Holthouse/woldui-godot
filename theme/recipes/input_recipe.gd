@@ -35,10 +35,6 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 		theme.set_color("font_focus_color", type, t.role("text"))
 		theme.set_color("font_disabled_color", type, t.role("text_disabled"))
 		theme.set_constant("h_separation", type, t.space_sm)
-	theme.set_color("checkbox_checked_color", "CheckBox", t.role("accent"))
-	theme.set_color("checkbox_unchecked_color", "CheckBox", t.role("border_strong"))
-	theme.set_color("button_checked_color", "CheckButton", t.role("accent"))
-	theme.set_color("button_unchecked_color", "CheckButton", t.role("border_strong"))
 
 	for type in ["OptionButton", "MenuButton"]:
 		var dims := t.control_size("")

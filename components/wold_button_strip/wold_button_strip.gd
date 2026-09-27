@@ -102,10 +102,16 @@ func _join() -> void:
 		var b := list[i]
 		var keep := corners_for(i, list.size())
 		# skip when nothing changed, so a re-sort doesn't restyle (and re-sort)
-		var key := [keep, b.theme_type_variation, b.theme]
+		var fade: Object = b.get_meta(&"_wold_fade") if b.has_meta(&"_wold_fade") else null
+		var key := [keep, b.theme_type_variation, b.theme, fade != null]
 		if _joined.get(b, []) == key:
 			continue
 		_unjoin(b)
+		if fade:
+			# WoldFeedback is crossfading this one, it squares its own corners
+			fade.set_corners(keep)
+			_joined[b] = key
+			continue
 		for state in STATES:
 			var src := b.get_theme_stylebox(state)
 			if not src is StyleBoxFlat:
@@ -132,6 +138,10 @@ func _unjoin(b: Control) -> void:
 		return
 	var was := _joining
 	_joining = true
-	for state in STATES:
-		b.remove_theme_stylebox_override(state)
+	if b.has_meta(&"_wold_fade"):
+		var all: Array[bool] = [true, true, true, true]
+		b.get_meta(&"_wold_fade").set_corners(all)
+	else:
+		for state in STATES:
+			b.remove_theme_stylebox_override(state)
 	_joining = was

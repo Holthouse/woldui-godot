@@ -1205,7 +1205,7 @@ func _wold_screens() -> void:
 
 func _motion() -> void:
 	var ui := WoldUIRuntime.instance()
-	var s := _section("Motion & feedback", "Every animation goes through WoldMotion and honours Reduce motion. Buttons get hover, press and sound from a WoldFeedback node.")
+	var s := _section("Motion & feedback", "Every animation goes through WoldMotion and honours Reduce motion. Buttons get hover, press and sound from a WoldFeedback node, and under one every plain control eases between its theme states and popups fade in.")
 
 	var prefs := _row(&"RowXl")
 	var reduce := CheckButton.new()

@@ -6,6 +6,11 @@ extends "../shared/wold_toggle_base.gd"
 ## `indeterminate` shows a dash for "some of these"; a click clears it and
 ## checks the box.
 
+var _shown := ""
+var _mark_from := ""
+var _mark := 1.0
+var _mark_tween: Tween
+
 @export var indeterminate := false:
 	set(v):
 		indeterminate = v
@@ -55,13 +60,30 @@ func _on_toggled(_on: bool) -> void:
 
 
 func _draw_indicator(rect: Rect2) -> void:
-	if is_hovered() and not disabled:
+	var lit := hot()
+	if lit > 0.0:
 		var grow := rect.size.x * 0.3
 		var halo := rect.grow(grow)
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = get_theme_color("halo")
+		sb.bg_color.a *= lit
 		sb.set_corner_radius_all(int(halo.size.x / 2.0))
 		sb.corner_detail = 8
 		sb.anti_aliasing = true
 		draw_style_box(sb, halo)
-	draw_texture_rect(get_theme_icon(icon_name(), &"CheckBox"), rect, false)
+	# the new mark fades in over the old one; both are opaque boxes, so
+	# drawing old then new at alpha is a clean crossfade
+	var now := icon_name()
+	if now != _shown:
+		if _shown != "":
+			_mark_from = _shown
+			_mark = 0.0
+			_mark_tween = WoldMotion.blend(_mark_tween, self, 0.0, 1.0, func(v: float):
+				_mark = v
+				queue_redraw())
+		_shown = now
+	if _mark < 1.0 and _mark_from != "":
+		draw_texture_rect(get_theme_icon(_mark_from, &"CheckBox"), rect, false)
+		draw_texture_rect(get_theme_icon(now, &"CheckBox"), rect, false, Color(1, 1, 1, _mark))
+	else:
+		draw_texture_rect(get_theme_icon(now, &"CheckBox"), rect, false)

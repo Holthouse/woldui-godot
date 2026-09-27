@@ -23,6 +23,9 @@ signal page_selected(index: int)
 var _at := 0.0
 var _hot := -1
 var _anim := Node.new()
+# per dot hover glow, eased
+var _lit := PackedFloat32Array()
+var _lit_tween: Tween
 
 
 func _ready() -> void:
@@ -30,9 +33,7 @@ func _ready() -> void:
 	if _anim.get_parent() == null:
 		add_child(_anim, false, Node.INTERNAL_MODE_FRONT)
 	_at = current
-	mouse_exited.connect(func():
-		_hot = -1
-		queue_redraw())
+	mouse_exited.connect(_set_hot.bind(-1))
 
 
 func _get_minimum_size() -> Vector2:
@@ -79,10 +80,7 @@ func _slide(from: int) -> void:
 func _gui_input(event: InputEvent) -> void:
 	var mm := event as InputEventMouseMotion
 	if mm:
-		var h := _dot_at(mm.position)
-		if h != _hot:
-			_hot = h
-			queue_redraw()
+		_set_hot(_dot_at(mm.position))
 	var mb := event as InputEventMouseButton
 	if mb and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
 		var i := _dot_at(mb.position)
@@ -90,6 +88,18 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 			current = i
 			page_selected.emit(i)
+
+
+func _set_hot(h: int) -> void:
+	if h == _hot:
+		return
+	_hot = h
+	_lit.resize(count)
+	var from := _lit.duplicate()
+	_lit_tween = WoldMotion.blend(_lit_tween, self, 0.0, 1.0, func(v: float):
+		for i in _lit.size():
+			_lit[i] = lerpf(from[i], 1.0 if i == _hot else 0.0, v)
+		queue_redraw())
 
 
 # generous hit boxes: the gap is split between neighbours
@@ -109,7 +119,7 @@ func _draw() -> void:
 	var active := get_theme_color(&"active")
 	var rects := dot_rects()
 	for i in rects.size():
-		var base := get_theme_color(&"dot_hover") if i == _hot else idle
+		var base := idle.lerp(get_theme_color(&"dot_hover"), _lit[i] if i < _lit.size() else 0.0)
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = base.lerp(active, _weight(i))
 		sb.set_corner_radius_all(int(rects[i].size.y / 2.0))

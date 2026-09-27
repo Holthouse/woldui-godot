@@ -43,7 +43,9 @@ enum Size { SM, MD }
 			for other in get_tree().get_nodes_in_group(_group_name()):
 				if other != self and other.selected:
 					other.selected = false
-		queue_redraw()
+		_sel_tween = WoldMotion.blend(_sel_tween, self, _sel, 1.0 if v else 0.0, func(a: float):
+			_sel = a
+			queue_redraw())
 ## Cards with the same group select one at a time. Empty = independent.
 @export var card_group: StringName = &"":
 	set(v):
@@ -53,17 +55,20 @@ enum Size { SM, MD }
 		if is_inside_tree() and v != &"":
 			add_to_group(_group_name())
 
-var _hot := false
+# eased 0..1 amounts for hover, selected and the focus ring
+var _hot := 0.0
+var _sel := 0.0
+var _ring := 0.0
+var _hot_tween: Tween
+var _sel_tween: Tween
+var _ring_tween: Tween
 var _refreshing := false
 
 
 func _ready() -> void:
-	mouse_entered.connect(func():
-		_hot = true
-		queue_redraw())
-	mouse_exited.connect(func():
-		_hot = false
-		queue_redraw())
+	mouse_entered.connect(_ease_hot.bind(true))
+	mouse_exited.connect(_ease_hot.bind(false))
+	_sel = 1.0 if selected else 0.0
 	for slot in [%Action, %Content, %Footer]:
 		slot.child_entered_tree.connect(func(_n): _refresh.call_deferred())
 		slot.child_exiting_tree.connect(func(_n): _refresh.call_deferred())
@@ -138,17 +143,29 @@ func _refresh() -> void:
 	_refreshing = false
 
 
+func _ease_hot(on: bool) -> void:
+	_hot_tween = WoldMotion.blend(_hot_tween, self, _hot, 1.0 if on else 0.0, func(a: float):
+		_hot = a
+		queue_redraw())
+
+
 func _draw() -> void:
-	if selectable and _hot:
-		draw_style_box(get_theme_stylebox(&"hover"), Rect2(Vector2.ZERO, size))
-	if selected:
-		draw_style_box(get_theme_stylebox(&"selected"), Rect2(Vector2.ZERO, size))
+	var r := Rect2(Vector2.ZERO, size)
+	if selectable and _hot > 0.0:
+		draw_style_box(WoldStyle.faded(get_theme_stylebox(&"hover"), _hot), r)
+	if _sel > 0.0:
+		draw_style_box(WoldStyle.faded(get_theme_stylebox(&"selected"), _sel), r)
 	if has_focus() and WoldUIRuntime.instance().is_focus_navigating():
-		draw_style_box(get_theme_stylebox(&"focus"), Rect2(Vector2.ZERO, size))
+		draw_style_box(WoldStyle.faded(get_theme_stylebox(&"focus"), _ring), r)
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_FOCUS_ENTER or what == NOTIFICATION_FOCUS_EXIT:
+	if what == NOTIFICATION_FOCUS_ENTER:
+		# the ring fades in; on the way out it just goes
+		_ring_tween = WoldMotion.blend(_ring_tween, self, 0.0, 1.0, func(a: float):
+			_ring = a
+			queue_redraw())
+	elif what == NOTIFICATION_FOCUS_EXIT:
 		queue_redraw()
 
 

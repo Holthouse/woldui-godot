@@ -16,6 +16,8 @@ const Content := preload("wold_button_content.gd")
 		_refresh()
 
 var _refreshing := false
+var _hot := 0.0
+var _hot_tween: Tween
 
 
 func _init() -> void:
@@ -23,6 +25,8 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	mouse_entered.connect(_ease_hot.bind(true))
+	mouse_exited.connect(_ease_hot.bind(false))
 	theme_type_variation = _style()
 	text = ""
 	%Content.minimum_size_changed.connect(_fit)
@@ -46,6 +50,17 @@ func indicator_rect() -> Rect2:
 	var x := get_theme_stylebox("normal").get_margin(SIDE_LEFT) - s.x - get_theme_constant("h_separation")
 	var mid := Content.label_mid(self, %Content, %Label, description != "")
 	return Rect2(x, mid - s.y / 2.0, s.x, s.y)
+
+
+## Hover for the indicator, eased 0..1. 0 while disabled.
+func hot() -> float:
+	return 0.0 if disabled else _hot
+
+
+func _ease_hot(on: bool) -> void:
+	_hot_tween = WoldMotion.blend(_hot_tween, self, _hot, 1.0 if on else 0.0, func(v: float):
+		_hot = v
+		queue_redraw())
 
 
 func _style() -> StringName:

@@ -71,6 +71,10 @@ enum IconTint { INHERIT, ORIGINAL }
 ## Moving from one on-screen spot to another.
 @export var move_transition: Tween.TransitionType = Tween.TRANS_CUBIC
 @export var move_ease: Tween.EaseType = Tween.EASE_IN_OUT
+## Hover, press and focus colour fades. Softer than enter, a quart would be
+## most of the way there in two frames.
+@export var state_transition: Tween.TransitionType = Tween.TRANS_SINE
+@export var state_ease: Tween.EaseType = Tween.EASE_OUT
 @export_range(0.8, 1.0, 0.005) var press_scale := 0.97
 @export_range(1.0, 1.2, 0.005) var hover_scale := 1.0
 ## Hover time before a WoldTooltip shows.

@@ -73,6 +73,7 @@ func _init() -> void:
 			child.free()
 	_probe.name = &"WoldProbe"
 	_probe.visible = false
+	_probe.set_meta("wold_feedback", false)
 	add_child(_probe, false, Node.INTERNAL_MODE_FRONT)
 	set_meta("wold_sound", sound)
 

@@ -191,6 +191,22 @@ static func fade(tw: Tween, node: CanvasItem, alpha: float, seconds: float, toge
 	return tw.tween_property(node, "modulate:a", alpha, 0.0 if reduced() else seconds)
 
 
+## Eases a 0..1 style amount (hover glow, a selected tint) for things a
+## component draws itself. Its own tween, so it runs alongside hover and press
+## motion on the same node. Kills `prev`; null when it jumped (reduced motion,
+## editor, not in the tree).
+static func blend(prev: Tween, node: Node, from: float, to: float, show: Callable, seconds := -1.0) -> Tween:
+	if prev:
+		prev.kill()
+	var t := tokens()
+	if reduced() or Engine.is_editor_hint() or not node.is_inside_tree() or is_equal_approx(from, to):
+		show.call(to)
+		return null
+	var tw := node.create_tween()
+	tw.tween_method(show, from, to, seconds if seconds >= 0.0 else t.duration_fast).set_trans(t.state_transition).set_ease(t.state_ease)
+	return tw
+
+
 static func hover(node: Control, on: bool) -> Tween:
 	var t := tokens()
 	_prepare(node)

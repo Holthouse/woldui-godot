@@ -44,6 +44,16 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 		theme.set_icon("unchecked_disabled" + mirrored, "CheckButton", switch(w, h, dim_fill, dim, dim, mirrored != ""))
 		theme.set_icon("checked_disabled" + mirrored, "CheckButton", switch(w, h, dim_fill, dim, dim, mirrored == ""))
 
+	# the engine multiplies its check icons by these. Ours carry their own
+	# colour, so a tint here would darken them (accent on accent)
+	for item in ["checkbox_checked_color", "checkbox_unchecked_color"]:
+		theme.set_color(item, "CheckBox", Color.WHITE)
+	for item in ["button_checked_color", "button_unchecked_color"]:
+		theme.set_color(item, "CheckButton", Color.WHITE)
+	# Button's icon_max_width would squash the switch to a stub
+	for type in ["CheckBox", "CheckButton"]:
+		theme.set_constant("icon_max_width", type, 0)
+
 	# the toggles' own labels are separate Labels, so they need a disabled look
 	theme.set_type_variation("ToggleLabel", "Label")
 	theme.set_font_size("font_size", "ToggleLabel", t.font_size(0))

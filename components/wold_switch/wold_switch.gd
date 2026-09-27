@@ -60,9 +60,9 @@ func _on_toggled(on: bool) -> void:
 func _draw_indicator(track: Rect2) -> void:
 	var h := track.size.y
 	var k := knob_position()
-	var hot := is_hovered() and not disabled
-	var off_col := get_theme_color("track_off_hover" if hot else "track_off")
-	var on_col := get_theme_color("track_on_hover" if hot else "track_on")
+	var lit := hot()
+	var off_col := get_theme_color("track_off").lerp(get_theme_color("track_off_hover"), lit)
+	var on_col := get_theme_color("track_on").lerp(get_theme_color("track_on_hover"), lit)
 	var fill := off_col.lerp(on_col, k)
 	var knob_col := get_theme_color("knob").lerp(get_theme_color("knob_on"), k)
 	if disabled:
