@@ -128,6 +128,28 @@ func _on_focus(b: BaseButton, on: bool) -> void:
 func _on_down(b: BaseButton) -> void:
 	if motion:
 		WoldMotion.press(b)
+		var effect := press_effect_for(b)
+		if effect:
+			# keyboard, pad and touch have no point to grow from; mouse does
+			var at: Vector2 = b.get_local_mouse_position() if _ui().input_mode == WoldUIRuntime.InputMode.MOUSE else b.size / 2.0
+			effect.play(b, at)
+
+
+## The press effect `b` gets: its wold_press_effect metadata ("none" = off),
+## then WoldButton.press_effect, then the tokens'. Check boxes and switches
+## don't get one, the mark is their feedback.
+func press_effect_for(b: BaseButton) -> WoldPressEffect:
+	if not b is Button or b is CheckBox or b is CheckButton or b.has_method(&"hot"):
+		return null
+	var meta: Variant = b.get_meta("wold_press_effect") if b.has_meta("wold_press_effect") else null
+	if meta is String and meta == "none":
+		return null
+	if meta is WoldPressEffect:
+		return meta
+	var own: Variant = b.get("press_effect")
+	if own is WoldPressEffect:
+		return own
+	return _ui().tokens.press_effect
 
 
 func _on_pressed(b: BaseButton) -> void:

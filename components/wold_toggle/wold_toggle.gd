@@ -20,7 +20,7 @@ func _init() -> void:
 func style_name() -> StringName:
 	if variant != "":
 		return StringName(variant)
-	return StringName("Toggle" + ("Outline" if outline else "") + ("Icon" if shape == Shape.ICON else "") + _SIZE_SUFFIX[button_size])
+	return StringName("Toggle" + ("Outline" if outline else "") + ("Icon" if shape == Shape.ICON else "") + ("Sm" if button_size == Size.XS else _SIZE_SUFFIX[button_size]))
 
 
 func _validate_property(property: Dictionary) -> void:

@@ -4,16 +4,22 @@ extends Button
 ## Plain Button plus shape, size and a second icon after the text.
 ## Still a real Button underneath, so toggle_mode, button_group, shortcuts and
 ## all the signals behave as normal.
-# Style names come out as Button{Shape}{Size}, e.g. ButtonPrimarySm, ButtonGhost.
+# Style names come out as Button{Shape}{Size}, e.g. ButtonPrimarySm, ButtonGhost,
+# or with a look set, Button{Look}{Tone}{Size}, e.g. ButtonFlatSuccessSm.
 # To make a custom button, subclass and set props in _wold_refresh() (the
 # gallery's confirm_button does this).
 
 enum Shape { PRIMARY, SECONDARY, OUTLINE, GHOST, DANGER, ICON }
-enum Size { SM, MD, LG }
+enum Size { SM, MD, LG, XS }
+## SHAPE = use `shape`. Anything else picks from the look x tone grid.
+enum Look { SHAPE, SOLID, FLAT, BORDERED, LIGHT, FADED, SHADOW, LINK }
+enum Tone { NEUTRAL, ACCENT, SUCCESS, WARNING, DANGER }
 
 const _SHAPE_NAMES := ["Primary", "Secondary", "Outline", "Ghost", "Danger", "Icon"]
-const _SIZE_SUFFIX := ["Sm", "", "Lg"]
-const _STATES := ["normal", "hover", "pressed", "disabled", "focus"]
+const _SIZE_SUFFIX := ["Sm", "", "Lg", "Xs"]
+const _LOOK_NAMES := ["", "Solid", "Flat", "Bordered", "Light", "Faded", "Shadow", "Link"]
+const _TONE_NAMES := ["Neutral", "Accent", "Success", "Warning", "Danger"]
+const _STATES := ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]
 
 @export var shape: Shape = Shape.SECONDARY:
 	set(value):
@@ -23,6 +29,21 @@ const _STATES := ["normal", "hover", "pressed", "disabled", "focus"]
 @export var button_size: Size = Size.MD:
 	set(value):
 		button_size = value
+		_refresh()
+## Wins over `shape` unless it's SHAPE.
+@export var look: Look = Look.SHAPE:
+	set(value):
+		look = value
+		_refresh()
+## Colour for `look`. Ignored while look is SHAPE.
+@export var tone: Tone = Tone.ACCENT:
+	set(value):
+		tone = value
+		_refresh()
+## Square padding, for a button that's just an icon.
+@export var icon_only := false:
+	set(value):
+		icon_only = value
 		_refresh()
 ## Theme type that overrides shape + size ("ButtonGold"). Empty = derived.
 @export var variant := "":
@@ -50,6 +71,8 @@ const _STATES := ["normal", "hover", "pressed", "disabled", "focus"]
 		_refresh()
 
 @export_group("Feedback")
+## Wins over the tokens' press_effect for this button.
+@export var press_effect: WoldPressEffect
 ## Played through WoldFeedback, if there's one above this button.
 @export_enum("click", "confirm", "back", "open", "close", "none") var sound := "click":
 	set(value):
@@ -79,7 +102,27 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	mouse_entered.connect(_ease_link.bind(true))
+	mouse_exited.connect(_ease_link.bind(false))
 	_refresh()
+
+
+var _link := 0.0
+var _link_tween: Tween
+
+
+func _ease_link(on: bool) -> void:
+	if look != Look.LINK:
+		_link = 0.0
+		return
+	_link_tween = WoldMotion.blend(_link_tween, self, _link, 1.0 if on else 0.0, func(v: float):
+		_link = v
+		queue_redraw())
+
+
+## How much of the link underline shows, 0..1. For tests.
+func link_underline() -> float:
+	return _link if look == Look.LINK else 0.0
 
 
 func _notification(what: int) -> void:
@@ -93,7 +136,11 @@ func _notification(what: int) -> void:
 func style_name() -> StringName:
 	if variant != "":
 		return StringName(variant)
-	return StringName("Button" + _SHAPE_NAMES[shape] + _SIZE_SUFFIX[button_size])
+	if look != Look.SHAPE:
+		return StringName("Button" + _LOOK_NAMES[look] + _TONE_NAMES[tone] + _SIZE_SUFFIX[button_size])
+	# the old shapes stop at Sm
+	var suffix: String = "Sm" if button_size == Size.XS else _SIZE_SUFFIX[button_size]
+	return StringName("Button" + _SHAPE_NAMES[shape] + suffix)
 
 
 func end_icon() -> Texture2D:
@@ -158,17 +205,24 @@ func _apply_end_padding() -> void:
 	_applying = true
 	# clear first so the probe sees the unpadded theme
 	theme = null
-	if _end_texture:
+	if _end_texture or icon_only:
 		var local := Theme.new()
-		var extra := _end_width() + _probe.get_theme_constant("h_separation")
-		_base_right_pad = _probe.get_theme_stylebox("normal").get_margin(SIDE_RIGHT)
+		var extra := 0.0
+		if _end_texture:
+			extra = _end_width() + _probe.get_theme_constant("h_separation")
+		var normal := _probe.get_theme_stylebox("normal")
+		# icon_only: the sides take the top padding, so it comes out square
+		var side := normal.get_margin(SIDE_TOP) if icon_only else normal.get_margin(SIDE_RIGHT)
+		_base_right_pad = side
 		for state in _STATES:
 			var base := _probe.get_theme_stylebox(state)
 			if base == null:
 				continue
 			var padded := base.duplicate() as StyleBox
 			if state != "focus":
-				padded.content_margin_right = base.get_margin(SIDE_RIGHT) + extra
+				if icon_only:
+					padded.content_margin_left = base.get_margin(SIDE_TOP)
+				padded.content_margin_right = (base.get_margin(SIDE_TOP) if icon_only else base.get_margin(SIDE_RIGHT)) + extra
 			local.set_stylebox(state, theme_type_variation, padded)
 		theme = local
 	_applying = false
@@ -183,6 +237,8 @@ func _end_width() -> float:
 
 
 func _draw() -> void:
+	if look == Look.LINK and _link > 0.0:
+		_draw_underline()
 	if _end_texture == null:
 		return
 	# lands in the gap _apply_end_padding reserved, left of the original margin
@@ -199,3 +255,32 @@ func _validate_property(property: Dictionary) -> void:
 	generated = generated or property.name == "theme_type_variation"
 	if generated:
 		property.usage &= ~PROPERTY_USAGE_STORAGE
+
+
+# Button can't underline its text, so the link look draws one under where the
+# text lands: icon + gap + text, placed by `alignment` inside the content box.
+func _draw_underline() -> void:
+	if text == "":
+		return
+	var font := get_theme_font("font")
+	var fsize := get_theme_font_size("font_size")
+	var text_w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fsize).x
+	var sb := get_theme_stylebox("normal")
+	var left := sb.get_margin(SIDE_LEFT)
+	var room := size.x - left - sb.get_margin(SIDE_RIGHT)
+	var lead := 0.0
+	if icon:
+		var max_w := get_theme_constant("icon_max_width")
+		lead = (mini(icon.get_width(), max_w) if max_w > 0 else icon.get_width()) + get_theme_constant("h_separation")
+	var group := lead + text_w
+	var x := left
+	match alignment:
+		HORIZONTAL_ALIGNMENT_CENTER:
+			x = left + (room - group) / 2.0
+		HORIZONTAL_ALIGNMENT_RIGHT:
+			x = left + room - group
+	x += lead
+	var y := (size.y + font.get_height(fsize)) / 2.0 - font.get_descent(fsize) + 2.0
+	var col := get_theme_color("font_hover_color")
+	col.a *= _link
+	draw_line(Vector2(x, y), Vector2(x + text_w, y), col, maxf(1.0, fsize / 14.0), true)

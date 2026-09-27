@@ -60,6 +60,38 @@ Saved scenes only hold the props. Icons and styling are rebuilt on load, so you 
 
 To make your own button, make an inherited scene of `wold_button.tscn`, give it a script that `extends WoldButton`, and do your extra stuff in `_wold_refresh()`, which runs at the start of every restyle. `gallery/examples/confirm_button.tscn` adds a `busy` prop that way in about ten lines.
 
+#### Looks and tones
+
+For more than the six shapes, set `look` and `tone`. It's the same grid the web version has:
+
+```gdscript
+b.look = WoldButton.Look.FLAT            # SOLID, FLAT, BORDERED, LIGHT, FADED, SHADOW, LINK
+b.tone = WoldButton.Tone.SUCCESS         # NEUTRAL, ACCENT, SUCCESS, WARNING, DANGER
+b.button_size = WoldButton.Size.XS       # XS joins SM, MD, LG
+b.icon_only = true                       # square, for a lone icon
+```
+
+That picks `Button{Look}{Tone}{Size}` (`ButtonFlatSuccessXs` here), so a plain Button can use the styles too. Flat is a soft tint of the tone, bordered an outline, light only tints on hover, faded a grey button with coloured text, shadow a solid one with a glow of its own colour, and link is just text that underlines on hover. Every one is checked for 4.5:1 text in dark and light mode, hover and pressed included. `look` defaults to `SHAPE`, which means "use `shape`", so older scenes keep their look.
+
+#### Press effects
+
+On top of the press dip, a button can play a press effect: `WoldRipple` (a circle spreading from where you clicked, like the web ripple) or `WoldPressFlash`. The tokens' `press_effect` sets it for the whole game (the bundled tokens use a ripple), `press_effect` on a WoldButton overrides it for that button, and metadata `wold_press_effect` does the same on any Button (`"none"` turns it off). It needs a WoldFeedback above the button, like the sounds. Check boxes and switches don't get one.
+
+Your own is a small script:
+
+```gdscript
+@tool
+extends WoldPressEffect
+
+func _play(button: Control, at: Vector2, layer: Control) -> void:
+	# layer covers the button and is clipped to its rounded box
+	layer.draw.connect(func(): layer.draw_circle(at, 12.0, Color.WHITE))
+	layer.queue_redraw()
+	release(layer, 0.3)        # frees it afterwards
+```
+
+`gallery/examples/spark_press.gd` throws a ring of sparks; `spark_button.tscn` uses it. Effects are skipped under reduced motion.
+
 ### WoldStat
 
 An icon, a number and a label. Think resources in a top bar, health, score.

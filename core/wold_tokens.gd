@@ -45,6 +45,7 @@ enum IconTint { INHERIT, ORIGINAL }
 
 @export_group("Controls")
 ## Button/field padding (x, y) per size.
+@export var padding_xs := Vector2i(8, 3)
 @export var padding_sm := Vector2i(12, 5)
 @export var padding_md := Vector2i(18, 9)
 @export var padding_lg := Vector2i(26, 13)
@@ -77,6 +78,9 @@ enum IconTint { INHERIT, ORIGINAL }
 @export var state_ease: Tween.EaseType = Tween.EASE_OUT
 @export_range(0.8, 1.0, 0.005) var press_scale := 0.97
 @export_range(1.0, 1.2, 0.005) var hover_scale := 1.0
+## What buttons do when pressed (WoldRipple, WoldPressFlash or your own).
+## Empty = just the press dip.
+@export var press_effect: WoldPressEffect
 ## Hover time before a WoldTooltip shows.
 @export_range(0.0, 2.0, 0.05, "suffix:s") var tooltip_delay := 0.45
 ## Game-wide replacements for bundled presets ("appear", "screen_enter"...).
@@ -88,6 +92,7 @@ enum IconTint { INHERIT, ORIGINAL }
 @export var icon_set: WoldIconSet
 ## On Lucide's 24px grid. 2 is Lucide's default.
 @export_range(0.5, 3.0, 0.25) var icon_stroke := 2.0
+@export var icon_size_xs := 12
 @export var icon_size_sm := 16
 @export var icon_size_md := 20
 @export var icon_size_lg := 24
@@ -202,9 +207,11 @@ func display() -> Font:
 	return display_font if display_font else body_font
 
 
-## "Sm", "" or "Lg". Anything else is treated as medium.
+## "Xs", "Sm", "" or "Lg". Anything else is treated as medium.
 func control_size(size_name: String) -> Dictionary:
 	match size_name:
+		"Xs":
+			return {padding = padding_xs, font = font_size(-2), icon = icon_size_xs, radius = radius_sm}
 		"Sm":
 			return {padding = padding_sm, font = font_size(-1), icon = icon_size_sm, radius = radius_sm}
 		"Lg":

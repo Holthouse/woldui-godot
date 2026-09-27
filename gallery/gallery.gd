@@ -62,6 +62,7 @@ func rebuild() -> void:
 
 	_header(path)
 	_wold_buttons()
+	_button_grid()
 	_wold_stats()
 	_wold_badges()
 	_wold_dialogs()
@@ -178,6 +179,56 @@ func _wold_buttons() -> void:
 	busy.toggled.connect(func(on): confirm.busy = on)
 	extended.add_child(busy)
 	s.add_child(extended)
+
+
+func _button_grid() -> void:
+	var s := _section("Button looks", "WoldButton.look x tone (Button{Look}{Tone}{Size}), sizes down to Xs, icon_only. Press effects come from the tokens' press_effect or the button's own; SparkButton is a custom one.")
+	var scene := load("res://addons/woldui/components/wold_button/wold_button.tscn")
+	var L := WoldButton.Look
+	var tones := ["Neutral", "Accent", "Success", "Warning", "Danger"]
+	var looks := {"Solid": L.SOLID, "Flat": L.FLAT, "Bordered": L.BORDERED, "Light": L.LIGHT, "Faded": L.FADED, "Shadow": L.SHADOW, "Link": L.LINK}
+	for look_name in looks:
+		var row := _row(&"RowMd")
+		var tag := _label(look_name, &"Caption")
+		tag.custom_minimum_size.x = 90
+		row.add_child(tag)
+		for i in tones.size():
+			var b: WoldButton = scene.instantiate()
+			b.look = looks[look_name]
+			b.tone = i
+			b.text = tones[i]
+			b.disabled = show_disabled
+			b.tooltip_text = String(b.style_name())
+			row.add_child(b)
+		s.add_child(row)
+	var sizes := _row(&"RowMd")
+	for z in [WoldButton.Size.XS, WoldButton.Size.SM, WoldButton.Size.MD, WoldButton.Size.LG]:
+		var b: WoldButton = scene.instantiate()
+		b.look = L.FLAT
+		b.button_size = z
+		b.text = "Recruit"
+		b.icon_start = "swords"
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		sizes.add_child(b)
+		var only: WoldButton = scene.instantiate()
+		only.look = L.LIGHT
+		only.tone = WoldButton.Tone.NEUTRAL
+		only.button_size = z
+		only.icon_only = true
+		only.icon_start = "settings"
+		only.tooltip_text = "Settings"
+		only.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		sizes.add_child(only)
+	s.add_child(sizes)
+	var presses := _row(&"RowMd")
+	for pair in [["Ripple", WoldRipple.new()], ["Flash", WoldPressFlash.new()]]:
+		var b: WoldButton = scene.instantiate()
+		b.look = L.SOLID
+		b.text = pair[0]
+		b.press_effect = pair[1]
+		presses.add_child(b)
+	presses.add_child(load("res://addons/woldui/gallery/examples/spark_button.tscn").instantiate())
+	s.add_child(presses)
 
 
 ## HealthStat = a meter in the Extra slot
@@ -1600,6 +1651,10 @@ func _game_styles() -> void:
 	for recipe in WoldThemeBuilder.CORE_RECIPES:
 		for style in recipe.STYLES:
 			core[style] = true
+		# big generated grids only list a sample in STYLES
+		if recipe.get_script_method_list().any(func(m): return m.name == "all_styles"):
+			for style in recipe.all_styles():
+				core[style] = true
 	var extra := PackedStringArray()
 	for style in WoldThemeBuilder.variation_names(theme):
 		if not core.has(style):
