@@ -20,7 +20,7 @@ func _run() -> void:
 	await _with_fades()
 	await _strip()
 	await _auto_feedback()
-	finish(34)
+	finish(36)
 
 
 func _custom(node: Control, setup: Callable) -> WoldCustom:
@@ -203,6 +203,12 @@ func _strip() -> void:
 
 func _auto_feedback() -> void:
 	check(ui.tokens.auto_feedback and ui.feedback == null, "no automatic WoldFeedback for a script run (no current scene)")
+	ui.start_feedback()
+	check(ui.feedback == null, "start_feedback() alone doesn't start one there either")
+	ui.start_feedback(true)
+	check(ui.feedback != null, "start_feedback(true) does, for a game's own tests")
+	ui.feedback.free()
+	ui.feedback = null
 	var scene := VBoxContainer.new()
 	get_root().add_child(scene)
 	current_scene = scene

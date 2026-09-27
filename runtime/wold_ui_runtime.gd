@@ -85,12 +85,13 @@ func _ready() -> void:
 
 ## Puts a WoldFeedback on the root when the tokens ask for it (auto_feedback),
 ## set from the tokens' Feedback group. Only in a running game: a script run
-## (tests, tools) has no current_scene and gets none.
-func start_feedback() -> void:
+## (tests, tools) has no current_scene and gets none, unless it passes
+## `force` (a game's own tests, say, that should see what players get).
+func start_feedback(force := false) -> void:
 	if is_instance_valid(feedback) or tokens == null or not tokens.auto_feedback:
 		return
 	var tree := get_tree()
-	if tree == null or tree.current_scene == null:
+	if tree == null or (tree.current_scene == null and not force):
 		return
 	feedback = WoldFeedback.new()
 	feedback.name = "WoldFeedback"

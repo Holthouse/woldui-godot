@@ -543,7 +543,7 @@ The important bit is that it only animates `modulate.a` and a Control's offset t
 
 Presets are `.tres` files in `motion/presets/` (appear, disappear, dialog_in, toast_in, screen_enter and a few more). Each one picks a duration step, an easing from the tokens and a starting alpha/offset/scale. To change one for the whole game, put your own under the same name in the tokens' `motion_presets`.
 
-You usually don't add this yourself: with the tokens' `auto_feedback` on, the WoldUI autoload puts a WoldFeedback on the root when the game runs, set from the tokens' Feedback group. Add your own where one part of the UI wants other settings; in its part of the tree it wins. (Script runs, like tests and tools, have no current scene and get no automatic one.)
+You usually don't add this yourself: with the tokens' `auto_feedback` on, the WoldUI autoload puts a WoldFeedback on the root when the game runs, set from the tokens' Feedback group. Add your own where one part of the UI wants other settings; in its part of the tree it wins. (Script runs, like tests and tools, have no current scene and get no automatic one; `WoldUI.start_feedback(true)` starts it anyway, for a game's own tests.)
 
 For buttons, drop a `WoldFeedback` node into a scene. Every button under its parent then gets a hover/focus lift, a press dip, sounds, and a shake plus error sound when someone clicks it while it's disabled. Buttons added later are picked up too. Per button you can set metadata `wold_sound` (`confirm`, `back`, `open`, `close` or `none`) or `wold_feedback = false`, which also covers anything inside that node.
 
