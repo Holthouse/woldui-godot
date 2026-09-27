@@ -11,6 +11,8 @@ signal item_toggled(index: int, on: bool)
 
 enum Size { SM, MD }
 
+const Thumb := preload("../shared/wold_thumb.gd")
+
 @export var options: PackedStringArray = ["Day", "Week", "Month"]:
 	set(v):
 		options = v
@@ -39,18 +41,25 @@ enum Size { SM, MD }
 	set(v):
 		segment_size = v
 		_rebuild()
-## Segments share the width equally.
+## Segments share the width (or the height, when vertical) equally.
 @export var stretch := false:
 	set(v):
 		stretch = v
 		_rebuild()
+## Stacked top to bottom; the thumb slides up and down.
+@export var vertical := false:
+	set(v):
+		vertical = v
+		_rebuild()
+## A bordered track with no fill, like the web toggle group's outline look.
+@export var outline := false:
+	set(v):
+		outline = v
+		_rebuild()
 
 var _refreshing := false
-# thumb slides between these two rects, _t from 0 to 1
-var _from := Rect2()
-var _to := Rect2()
-var _t := 1.0
 var _anim := Node.new()
+var _thumb := Thumb.new(self, _anim)
 
 
 func _ready() -> void:
@@ -85,9 +94,7 @@ func pressed_items() -> PackedInt32Array:
 
 ## Where the thumb is drawn right now, in our own space.
 func thumb_rect() -> Rect2:
-	if _t >= 1.0:
-		return _to
-	return Rect2(_from.position.lerp(_to.position, _t), _from.size.lerp(_to.size, _t))
+	return _thumb.rect()
 
 
 func _rebuild() -> void:
@@ -96,7 +103,8 @@ func _rebuild() -> void:
 	_refreshing = true
 	_wold_refresh()
 	var sm := segment_size == Size.SM
-	theme_type_variation = &"SegmentedSm" if sm else &"Segmented"
+	theme_type_variation = StringName("Segmented" + ("Outline" if outline else "") + ("Sm" if sm else ""))
+	(%Buttons as BoxContainer).vertical = vertical
 	var style := &"SegmentedButtonSm" if sm else &"SegmentedButton"
 	var group: ButtonGroup = null if multiple else ButtonGroup.new()
 	var box := %Buttons as Node
@@ -114,7 +122,10 @@ func _rebuild() -> void:
 			b.icon = t.icon(icons[i], "Sm" if sm else "")
 		if b.text == "" and b.icon:
 			b.tooltip_text = icons[i]
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL if stretch else Control.SIZE_FILL
+		if vertical:
+			b.size_flags_vertical = Control.SIZE_EXPAND_FILL if stretch else Control.SIZE_FILL
+		else:
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL if stretch else Control.SIZE_FILL
 		b.alignment = HORIZONTAL_ALIGNMENT_CENTER
 		b.toggled.connect(_on_toggled.bind(i))
 		box.add_child(b)
@@ -137,18 +148,7 @@ func _apply(animate: bool) -> void:
 		for i in item_count():
 			item(i).set_pressed_no_signal(i == selected)
 	var target := _item_rect(selected) if selected >= 0 and selected < item_count() else Rect2()
-	if not animate or _to == Rect2() or not is_inside_tree() or Engine.is_editor_hint():
-		_to = target
-		_t = 1.0
-		queue_redraw()
-		return
-	_from = thumb_rect()
-	_to = target
-	_t = 0.0
-	var t := WoldUIRuntime.instance().tokens
-	WoldMotion.tween_number(_anim, 0.0, 1.0, func(v: float):
-		_t = v
-		queue_redraw(), t.duration_base)
+	_thumb.move(target, animate)
 
 
 func _item_rect(index: int) -> Rect2:
@@ -161,7 +161,7 @@ func _draw() -> void:
 	if multiple:
 		for i in pressed_items():
 			draw_style_box(sb, _item_rect(i))
-	elif selected >= 0 and _to != Rect2():
+	elif selected >= 0 and _thumb.is_placed():
 		draw_style_box(sb, thumb_rect())
 
 

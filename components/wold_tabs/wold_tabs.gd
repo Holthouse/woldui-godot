@@ -1,13 +1,21 @@
 @tool
 class_name WoldTabs
-extends VBoxContainer
-## Tab bar with a sliding underline. Works like TabContainer: each child you
-## add is a page, and its node name is the tab label.
+extends BoxContainer
+## Tab bar with a sliding marker. Works like TabContainer: each child you add
+## is a page, and its node name is the tab label.
+## `look`: an underline (LINE) or a raised pill on a sunken track (PILL).
+## `layout`: tabs across the top, or down the SIDE with pages to the right
+## (give the pages SIZE_EXPAND_FILL horizontally so they take the room).
 ## Per-page meta if you want more: wold_title (label), wold_icon, wold_badge
 ## (a count, 0 = none).
 ## No pages at all -> fill in `tabs` and use it as a bare bar.
 
+const Thumb := preload("../shared/wold_thumb.gd")
+
 signal tab_changed(index: int)
+
+enum Look { LINE, PILL }
+enum Layout { TOP, SIDE }
 
 @export var current := 0:
 	set(v):
@@ -29,6 +37,15 @@ signal tab_changed(index: int)
 	set(v):
 		stretch = v
 		_rebuild()
+@export var look: Look = Look.LINE:
+	set(v):
+		look = v
+		_rebuild()
+## Not `vertical`: that's BoxContainer's own, and this sets it.
+@export var layout: Layout = Layout.TOP:
+	set(v):
+		layout = v
+		_rebuild()
 ## LB/RB flip tabs. Reads the joypad buttons directly, no InputMap needed.
 @export var pad_shoulders := true
 @export var animate_pages := true
@@ -36,12 +53,17 @@ signal tab_changed(index: int)
 var _group := ButtonGroup.new()
 var _slide: Tween
 var _building := false
+var _anim := Node.new()
+var _pill := Thumb.new(self, _anim)
 
 
 func _ready() -> void:
+	if _anim.get_parent() == null:
+		add_child(_anim, false, Node.INTERNAL_MODE_FRONT)
 	child_entered_tree.connect(func(_n): _rebuild.call_deferred())
 	child_exiting_tree.connect(func(_n): _rebuild.call_deferred())
-	%Bar.resized.connect(func(): _place_indicator(false))
+	# after the bar lays its buttons out; resized comes before that
+	%Bar.sort_children.connect(_follow, CONNECT_DEFERRED)
 	_rebuild()
 
 
@@ -88,7 +110,8 @@ func _rebuild() -> void:
 		return
 	_building = true
 	_wold_refresh()
-	var bar := %Bar as HBoxContainer
+	_arrange()
+	var bar := %Bar as BoxContainer
 	# throw the buttons away and rebuild; cheap enough for a handful of tabs
 	for child in bar.get_children():
 		bar.remove_child(child)
@@ -104,15 +127,19 @@ func _rebuild() -> void:
 	var tokens := WoldUIRuntime.instance().tokens
 	for i in labels.size():
 		var b := Button.new()
-		b.theme_type_variation = &"TabButton"
+		b.theme_type_variation = &"TabButtonPill" if look == Look.PILL else &"TabButton"
+		if layout == Layout.SIDE:
+			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.text = labels[i].title
 		b.toggle_mode = true
 		b.button_group = _group
 		b.focus_mode = Control.FOCUS_ALL
 		if labels[i].icon != "":
 			b.icon = tokens.icon(labels[i].icon)
-		if stretch:
+		if stretch and layout == Layout.TOP:
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		elif stretch:
+			b.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		if labels[i].badge > 0:
 			var badge: WoldBadge = load("res://addons/woldui/components/wold_badge/wold_badge.tscn").instantiate()
 			badge.count = labels[i].badge
@@ -132,7 +159,7 @@ func _rebuild() -> void:
 func _apply(changed: bool) -> void:
 	if not is_node_ready() or _building:
 		return
-	var bar := %Bar as HBoxContainer
+	var bar := %Bar as BoxContainer
 	if current < bar.get_child_count():
 		(bar.get_child(current) as Button).set_pressed_no_signal(true)
 	var page_list := pages()
@@ -149,18 +176,47 @@ func _apply(changed: bool) -> void:
 		tab_changed.emit(current)
 
 
-## Underline rect for the current tab, in bar space.
+## Where the underline goes for the current tab, in the rail's space: under
+## it for TOP, beside it for SIDE.
 func indicator_target() -> Rect2:
-	var bar := %Bar as HBoxContainer
+	var bar := %Bar as BoxContainer
 	if current >= bar.get_child_count():
 		return Rect2()
 	var b := bar.get_child(current) as Control
-	var h := (%Rail as Control).size.y
-	return Rect2(b.position.x, 0.0, b.size.x, h)
+	var rail := %Rail as Control
+	var at := b.global_position - rail.global_position
+	if layout == Layout.SIDE:
+		return Rect2(0.0, at.y, rail.size.x, b.size.y)
+	return Rect2(at.x, 0.0, b.size.x, rail.size.y)
+
+
+func _follow() -> void:
+	if look == Look.PILL:
+		_pill.retarget(pill_target())
+	else:
+		_place_indicator(false)
+
+
+## The pill's target for the current tab, in our own space.
+func pill_target() -> Rect2:
+	var bar := %Bar as BoxContainer
+	if current >= bar.get_child_count():
+		return Rect2()
+	var b := bar.get_child(current) as Control
+	return Rect2(b.global_position - global_position, b.size)
+
+
+## Where the pill is drawn right now, in our own space.
+func pill_rect() -> Rect2:
+	return _pill.rect()
 
 
 func _place_indicator(animated: bool) -> void:
 	if not is_node_ready():
+		return
+	if look == Look.PILL:
+		_pill.move(pill_target(), animated)
+		queue_redraw()
 		return
 	var ind := %Indicator as Control
 	var target := indicator_target()
@@ -175,3 +231,43 @@ func _place_indicator(animated: bool) -> void:
 	_slide = ind.create_tween().set_parallel().set_trans(t.move_transition).set_ease(t.move_ease)
 	_slide.tween_property(ind, "position", target.position, t.duration_base)
 	_slide.tween_property(ind, "size", target.size, t.duration_base)
+
+
+# The bits the look and layout move around: which boxes run which way, where
+# the rail sits, the track padding.
+func _arrange() -> void:
+	var top := layout == Layout.TOP
+	vertical = top
+	(%Header as BoxContainer).vertical = top
+	(%Bar as BoxContainer).vertical = not top
+	# down the side the bar is only as tall as its tabs
+	(%Header as Control).size_flags_vertical = Control.SIZE_FILL if top else Control.SIZE_SHRINK_BEGIN
+	var line := look == Look.LINE
+	(%BarPad as Control).theme_type_variation = &"TabsLineInset" if line else &"TabsPillInset"
+	var rail := %Rail as Control
+	rail.visible = line
+	rail.custom_minimum_size = Vector2(0, 2) if top else Vector2(2, 0)
+	var track := %Track as Control
+	if top:
+		track.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		track.offset_top = -1.0
+	else:
+		track.set_anchors_and_offsets_preset(Control.PRESET_RIGHT_WIDE)
+		track.offset_left = -1.0
+	queue_redraw()
+
+
+# the pill look draws its track and pill here, behind the tab buttons
+func _draw() -> void:
+	if look != Look.PILL:
+		return
+	var pad := %BarPad as Control
+	draw_style_box(get_theme_stylebox(&"panel", &"TabsPillTrack"), Rect2(pad.global_position - global_position, pad.size))
+	if _pill.is_placed():
+		draw_style_box(get_theme_stylebox(&"panel", &"TabsPill"), _pill.rect())
+
+
+func _validate_property(property: Dictionary) -> void:
+	# `layout` sets it
+	if property.name == "vertical":
+		property.usage &= ~PROPERTY_USAGE_STORAGE

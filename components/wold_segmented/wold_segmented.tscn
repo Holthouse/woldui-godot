@@ -9,7 +9,7 @@ script = ExtResource("1_seg")
 options = PackedStringArray("Map", "Cities", "Units")
 icons = PackedStringArray("map", "castle", "swords")
 
-[node name="Buttons" type="HBoxContainer" parent="."]
+[node name="Buttons" type="BoxContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"RowNone"

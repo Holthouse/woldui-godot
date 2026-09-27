@@ -6,7 +6,7 @@ extends RefCounted
 
 const STYLES: PackedStringArray = [
 	"Switch", "Checkbox", "ToggleLabel", "ToggleLabelDisabled", "ToggleDescription", "ToggleDescriptionDisabled", "Segmented", "SegmentedButton", "SegmentedThumb",
-	"SegmentedSm", "SegmentedButtonSm",
+	"SegmentedSm", "SegmentedButtonSm", "SegmentedOutline", "SegmentedOutlineSm",
 	"Toggle", "ToggleSm", "ToggleLg", "ToggleOutline", "ToggleOutlineSm", "ToggleOutlineLg",
 	"ToggleIcon", "ToggleIconSm", "ToggleIconLg", "ToggleOutlineIcon", "ToggleOutlineIconSm", "ToggleOutlineIconLg",
 ]
@@ -122,6 +122,9 @@ static func _segmented(theme: Theme, t: WoldTokens, size: String, dims: Dictiona
 	var button: String = "SegmentedButton" + size
 	theme.set_type_variation(track, "PanelContainer")
 	theme.set_stylebox("panel", track, WoldStyle.flat(t.role("surface_sunken"), dims.radius + 2, Vector2i(2, 2), t.role("border"), t.border_width))
+	var outline: String = "SegmentedOutline" + size
+	theme.set_type_variation(outline, track)
+	theme.set_stylebox("panel", outline, WoldStyle.flat(Color(0, 0, 0, 0), dims.radius + 2, Vector2i(2, 2), t.role("field_border"), t.border_width))
 	theme.set_type_variation(button, "Button")
 	var pad: Vector2i = dims.padding
 	pad.y = maxi(pad.y - 2, 2)

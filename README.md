@@ -228,7 +228,7 @@ seg.icons = PackedStringArray(["map", "castle", "swords"])
 seg.selected_changed.connect(func(i): show_view(i))
 ```
 
-With one pick, a raised thumb slides to the chosen segment. Set `multiple` and any number can be on instead (`pressed_items()`, `item_toggled`). `segment_size` is SM or MD, and `stretch` shares the width equally. An option with an icon and no text gets the icon name as its tooltip; set a better one through `item(i)`. See `gallery/examples/map_layers.tscn`.
+With one pick, a raised thumb slides to the chosen segment. Set `multiple` and any number can be on instead (`pressed_items()`, `item_toggled`). `segment_size` is SM or MD, and `stretch` shares the width equally. `vertical` stacks the segments (the thumb slides up and down) and `outline` swaps the sunken track for an edge with no fill. An option with an icon and no text gets the icon name as its tooltip; set a better one through `item(i)`. See `gallery/examples/map_layers.tscn`.
 
 ### WoldToggle
 
@@ -418,7 +418,7 @@ Key caps for a shortcut written as text: `keys = "Ctrl+Shift+S"`. It uses the sa
 
 ### WoldTabs
 
-Tabs with an underline that slides to the current one.
+Tabs with a marker that slides to the current one: an underline, or a raised pill on a sunken track.
 
 ```gdscript
 tabs.current = 1
@@ -426,6 +426,13 @@ tabs.tab_changed.connect(func(i): print("tab ", i))
 ```
 
 Add your pages as children of the WoldTabs node, like a TabContainer; each page's name is its tab label. Page metadata `wold_title`, `wold_icon` and `wold_badge` change the label, add an icon or add a count. With no pages and `tabs` set, it's just a tab bar. `stretch` spreads the tabs over the width, and LB/RB switch tabs on a pad with no InputMap setup (`pad_shoulders`). See `gallery/examples/tabs_example.tscn`.
+
+```gdscript
+tabs.look = WoldTabs.Look.PILL        # LINE (default) or PILL
+tabs.layout = WoldTabs.Layout.SIDE    # TOP (default) or SIDE
+```
+
+The pill look is the segmented-control one from the web version: the tabs only change colour and the pill slides behind them. `SIDE` stacks the tabs down the left with the pages to their right, underline or pill running vertically, and up/down moving between tabs. Give the pages `SIZE_EXPAND_FILL` horizontally so they take the room. It's called `layout` because `vertical` is BoxContainer's own property, which this sets for you.
 
 ### WoldButtonPrompt
 

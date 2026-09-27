@@ -588,7 +588,7 @@ func _wold_radio_groups() -> void:
 
 ## MapLayers is the multiple mode
 func _wold_segmented() -> void:
-	var s := _section("WoldSegmented", "components/wold_segmented. Joined toggle buttons: pick one and the raised thumb slides to it, or turn on any number with multiple. MapLayers is a set of layer toggles.")
+	var s := _section("WoldSegmented", "components/wold_segmented. Joined toggle buttons: pick one and the raised thumb slides to it, or turn on any number with multiple. vertical stacks them, outline drops the track fill. MapLayers is a set of layer toggles.")
 	var scene := load("res://addons/woldui/components/wold_segmented/wold_segmented.tscn")
 	var row := _row(&"RowXl")
 	var views: WoldSegmented = scene.instantiate()
@@ -613,6 +613,17 @@ func _wold_segmented() -> void:
 	wide.stretch = true
 	wide.custom_minimum_size.x = 520
 	s.add_child(wide)
+	var more := _row(&"RowXl")
+	var stack: WoldSegmented = scene.instantiate()
+	stack.vertical = true
+	stack.options = PackedStringArray(["North", "Centre", "South"])
+	stack.icons = PackedStringArray()
+	more.add_child(stack)
+	var ring: WoldSegmented = scene.instantiate()
+	ring.outline = true
+	ring.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	more.add_child(ring)
+	s.add_child(more)
 
 
 ## FastForward is a scene-only example: an icon-only outline toggle
@@ -1134,7 +1145,7 @@ func _wold_chat() -> void:
 
 
 func _wold_tabs() -> void:
-	var s := _section("WoldTabs", "components/wold_tabs. Pages are the node's children; page metadata adds icons and badges. The underline slides; LB / RB switch tabs.")
+	var s := _section("WoldTabs", "components/wold_tabs. Pages are the node's children; page metadata adds icons and badges. The underline (or, with look PILL, a raised pill) slides; layout SIDE puts the tabs down the left. LB / RB switch tabs.")
 	var panel := PanelContainer.new()
 	panel.theme_type_variation = &"PanelRaised"
 	panel.custom_minimum_size = Vector2(560, 0)
@@ -1147,6 +1158,27 @@ func _wold_tabs() -> void:
 	bar.custom_minimum_size.x = 420
 	bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	s.add_child(bar)
+	var pill: WoldTabs = load("res://addons/woldui/components/wold_tabs/wold_tabs.tscn").instantiate()
+	pill.look = WoldTabs.Look.PILL
+	pill.tabs = PackedStringArray(["Members", "Roles", "Audit log"])
+	pill.custom_minimum_size.x = 0
+	pill.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	s.add_child(pill)
+	var side_panel := PanelContainer.new()
+	side_panel.theme_type_variation = &"PanelRaised"
+	side_panel.custom_minimum_size = Vector2(560, 180)
+	side_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var side: WoldTabs = load("res://addons/woldui/components/wold_tabs/wold_tabs.tscn").instantiate()
+	side.layout = WoldTabs.Layout.SIDE
+	side.look = WoldTabs.Look.PILL
+	side.tabs = PackedStringArray()
+	for pair in [["Video", "Resolution, window mode, vsync."], ["Audio", "Master, music and effects volume."], ["Controls", "Rebind keys and pad buttons."]]:
+		var page := _label(pair[1], &"")
+		page.name = pair[0]
+		page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		side.add_child(page)
+	side_panel.add_child(side)
+	s.add_child(side_panel)
 
 
 ## TODO: the wold_demo_* actions are added to the InputMap and never removed.

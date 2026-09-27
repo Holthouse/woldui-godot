@@ -21,7 +21,9 @@ func _run() -> void:
 	await _metadata_and_live_pages()
 	await _pad()
 	await _saved_past_three()
-	finish(26)
+	await _pill()
+	await _side()
+	finish(42)
 
 
 func _bar_only() -> void:
@@ -163,3 +165,97 @@ func _saved_past_three() -> void:
 	check(copy.current == 4 and copy.pages()[4].visible, "a saved tab past the third comes back (got %d)" % copy.current)
 	host.queue_free()
 	again.queue_free()
+
+
+func _pill() -> void:
+	ui.reduced_motion = false
+	var t: WoldTabs = load(EXAMPLE).instantiate()
+	t.look = WoldTabs.Look.PILL
+	stage.add_child(t)
+	await process_frame
+	await process_frame
+	check(t.tab_button(0).theme_type_variation == &"TabButtonPill" and not t.get_node("%Rail").visible, "PILL: pill tab buttons, no underline rail")
+	check(t.get_node("%BarPad").theme_type_variation == &"TabsPillInset", "the bar sits inset in its track")
+	check(t.pill_rect().is_equal_approx(t.pill_target()) and t.pill_rect().size.x > 0.0, "the pill sits behind the current tab")
+	var first := t.pill_target()
+	t.current = 2
+	await create_timer(tokens().duration_base * 0.4).timeout
+	var mid := t.pill_rect()
+	await create_timer(tokens().duration_base + 0.1).timeout
+	var last := t.pill_target()
+	check(mid.position.x > first.position.x and mid.position.x < last.position.x, "switching slides it over")
+	check(t.pill_rect().is_equal_approx(last), "and it lands behind the new tab")
+	ui.reduced_motion = true
+	t.current = 0
+	await process_frame
+	check(t.pill_rect().is_equal_approx(t.pill_target()), "reduced motion: it jumps")
+	ui.reduced_motion = false
+	t.stretch = true
+	await process_frame
+	await process_frame
+	var narrow := t.pill_rect().size.x
+	t.custom_minimum_size.x = 800
+	await process_frame
+	await process_frame
+	check(t.pill_rect().size.x > narrow and t.pill_rect().is_equal_approx(t.pill_target()), "the pill follows its tab when the bar is resized (%s -> %s, target %s)" % [narrow, t.pill_rect(), t.pill_target()])
+	var line: WoldTabs = load(SCENE).instantiate()
+	line.stretch = true
+	stage.add_child(line)
+	await process_frame
+	await process_frame
+	var before := (line.get_node("%Indicator") as Control).size.x
+	line.custom_minimum_size.x = 800
+	await process_frame
+	await process_frame
+	check((line.get_node("%Indicator") as Control).size.x > before and is_equal_approx((line.get_node("%Indicator") as Control).size.x, line.indicator_target().size.x), "so does the underline")
+	line.queue_free()
+	t.queue_free()
+
+
+func _side() -> void:
+	var t: WoldTabs = load(EXAMPLE).instantiate()
+	t.layout = WoldTabs.Layout.SIDE
+	stage.add_child(t)
+	await process_frame
+	await process_frame
+	var bar: BoxContainer = t.get_node("%Bar")
+	check(not t.vertical and bar.vertical and (t.get_node("%Header") as BoxContainer).vertical == false, "SIDE: tabs stacked down the left, pages beside them")
+	check(t.tab_button(0).alignment == HORIZONTAL_ALIGNMENT_LEFT, "side tabs read from the left edge")
+	var b1 := t.tab_button(1)
+	check(t.tab_button(0).global_position.x == b1.global_position.x and b1.global_position.y > t.tab_button(0).global_position.y, "one under the other")
+	t.current = 1
+	await process_frame
+	await create_timer(tokens().duration_base + 0.1).timeout
+	var ind := t.get_node("%Indicator") as Control
+	check(is_equal_approx(ind.size.y, b1.size.y) and ind.size.x <= 2.0 and is_equal_approx(ind.global_position.y, b1.global_position.y), "the underline runs down beside the current tab")
+	check(t.tab_button(0).find_valid_focus_neighbor(SIDE_BOTTOM) == b1, "down moves focus to the next tab")
+	var header := t.get_node("%Header") as Control
+	check(header.size.y < t.size.y or t.size.y == header.size.y and header.size_flags_vertical == Control.SIZE_SHRINK_BEGIN, "the bar is only as tall as its tabs")
+	var host := VBoxContainer.new()
+	get_root().add_child(host)
+	# packed as a root, like an inherited scene would be: vertical differs from
+	# BoxContainer's default there, so it would be saved
+	var top_root: WoldTabs = load(SCENE).instantiate()
+	host.add_child(top_root)
+	await process_frame
+	var own := PackedScene.new()
+	own.pack(top_root)
+	var own_state := own.get_state()
+	var own_props := []
+	for i in own_state.get_node_property_count(0):
+		own_props.append(own_state.get_node_property_name(0, i))
+	check(not own_props.has("vertical"), "vertical, which layout drives, isn't saved (%s)" % [own_props])
+	var saved: WoldTabs = load(SCENE).instantiate()
+	saved.layout = WoldTabs.Layout.SIDE
+	host.add_child(saved)
+	saved.owner = host
+	await process_frame
+	var packed := PackedScene.new()
+	packed.pack(host)
+	var again := packed.instantiate()
+	get_root().add_child(again)
+	await process_frame
+	check(not (again.get_child(0) as WoldTabs).vertical, "a saved SIDE layout comes back sideways")
+	host.queue_free()
+	again.queue_free()
+	t.queue_free()

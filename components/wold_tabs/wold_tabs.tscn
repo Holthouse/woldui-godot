@@ -2,18 +2,25 @@
 
 [ext_resource type="Script" path="res://addons/woldui/components/wold_tabs/wold_tabs.gd" id="1_tabs"]
 
-[node name="WoldTabs" type="VBoxContainer"]
+[node name="WoldTabs" type="BoxContainer"]
 custom_minimum_size = Vector2(420, 0)
 theme_type_variation = &"StackMd"
+vertical = true
 script = ExtResource("1_tabs")
 tabs = PackedStringArray("Army", "Economy", "Research")
 
-[node name="Header" type="VBoxContainer" parent="."]
+[node name="Header" type="BoxContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"StackNone"
+vertical = true
 
-[node name="Bar" type="HBoxContainer" parent="Header"]
+[node name="BarPad" type="MarginContainer" parent="Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TabsLineInset"
+
+[node name="Bar" type="BoxContainer" parent="Header/BarPad"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"RowXs"
@@ -25,6 +32,7 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="Track" type="Panel" parent="Header/Rail"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

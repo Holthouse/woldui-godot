@@ -18,8 +18,9 @@ func _run() -> void:
 	await _multiple()
 	await _sizes()
 	await _saved_scene()
+	await _vertical_and_outline()
 	await _example()
-	finish(21)
+	finish(26)
 
 
 func _seg() -> WoldSegmented:
@@ -146,4 +147,28 @@ func _example() -> void:
 	s.item(0).button_pressed = true
 	s.item(2).button_pressed = true
 	check(s.layers() == PackedStringArray(["Grid", "Borders"]), "MapLayers names the layers that are on (%s)" % [s.layers()])
+	s.queue_free()
+
+
+func _vertical_and_outline() -> void:
+	WoldUIRuntime.instance().reduced_motion = false
+	var s := _seg()
+	s.vertical = true
+	s.stretch = true
+	await process_frame
+	await process_frame
+	check((s.get_node("%Buttons") as BoxContainer).vertical and s.item(1).global_position.y > s.item(0).global_position.y, "vertical stacks the segments")
+	check(s.item(0).size_flags_vertical == Control.SIZE_EXPAND_FILL, "stretch shares the height when vertical")
+	var first := s.thumb_rect()
+	s.selected = 2
+	await create_timer(tokens().duration_base * 0.4).timeout
+	var mid := s.thumb_rect()
+	await create_timer(tokens().duration_base + 0.1).timeout
+	check(mid.position.y > first.position.y and mid.position.y < s.thumb_rect().position.y and is_equal_approx(mid.position.x, first.position.x), "the thumb slides down, not across")
+	s.outline = true
+	s.segment_size = WoldSegmented.Size.SM
+	await process_frame
+	check(s.theme_type_variation == &"SegmentedOutlineSm", "outline + SM pick SegmentedOutlineSm")
+	var sb := s.get_theme_stylebox("panel") as StyleBoxFlat
+	check(sb.bg_color.a == 0.0 and sb.border_color.a > 0.0, "an outline track: edge, no fill")
 	s.queue_free()
