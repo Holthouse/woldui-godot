@@ -10,10 +10,23 @@ var _status: Label
 var _auto: CheckBox
 var _swatches: VBoxContainer
 var _file_dialog: EditorFileDialog
+var _own_copy: Button
+
+const OWN_COPY := "res://design_system.tres"
 
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 6)
+
+	var main := _button("Edit design system", _edit_tokens)
+	main.tooltip_text = "Opens the tokens in the Inspector: colours, fonts, sizes, spacing, motion, sounds and feedback for the whole game. The theme rebuilds as you change them."
+	add_child(main)
+	var hint := _caption("One file for the whole look. To change a single control, select it and use Customize at the top of its Inspector.")
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	add_child(hint)
+	_own_copy = _button("Make it this project's own copy", _make_own_copy)
+	_own_copy.tooltip_text = "The tokens in use are the ones that ship inside the addon, and an update would overwrite your changes. This copies them to %s and switches to the copy." % OWN_COPY
+	add_child(_own_copy)
 
 	var path_row := HBoxContainer.new()
 	add_child(path_row)
@@ -25,7 +38,6 @@ func _ready() -> void:
 
 	var actions := HFlowContainer.new()
 	add_child(actions)
-	actions.add_child(_button("Edit tokens", _edit_tokens))
 	actions.add_child(_button("Rebuild theme", _rebuild))
 	actions.add_child(_button("Use as project theme", _use_as_project))
 	actions.add_child(_button("Open gallery", func(): plugin.open_gallery()))
@@ -73,6 +85,7 @@ func refresh() -> void:
 	_path_label.text = plugin.tokens_path()
 	_path_label.tooltip_text = "Tokens: %s\nGenerated theme: %s" % [plugin.tokens_path(), plugin.theme_path()]
 	_auto.set_pressed_no_signal(ProjectSettings.get_setting(plugin.SETTING_AUTO, true))
+	_own_copy.visible = plugin.tokens_path().begins_with("res://addons/woldui/")
 	var t: WoldTokens = plugin.tokens()
 	if t == null:
 		_say("No WoldTokens at %s. Pick a file with Change…" % plugin.tokens_path())
@@ -285,3 +298,23 @@ func _caption(text: String) -> Label:
 
 func _say(text: String) -> void:
 	_status.text = text
+
+
+func _make_own_copy() -> void:
+	var t: WoldTokens = plugin.tokens()
+	if t == null:
+		return
+	if ResourceLoader.exists(OWN_COPY):
+		_say("%s already exists; pick it with Change… or move it first." % OWN_COPY)
+		return
+	var copy := t.duplicate(true) as WoldTokens
+	var err := ResourceSaver.save(copy, OWN_COPY)
+	if err != OK:
+		_say("Could not save %s (error %d)" % [OWN_COPY, err])
+		return
+	EditorInterface.get_resource_filesystem().scan()
+	ProjectSettings.set_setting(plugin.SETTING_TOKENS, OWN_COPY)
+	ProjectSettings.save()
+	var msg: String = plugin.use_as_project_theme()
+	_say(msg if msg != "" else "Now using %s. Edit design system opens it." % OWN_COPY)
+	EditorInterface.edit_resource(load(OWN_COPY))

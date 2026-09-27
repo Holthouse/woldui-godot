@@ -2,7 +2,7 @@
 
 A design system for Godot 4.7 games, driven by one tokens file. You pick a handful of colours, fonts and sizes, and every Control in the game restyles from them. Motion, sound and icons come with the components, and anything you can tweak, you can tweak in the editor.
 
-It's the Godot port of my web UI kit of the same name. Current version: 0.8.2.
+It's the Godot port of my web UI kit of the same name. Current version: 1.0.0.
 
 ## Install
 
@@ -18,9 +18,29 @@ Then:
 
 1. Enable WoldUI in Project -> Project Settings -> Plugins. A WoldUI dock shows up.
 2. Copy `addons/woldui/tokens/default_dark.tres` (or `default_light.tres`) somewhere in your game, say `ui/theme/my_tokens.tres`.
-3. In the dock, click "Change..." and pick that file, then "Use as project theme".
+3. In the dock, click "Change..." and pick that file, then "Use as project theme". (Or skip step 2: while the project still uses the tokens inside the addon, the dock offers "Make it this project's own copy", which does both for you.)
 
-That's it. Every Control in the game now uses the generated theme. Hit "Edit tokens" to tweak them in the Inspector; the theme rebuilds on every change and open scenes repaint.
+That's it. Every Control in the game now uses the generated theme. Hit "Edit design system" in the dock to change it in the Inspector; the theme rebuilds on every change and open scenes repaint. No code needed for any of it.
+
+## Changing things without code
+
+There are two places to change the look, and neither needs a script.
+
+**The whole game: one file.** The tokens file is the design system. "Edit design system" in the WoldUI dock opens it in the Inspector, grouped: colour seeds (one per tone, plus light or dark mode), typography, spacing, control padding, corners and borders, motion timings, feedback, icons and sounds. Every button, panel, field and component follows it, and the theme rebuilds while you drag a colour.
+
+The Feedback group is where the game-wide behaviour lives: with `auto_feedback` on (the default) every control in the running game gets the hover and press motion, the sounds, the state fades and the popup fades, without adding a single node. Turn any of those off there, or pick the `press_effect` (a ripple, a flash, none, or your own).
+
+**One control: Customize.** Select any Control in a scene, a WoldUI component or a plain Button, Label or Panel, and the top of its Inspector says "WoldUI: change just this control" with a Customize field. Make a New WoldCustom there and set what you want: a fill colour, text colour, border colour, corner radius, border width, padding, font, font size, and for buttons the sound and press effect. Anything you leave at its default keeps the design system's value, and hover and pressed shades are worked out from the fill. It changes that one control only; the others, and the tokens, stay as they are. It's kept in the node's metadata (`wold_custom`), so it saves with the scene, follows later token changes, and works with the state fades. `gallery/examples/gold_button.tscn` is one.
+
+From code it's the same resource:
+
+```gdscript
+var c := WoldCustom.new()
+c.fill = Color("d9a93d")
+c.corner_radius = 18
+button.set_meta("wold_custom", c)
+WoldCustomize.apply(button)
+```
 
 ## Tokens and styles
 
@@ -522,6 +542,8 @@ tw.tween_callback(banner.hide)
 The important bit is that it only animates `modulate.a` and a Control's offset transform, which is visual only. Containers don't reset it, so a node can animate inside a VBoxContainer without its neighbours jumping, and clicks still land where the node really is. Starting a new motion on a node replaces the running one. With reduced motion on, everything goes straight to its end state, but the tween still finishes so `await` works the same.
 
 Presets are `.tres` files in `motion/presets/` (appear, disappear, dialog_in, toast_in, screen_enter and a few more). Each one picks a duration step, an easing from the tokens and a starting alpha/offset/scale. To change one for the whole game, put your own under the same name in the tokens' `motion_presets`.
+
+You usually don't add this yourself: with the tokens' `auto_feedback` on, the WoldUI autoload puts a WoldFeedback on the root when the game runs, set from the tokens' Feedback group. Add your own where one part of the UI wants other settings; in its part of the tree it wins. (Script runs, like tests and tools, have no current scene and get no automatic one.)
 
 For buttons, drop a `WoldFeedback` node into a scene. Every button under its parent then gets a hover/focus lift, a press dip, sounds, and a shake plus error sound when someone clicks it while it's disabled. Buttons added later are picked up too. Per button you can set metadata `wold_sound` (`confirm`, `back`, `open`, `close` or `none`) or `wold_feedback = false`, which also covers anything inside that node.
 

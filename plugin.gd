@@ -15,6 +15,9 @@ const WATCHED := [&"WoldTokens", &"WoldVariant", &"WoldIconSet", &"WoldSoundSet"
 
 var dock: Control
 var _rebuild_queued := false
+var _custom_inspector: EditorInspectorPlugin
+# WoldCustom -> the node it belongs to, so edits land on the right control
+var _customs := {}
 
 
 func _enter_tree() -> void:
@@ -25,6 +28,10 @@ func _enter_tree() -> void:
 	dock.name = "WoldUI"
 	add_control_to_dock(DOCK_SLOT_RIGHT_UL, dock)
 	EditorInterface.get_inspector().property_edited.connect(_on_property_edited)
+	_custom_inspector = preload("editor/wold_custom_inspector.gd").new()
+	add_inspector_plugin(_custom_inspector)
+	EditorInterface.get_inspector().edited_object_changed.connect(_watch_edited)
+	scene_changed.connect(_on_scene_changed)
 
 
 func _enable_plugin() -> void:
@@ -37,6 +44,10 @@ func _disable_plugin() -> void:
 
 func _exit_tree() -> void:
 	var inspector := EditorInterface.get_inspector()
+	if _custom_inspector:
+		remove_inspector_plugin(_custom_inspector)
+	if inspector.edited_object_changed.is_connected(_watch_edited):
+		inspector.edited_object_changed.disconnect(_watch_edited)
 	if inspector.property_edited.is_connected(_on_property_edited):
 		inspector.property_edited.disconnect(_on_property_edited)
 	if dock:
@@ -85,6 +96,10 @@ func rebuild() -> String:
 			WoldThemeBuilder.update_in_place(existing, built)
 			target = existing
 	var err := ResourceSaver.save(target, out)
+	# customised controls are worked out from the theme, so they follow it
+	var edited := EditorInterface.get_edited_scene_root()
+	if edited:
+		WoldCustomize.apply_tree(edited)
 	if dock:
 		dock.refresh()
 	return "" if err == OK else "Could not save %s (error %d)" % [out, err]
@@ -103,7 +118,13 @@ func open_gallery() -> void:
 	EditorInterface.open_scene_from_path(GALLERY)
 
 
-func _on_property_edited(_property: String) -> void:
+func _on_property_edited(property: String) -> void:
+	if property == "metadata/wold_custom":
+		_watch_edited()
+		var node := EditorInterface.get_inspector().get_edited_object() as Control
+		if node:
+			WoldCustomize.apply(node)
+		return
 	if not ProjectSettings.get_setting(SETTING_AUTO, true):
 		return
 	var edited := EditorInterface.get_inspector().get_edited_object()
@@ -126,3 +147,43 @@ func _ensure_setting(setting: String, value: Variant, type: int, hint := PROPERT
 	ProjectSettings.set_initial_value(setting, value)
 	ProjectSettings.add_property_info({name = setting, type = type, hint = hint, hint_string = hint_string})
 	ProjectSettings.set_as_basic(setting, true)
+
+
+# follow the WoldCustom of whatever Control is in the Inspector
+func _watch_edited() -> void:
+	var node := EditorInterface.get_inspector().get_edited_object() as Control
+	if node:
+		_watch(node)
+
+
+func _watch(node: Control) -> void:
+	var c := WoldCustomize.custom_of(node)
+	if c == null:
+		return
+	# Ctrl+D shares the resource between the copies; give this one its own
+	if _customs.has(c) and is_instance_valid(_customs[c]) and _customs[c] != node:
+		c = c.duplicate()
+		node.set_meta(WoldCustomize.META, c)
+	_customs[c] = node
+	if not c.changed.is_connected(_on_custom_changed):
+		c.changed.connect(_on_custom_changed.bind(c))
+
+
+func _on_custom_changed(c: WoldCustom) -> void:
+	var node: Control = _customs.get(c)
+	if not is_instance_valid(node):
+		_customs.erase(c)
+		return
+	WoldCustomize.apply(node)
+	EditorInterface.mark_scene_as_unsaved()
+
+
+# an opened scene gets its customised controls applied against the current
+# tokens (they may have changed since it was saved)
+func _on_scene_changed(root: Node) -> void:
+	if root == null:
+		return
+	WoldCustomize.apply_tree(root)
+	for node in root.find_children("*", "Control", true, false) + [root]:
+		if node is Control and node.has_meta(WoldCustomize.META):
+			_watch(node)

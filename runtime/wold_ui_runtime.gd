@@ -38,6 +38,9 @@ var input_mode: InputMode = InputMode.MOUSE
 ## for tests
 var last_sound := ""
 
+## The WoldFeedback that the tokens' auto_feedback puts on the root, or null.
+var feedback: WoldFeedback
+
 var _voices: Array[AudioStreamPlayer] = []
 var _next_voice := 0
 
@@ -70,6 +73,43 @@ func _init() -> void:
 		p.bus = bus if AudioServer.get_bus_index(bus) >= 0 else &"Master"
 		_voices.append(p)
 		add_child(p)
+
+
+func _ready() -> void:
+	if Engine.is_editor_hint():
+		return
+	get_tree().node_added.connect(_on_node_added)
+	# the main scene isn't in yet while autoloads get ready
+	start_feedback.call_deferred()
+
+
+## Puts a WoldFeedback on the root when the tokens ask for it (auto_feedback),
+## set from the tokens' Feedback group. Only in a running game: a script run
+## (tests, tools) has no current_scene and gets none.
+func start_feedback() -> void:
+	if is_instance_valid(feedback) or tokens == null or not tokens.auto_feedback:
+		return
+	var tree := get_tree()
+	if tree == null or tree.current_scene == null:
+		return
+	feedback = WoldFeedback.new()
+	feedback.name = "WoldFeedback"
+	feedback.auto = true
+	feedback.motion = tokens.feedback_motion
+	feedback.sound = tokens.feedback_sounds
+	feedback.hover_sound = tokens.hover_sound
+	feedback.fade_states = tokens.fade_states
+	feedback.animate_popups = tokens.animate_popups
+	tree.root.add_child(feedback)
+
+
+# customised controls re-apply once they're in, so they follow the tokens the
+# game runs with; deferred so their own labels are in too
+func _on_node_added(node: Node) -> void:
+	if node is Control and node.has_meta(WoldCustomize.META):
+		(func():
+			if is_instance_valid(node) and node.is_inside_tree():
+				WoldCustomize.apply(node)).call_deferred()
 
 
 func _input(event: InputEvent) -> void:
@@ -142,3 +182,4 @@ func apply_tokens(new_tokens: WoldTokens) -> void:
 	tokens = new_tokens
 	get_tree().root.theme = WoldThemeBuilder.build(new_tokens)
 	tokens_changed.emit()
+	WoldCustomize.apply_tree(get_tree().root)

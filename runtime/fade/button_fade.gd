@@ -120,6 +120,16 @@ func ring() -> StyleBoxFlat:
 	return _ring.flat
 
 
+## New per-control values to fade between, item name -> StyleBox or Color;
+## WoldCustomize hands them over instead of overriding the button itself.
+func set_own(own: Dictionary) -> void:
+	_own = own.duplicate()
+	_read()
+	if not is_fading():
+		_step(1.0)
+	_ring_to(1.0 if _ringed else 0.0)
+
+
 ## Square off corners, [top_left, top_right, bottom_right, bottom_left].
 ## WoldButtonStrip does this instead of its own overrides.
 func set_corners(keep: Array[bool]) -> void:

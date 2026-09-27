@@ -85,6 +85,7 @@ func rebuild() -> void:
 	_wold_status()
 	_wold_carousels()
 	_more_looks()
+	_customized()
 	_wold_menus()
 	_wold_popovers()
 	_wold_sheets()
@@ -985,6 +986,19 @@ func _wold_carousels() -> void:
 	show.call(dots.current)
 	col.add_child(note)
 	row.add_child(col)
+	s.add_child(row)
+
+
+func _customized() -> void:
+	var s := _section("Customize", "One control, changed on its own: select it in the editor and use Customize at the top of its Inspector. GoldButton is a plain Button with a fill, text colour, rounder corners, more padding and the confirm sound; hover and pressed are worked out from the fill. Works on any Control, WoldUI or not.")
+	var row := _row(&"RowLg")
+	var plain := Button.new()
+	plain.text = "Plain button"
+	plain.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(plain)
+	var gold: Button = load("res://addons/woldui/gallery/examples/gold_button.tscn").instantiate()
+	gold.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(gold)
 	s.add_child(row)
 
 

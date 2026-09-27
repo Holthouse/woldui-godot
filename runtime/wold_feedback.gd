@@ -23,7 +23,13 @@ extends Node
 ## menus) and PopupPanels, which includes the engine's tooltips.
 @export var animate_popups := true
 
+## Set on the one the WoldUI autoload makes (tokens' auto_feedback). It waits a
+## frame before wiring anything new, so a WoldFeedback of your own in that
+## part of the tree gets there first and wins.
+var auto := false
+
 const _WIRED := &"_wold_feedback"
+const _SEEN := &"_wold_feedback_seen"
 const _FADE := &"_wold_fade"
 const ButtonFade := preload("res://addons/woldui/runtime/fade/button_fade.gd")
 const TabFade := preload("res://addons/woldui/runtime/fade/tab_fade.gd")
@@ -44,7 +50,13 @@ func _ready() -> void:
 
 func _on_node_added(node: Node) -> void:
 	var host := get_parent()
-	if host and host.is_ancestor_of(node):
+	if not host or not host.is_ancestor_of(node):
+		return
+	if auto:
+		(func():
+			if is_instance_valid(node) and node.is_inside_tree():
+				_wire_node(node)).call_deferred()
+	else:
 		_wire_node(node)
 
 
@@ -56,6 +68,10 @@ func _wire_tree(node: Node) -> void:
 
 
 func _wire_node(node: Node) -> void:
+	# one WoldFeedback per node, whichever reaches it first
+	if node.has_meta(_SEEN):
+		return
+	node.set_meta(_SEEN, true)
 	if node.get_meta("wold_feedback", true) == false:
 		return
 	# an opted-out node's insides stay out too

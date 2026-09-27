@@ -78,14 +78,29 @@ enum IconTint { INHERIT, ORIGINAL }
 @export var state_ease: Tween.EaseType = Tween.EASE_OUT
 @export_range(0.8, 1.0, 0.005) var press_scale := 0.97
 @export_range(1.0, 1.2, 0.005) var hover_scale := 1.0
-## What buttons do when pressed (WoldRipple, WoldPressFlash or your own).
-## Empty = just the press dip.
-@export var press_effect: WoldPressEffect
 ## Hover time before a WoldTooltip shows.
 @export_range(0.0, 2.0, 0.05, "suffix:s") var tooltip_delay := 0.45
 ## Game-wide replacements for bundled presets ("appear", "screen_enter"...).
 ## Unlisted names use motion/presets/<name>.tres.
 @export var motion_presets: Dictionary[String, WoldMotionPreset] = {}
+
+@export_group("Feedback")
+## Every button and control in the game gets hover, press, sounds and the
+## state fades without adding a WoldFeedback node anywhere. A WoldFeedback
+## you add yourself still wins in its part of the tree.
+@export var auto_feedback := true
+## Hover lift and press dip.
+@export var feedback_motion := true
+@export var feedback_sounds := true
+## Off for long lists, it gets noisy. Focus sounds aren't affected.
+@export var hover_sound := true
+## Buttons, tabs and focus rings ease between states instead of snapping.
+@export var fade_states := true
+## Menus, dropdown lists and tooltips fade in.
+@export var animate_popups := true
+## What buttons do when pressed (WoldRipple, WoldPressFlash or your own).
+## Empty = just the press dip.
+@export var press_effect: WoldPressEffect
 
 @export_group("Icons")
 ## Your own icons over Lucide. null = just Lucide (browse in the WoldUI dock).

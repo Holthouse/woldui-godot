@@ -101,6 +101,13 @@ func _join() -> void:
 	for i in list.size():
 		var b := list[i]
 		var keep := corners_for(i, list.size())
+		# a customised button (WoldCustom) keeps its own shape; the strip's
+		# overrides would fight it, and get stripped with it at every save
+		if b.has_meta(&"wold_custom"):
+			if _joined.has(b):
+				_unjoin(b)
+				WoldCustomize.apply(b)
+			continue
 		# skip when nothing changed, so a re-sort doesn't restyle (and re-sort)
 		var fade: Object = b.get_meta(&"_wold_fade") if b.has_meta(&"_wold_fade") else null
 		var key := [keep, b.theme_type_variation, b.theme, fade != null]
