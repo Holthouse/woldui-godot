@@ -13,6 +13,11 @@ var _file_dialog: EditorFileDialog
 var _own_copy: Button
 
 const OWN_COPY := "res://design_system.tres"
+# A wrapping label with no width to go on asks for a huge height, which stretched
+# the whole editor layout and pushed the FileSystem dock off screen
+const WRAP_MIN_WIDTH := 160.0
+# The dock sits in a scroll container, so its tabs need a height of their own
+const TABS_MIN_HEIGHT := 300.0
 
 
 func _ready() -> void:
@@ -23,6 +28,7 @@ func _ready() -> void:
 	add_child(main)
 	var hint := _caption("One file for the whole look. To change a single control, select it and use Customize at the top of its Inspector.")
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size.x = WRAP_MIN_WIDTH
 	add_child(hint)
 	_own_copy = _button("Make it this project's own copy", _make_own_copy)
 	_own_copy.tooltip_text = "The tokens in use are the ones that ship inside the addon, and an update would overwrite your changes. This copies them to %s and switches to the copy." % OWN_COPY
@@ -52,10 +58,12 @@ func _ready() -> void:
 
 	_status = Label.new()
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status.custom_minimum_size.x = WRAP_MIN_WIDTH
 	add_child(_status)
 
 	var tabs := TabContainer.new()
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	tabs.custom_minimum_size.y = TABS_MIN_HEIGHT
 	add_child(tabs)
 	var scroll := ScrollContainer.new()
 	scroll.name = "Colours"

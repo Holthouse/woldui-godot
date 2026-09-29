@@ -32,7 +32,12 @@ func _enter_tree() -> void:
 	_editor_dock.title = "WoldUI"
 	_editor_dock.layout_key = "woldui"
 	_editor_dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_UL
-	_editor_dock.add_child(dock)
+	# Scrolls, so the dock never asks the editor for more height than it has
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	dock.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(dock)
+	_editor_dock.add_child(scroll)
 	add_dock(_editor_dock)
 	EditorInterface.get_inspector().property_edited.connect(_on_property_edited)
 	_custom_inspector = preload("editor/wold_custom_inspector.gd").new()
