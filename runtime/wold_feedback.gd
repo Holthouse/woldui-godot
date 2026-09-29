@@ -53,9 +53,12 @@ func _on_node_added(node: Node) -> void:
 	if not host or not host.is_ancestor_of(node):
 		return
 	if auto:
+		# by id: a lambda that captured a node freed before it runs logs an error
+		var id := node.get_instance_id()
 		(func():
-			if is_instance_valid(node) and node.is_inside_tree():
-				_wire_node(node)).call_deferred()
+			var n := instance_from_id(id) as Node
+			if n != null and n.is_inside_tree():
+				_wire_node(n)).call_deferred()
 	else:
 		_wire_node(node)
 

@@ -28,9 +28,13 @@ func _play(_button: Control, _at: Vector2, layer: Control) -> void:
 ## Frees `layer` (and the mask it sits in) after `seconds`.
 func release(layer: Control, seconds: float) -> void:
 	var mask := layer.get_parent() if layer.get_parent() and layer.get_parent().name == &"WoldPressLayer" else layer
+	# by id: a lambda that captured a node freed before the timer fires logs an
+	# error even when it checks validity first (a click that closes its own screen)
+	var id := mask.get_instance_id()
 	layer.get_tree().create_timer(seconds).timeout.connect(func():
-		if is_instance_valid(mask):
-			mask.queue_free())
+		var m := instance_from_id(id) as Node
+		if m != null:
+			m.queue_free())
 
 
 ## The drawing surface _play gets: a Panel masking its children to the

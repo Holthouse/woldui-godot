@@ -108,9 +108,11 @@ func start_feedback(force := false) -> void:
 # game runs with; deferred so their own labels are in too
 func _on_node_added(node: Node) -> void:
 	if node is Control and node.has_meta(WoldCustomize.META):
+		var id := node.get_instance_id()
 		(func():
-			if is_instance_valid(node) and node.is_inside_tree():
-				WoldCustomize.apply(node)).call_deferred()
+			var n := instance_from_id(id) as Control
+			if n != null and n.is_inside_tree():
+				WoldCustomize.apply(n)).call_deferred()
 
 
 func _input(event: InputEvent) -> void:
