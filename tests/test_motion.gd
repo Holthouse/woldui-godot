@@ -15,6 +15,7 @@ func _run() -> void:
 	await _appear_and_disappear()
 	await _inside_a_container()
 	await _reduced_motion()
+	await _pulse_speed()
 	await _stagger()
 	await _count_and_press()
 	await _nudge()
@@ -26,7 +27,7 @@ func _run() -> void:
 	await _touch_feedback()
 	ui.reduced_motion = false
 	ui.sound_enabled = true
-	finish(73)
+	finish(75)
 
 
 func _card() -> PanelContainer:
@@ -126,6 +127,21 @@ func _reduced_motion() -> void:
 	ui.reduced_motion = false
 	c.queue_free()
 	label.queue_free()
+
+
+func _pulse_speed() -> void:
+	var c := _card()
+	var t0 := Time.get_ticks_msec()
+	var tw := WoldMotion.pulse(c, 0.4, 1, 0.1)
+	await tw.finished
+	var quick := Time.get_ticks_msec() - t0
+	check(quick < 700, "pulse takes its half-cycle from seconds (one loop took %d ms; the default is about 1440)" % quick)
+	t0 = Time.get_ticks_msec()
+	tw = WoldMotion.pulse(c, 0.4, 1, 1.0)
+	await tw.finished
+	var slow := Time.get_ticks_msec() - t0
+	check(slow > 1700, "a longer seconds slows the pulse (one loop took %d ms)" % slow)
+	c.queue_free()
 
 
 func _stagger() -> void:
