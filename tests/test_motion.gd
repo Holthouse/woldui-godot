@@ -27,7 +27,7 @@ func _run() -> void:
 	await _touch_feedback()
 	ui.reduced_motion = false
 	ui.sound_enabled = true
-	finish(75)
+	finish(77)
 
 
 func _card() -> PanelContainer:
@@ -141,6 +141,11 @@ func _pulse_speed() -> void:
 	await tw.finished
 	var slow := Time.get_ticks_msec() - t0
 	check(slow > 1700, "a longer seconds slows the pulse (one loop took %d ms)" % slow)
+	tw = WoldMotion.pulse(c, 0.0, 1, 0.1, 0.5)
+	await create_timer(0.35).timeout
+	check(c.modulate.a == 0.0, "pulse waits at low_alpha for hold seconds (alpha %.2f mid-hold)" % c.modulate.a)
+	await tw.finished
+	check(c.modulate.a == 1.0, "and is back at full after the hold")
 	c.queue_free()
 
 

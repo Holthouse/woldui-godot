@@ -234,8 +234,9 @@ static func shake(node: Control, strength := 6.0) -> Tween:
 
 
 ## Slow alpha breathing. loops = 0 runs until stopped. seconds is one way
-## (full to low, or back); the default is twice duration_slow.
-static func pulse(node: Control, low_alpha := 0.4, loops := 0, seconds := -1.0) -> Tween:
+## (full to low, or back); the default is twice duration_slow. hold waits at
+## low_alpha each cycle, so a pulse down to 0 stays gone for a moment.
+static func pulse(node: Control, low_alpha := 0.4, loops := 0, seconds := -1.0, hold := 0.0) -> Tween:
 	var t := tokens()
 	_prepare(node)
 	if reduced():
@@ -245,6 +246,8 @@ static func pulse(node: Control, low_alpha := 0.4, loops := 0, seconds := -1.0) 
 	var tw := _tween(node, null, t, false)
 	tw.set_loops(loops)
 	tw.tween_property(node, "modulate:a", low_alpha, d).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if hold > 0.0:
+		tw.tween_interval(hold)
 	tw.tween_property(node, "modulate:a", 1.0, d).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	return tw
 

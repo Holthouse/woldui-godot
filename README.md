@@ -522,7 +522,7 @@ WoldMotion.appear(panel, WoldMotion.preset("dialog_in"))
 WoldMotion.disappear(toast, null, true)                   # then free it
 WoldMotion.stagger(list.get_children())
 WoldMotion.count_to(gold_label, 120, 240, "%d gold")
-WoldMotion.pulse(waiting_label)                           # optional: low alpha, loops, seconds per way
+WoldMotion.pulse(waiting_label)                           # optional: low alpha, loops, seconds per way, hold at low
 WoldMotion.shake(button)
 WoldTransition.swap(old_screen, new_screen)
 ```
