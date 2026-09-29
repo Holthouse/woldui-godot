@@ -14,6 +14,7 @@ const RUNTIME := "res://addons/woldui/runtime/wold_ui_runtime.gd"
 const WATCHED := [&"WoldTokens", &"WoldVariant", &"WoldIconSet", &"WoldSoundSet", &"WoldMotionPreset"]
 
 var dock: Control
+var _editor_dock: EditorDock
 var _rebuild_queued := false
 var _custom_inspector: EditorInspectorPlugin
 # WoldCustom -> the node it belongs to, so edits land on the right control
@@ -26,7 +27,13 @@ func _enter_tree() -> void:
 	dock = preload("editor/wold_dock.gd").new()
 	dock.plugin = self
 	dock.name = "WoldUI"
-	add_control_to_dock(DOCK_SLOT_RIGHT_UL, dock)
+	# Godot 4.7 dock system; add_control_to_dock is deprecated
+	_editor_dock = EditorDock.new()
+	_editor_dock.title = "WoldUI"
+	_editor_dock.layout_key = "woldui"
+	_editor_dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_UL
+	_editor_dock.add_child(dock)
+	add_dock(_editor_dock)
 	EditorInterface.get_inspector().property_edited.connect(_on_property_edited)
 	_custom_inspector = preload("editor/wold_custom_inspector.gd").new()
 	add_inspector_plugin(_custom_inspector)
@@ -50,9 +57,11 @@ func _exit_tree() -> void:
 		inspector.edited_object_changed.disconnect(_watch_edited)
 	if inspector.property_edited.is_connected(_on_property_edited):
 		inspector.property_edited.disconnect(_on_property_edited)
-	if dock:
-		remove_control_from_docks(dock)
-		dock.queue_free()
+	if _editor_dock:
+		remove_dock(_editor_dock)
+		_editor_dock.queue_free()
+		_editor_dock = null
+		dock = null
 
 
 func tokens_path() -> String:
