@@ -46,6 +46,12 @@ enum Layout { TOP, SIDE }
 	set(v):
 		layout = v
 		_rebuild()
+## The underline goes before the tabs (left of a side bar, above a top one)
+## instead of after them. Only the LINE look draws it.
+@export var marker_first := false:
+	set(v):
+		marker_first = v
+		_rebuild()
 ## LB/RB flip tabs. Reads the joypad buttons directly, no InputMap needed.
 @export var pad_shoulders := true
 @export var animate_pages := true
@@ -242,6 +248,8 @@ func _arrange() -> void:
 	(%Bar as BoxContainer).vertical = not top
 	# down the side the bar is only as tall as its tabs
 	(%Header as Control).size_flags_vertical = Control.SIZE_FILL if top else Control.SIZE_SHRINK_BEGIN
+	var header := %Header as Control
+	header.move_child(%Rail, 0 if marker_first else header.get_child_count() - 1)
 	var line := look == Look.LINE
 	(%BarPad as Control).theme_type_variation = &"TabsLineInset" if line else &"TabsPillInset"
 	var rail := %Rail as Control

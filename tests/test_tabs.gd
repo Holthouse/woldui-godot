@@ -23,7 +23,7 @@ func _run() -> void:
 	await _saved_past_three()
 	await _pill()
 	await _side()
-	finish(42)
+	finish(44)
 
 
 func _bar_only() -> void:
@@ -231,6 +231,18 @@ func _side() -> void:
 	check(t.tab_button(0).find_valid_focus_neighbor(SIDE_BOTTOM) == b1, "down moves focus to the next tab")
 	var header := t.get_node("%Header") as Control
 	check(header.size.y < t.size.y or t.size.y == header.size.y and header.size_flags_vertical == Control.SIZE_SHRINK_BEGIN, "the bar is only as tall as its tabs")
+	# marker_first: the underline goes before the tabs (left of a side bar)
+	var after_rail := t.get_node("%Rail") as Control
+	check(after_rail.global_position.x > t.tab_button(0).global_position.x, "by default the side underline sits after (right of) the tabs")
+	var lead: WoldTabs = load(SCENE).instantiate()
+	lead.layout = WoldTabs.Layout.SIDE
+	lead.marker_first = true
+	stage.add_child(lead)
+	await process_frame
+	await process_frame
+	var lead_rail := lead.get_node("%Rail") as Control
+	check(lead_rail.global_position.x < lead.tab_button(0).global_position.x, "marker_first puts the side underline before (left of) the tabs")
+	lead.queue_free()
 	var host := VBoxContainer.new()
 	get_root().add_child(host)
 	# packed as a root, like an inherited scene would be: vertical differs from

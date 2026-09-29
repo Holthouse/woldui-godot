@@ -456,6 +456,7 @@ Add your pages as children of the WoldTabs node, like a TabContainer; each page'
 ```gdscript
 tabs.look = WoldTabs.Look.PILL        # LINE (default) or PILL
 tabs.layout = WoldTabs.Layout.SIDE    # TOP (default) or SIDE
+tabs.marker_first = true             # underline before the tabs (left of a side bar)
 ```
 
 The pill look is the segmented-control one from the web version: the tabs only change colour and the pill slides behind them. `SIDE` stacks the tabs down the left with the pages to their right, underline or pill running vertically, and up/down moving between tabs. Give the pages `SIZE_EXPAND_FILL` horizontally so they take the room. It's called `layout` because `vertical` is BoxContainer's own property, which this sets for you.
