@@ -405,7 +405,7 @@ func _popups() -> void:
 	await _frames(2)
 	check(long_list.get_popup().max_size.y == 200, "popup_max_height caps a list's height (max_size.y %d)" % long_list.get_popup().max_size.y)
 	check(long_list.get_popup().size.y <= 200, "so a 60-row list is no taller than that (%d)" % long_list.get_popup().size.y)
-	check(popup.max_size.y > 200, "a list under a WoldFeedback without a cap is left alone")
+	check(popup.max_size == Vector2i.ZERO, "a list under a WoldFeedback without a cap is left alone (max_size %s)" % popup.max_size)
 	long_list.get_popup().hide()
 	capped.queue_free()
 	var tip := PopupPanel.new()
