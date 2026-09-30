@@ -22,6 +22,9 @@ extends Node
 ## Fade popups in: PopupMenus (OptionButton lists, MenuButton, context
 ## menus) and PopupPanels, which includes the engine's tooltips.
 @export var animate_popups := true
+## Cap the height of PopupMenus (dropdown lists, menus): a taller one scrolls.
+## 0 = no cap.
+@export_range(0, 4000, 10) var popup_max_height := 0
 
 ## Set on the one the WoldUI autoload makes (tokens' auto_feedback). It waits a
 ## frame before wiring anything new, so a WoldFeedback of your own in that
@@ -29,6 +32,7 @@ extends Node
 var auto := false
 
 const _WIRED := &"_wold_feedback"
+const POPUP_UNCAPPED := 16384
 const _SEEN := &"_wold_feedback_seen"
 const _FADE := &"_wold_fade"
 const ButtonFade := preload("res://addons/woldui/runtime/fade/button_fade.gd")
@@ -84,6 +88,9 @@ func _wire_node(node: Node) -> void:
 		return
 	if node is BaseButton:
 		_wire(node)
+	if node is PopupMenu and popup_max_height > 0:
+		# a window's max_size clamps BOTH sides, so the width is left as wide as it gets
+		node.max_size = Vector2i(POPUP_UNCAPPED, popup_max_height)
 	if node.has_meta(_FADE) or node.get_meta("wold_fade", true) == false:
 		return
 	var fade: RefCounted

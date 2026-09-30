@@ -32,7 +32,7 @@ func _run() -> void:
 	await _native_checks()
 	await _rereads()
 	await _component_fades()
-	finish(66)
+	finish(69)
 
 
 func _frames(n: int) -> void:
@@ -390,6 +390,24 @@ func _popups() -> void:
 	await _frames(1)
 	check(is_equal_approx(WoldMotion.popup_panel(still.get_popup()).modulate.a, 1.0), "animate_popups = false: the list just appears")
 	still.get_popup().hide()
+	# popup_max_height: a long dropdown scrolls instead of running off the screen
+	var capped := VBoxContainer.new()
+	stage.add_child(capped)
+	var cap_fb := WoldFeedback.new()
+	cap_fb.popup_max_height = 200
+	capped.add_child(cap_fb)
+	var long_list := OptionButton.new()
+	for i in 60:
+		long_list.add_item("Row %d" % i)
+	capped.add_child(long_list)
+	await _frames(2)
+	long_list.show_popup()
+	await _frames(2)
+	check(long_list.get_popup().max_size.y == 200, "popup_max_height caps a list's height (max_size.y %d)" % long_list.get_popup().max_size.y)
+	check(long_list.get_popup().size.y <= 200, "so a 60-row list is no taller than that (%d)" % long_list.get_popup().size.y)
+	check(popup.max_size.y > 200, "a list under a WoldFeedback without a cap is left alone")
+	long_list.get_popup().hide()
+	capped.queue_free()
 	var tip := PopupPanel.new()
 	var words := Label.new()
 	words.text = "Wood: 12"

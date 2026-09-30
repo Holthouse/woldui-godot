@@ -101,6 +101,7 @@ func start_feedback(force := false) -> void:
 	feedback.hover_sound = tokens.hover_sound
 	feedback.fade_states = tokens.fade_states
 	feedback.animate_popups = tokens.animate_popups
+	feedback.popup_max_height = tokens.popup_max_height
 	tree.root.add_child(feedback)
 
 

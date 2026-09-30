@@ -98,6 +98,9 @@ enum IconTint { INHERIT, ORIGINAL }
 @export var fade_states := true
 ## Menus, dropdown lists and tooltips fade in.
 @export var animate_popups := true
+## Dropdown lists and menus taller than this many pixels scroll instead of
+## running off the screen. 0 = no limit.
+@export_range(0, 4000, 10) var popup_max_height := 0
 ## What buttons do when pressed (WoldRipple, WoldPressFlash or your own).
 ## Empty = just the press dip.
 @export var press_effect: WoldPressEffect
