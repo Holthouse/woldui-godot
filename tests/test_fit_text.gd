@@ -14,7 +14,7 @@ func _run() -> void:
 	await _wold_button()
 	await _tooltip()
 	await _off()
-	finish(18)
+	finish(20)
 
 
 func _fixed_label(text: String, width: float) -> Label:
@@ -47,6 +47,9 @@ func _label() -> void:
 	check(shrunk >= ceili(base * fit.min_scale), "...but not below the floor")
 	check(l.tooltip_text == l.text, "past the floor the full text goes in the tooltip")
 	check(l.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS, "...and the label trims with an ellipsis")
+	l.text = "Another line far too long for three hundred pixels, even at the smallest size"
+	await _settle()
+	check(l.tooltip_text == l.text, "a new text that is still too long updates the tooltip")
 	l.text = "Short"
 	await _settle()
 	check(l.get_theme_font_size("font_size") == base, "a short text gets the full size back")
@@ -117,6 +120,7 @@ func _off() -> void:
 	fit.enabled = false
 	await _settle()
 	check(not l.has_theme_font_size_override("font_size"), "enabled = false gives the size back")
+	check(not l.clip_text and l.text_overrun_behavior == TextServer.OVERRUN_NO_TRIMMING, "...and the label its own clipping and overrun")
 	fit.enabled = true
 	await _settle()
 	check(l.has_theme_font_size_override("font_size"), "...and turning it back on fits again")

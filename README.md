@@ -112,6 +112,8 @@ func _play(button: Control, at: Vector2, layer: Control) -> void:
 
 `gallery/examples/spark_press.gd` throws a ring of sparks; `spark_button.tscn` uses it. Effects are skipped under reduced motion.
 
+Long labels in a grid or a fixed-width column: `fit_text = true` shrinks the text to the width the button gets, down to `fit_min_scale` of the theme size, and past that truncates it and puts the full text in the tooltip. For any other Button or Label, add a `WoldFitText` node as its child. The text no longer sets the control's minimum width, so use it where the layout decides the width, not in a container that sizes to its children.
+
 ### WoldStat
 
 An icon, a number and a label. Think resources in a top bar, health, score.

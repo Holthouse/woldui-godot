@@ -26,6 +26,7 @@ var _target: Control
 var _base := 0
 var _base_variation := &""
 var _was_clipping := false
+var _was_overrun := TextServer.OVERRUN_NO_TRIMMING
 var _tooltip_set := false
 var _hooked := false
 var _busy := false
@@ -40,6 +41,9 @@ func _ready() -> void:
 		return
 	if _target is Button:
 		_was_clipping = (_target as Button).clip_text
+	else:
+		_was_clipping = (_target as Label).clip_text
+		_was_overrun = (_target as Label).text_overrun_behavior
 	_hook(true)
 	refit()
 
@@ -151,7 +155,8 @@ func _apply(avail: float) -> void:
 # only a tooltip we put there ourselves is ours to take away
 func _set_tooltip(truncated: bool) -> void:
 	if truncated:
-		if _target.tooltip_text == "":
+		# ours follows the text; a new text that is still too long would keep the old one
+		if _tooltip_set or _target.tooltip_text == "":
 			_target.tooltip_text = _target.text
 			_tooltip_set = true
 	elif _tooltip_set:
@@ -164,4 +169,7 @@ func _restore() -> void:
 		_target.remove_theme_font_size_override("font_size")
 	if _target is Button:
 		(_target as Button).clip_text = _was_clipping
+	else:
+		(_target as Label).clip_text = _was_clipping
+		(_target as Label).text_overrun_behavior = _was_overrun
 	_set_tooltip(false)
