@@ -70,6 +70,18 @@ const _STATES := ["normal", "hover", "pressed", "hover_pressed", "disabled", "fo
 		icon_end_texture = value
 		_refresh()
 
+## Shrink the text to fit the width the layout gives the button, then truncate
+## (see WoldFitText). For buttons in a grid or a fixed column, not ones that
+## size to their text.
+@export var fit_text := false:
+	set(value):
+		fit_text = value
+		_sync_fit()
+@export_range(0.4, 1.0, 0.05) var fit_min_scale := 0.75:
+	set(value):
+		fit_min_scale = value
+		_sync_fit()
+
 @export_group("Feedback")
 ## Wins over the tokens' press_effect for this button.
 @export var press_effect: WoldPressEffect
@@ -104,6 +116,7 @@ func _init() -> void:
 func _ready() -> void:
 	mouse_entered.connect(_ease_link.bind(true))
 	mouse_exited.connect(_ease_link.bind(false))
+	_sync_fit()
 	_refresh()
 
 
@@ -284,3 +297,20 @@ func _draw_underline() -> void:
 	var col := get_theme_color("font_hover_color")
 	col.a *= _link
 	draw_line(Vector2(x, y), Vector2(x + text_w, y), col, maxf(1.0, fsize / 14.0), true)
+
+
+var _fit_node: WoldFitText
+
+
+func _sync_fit() -> void:
+	if not is_inside_tree():
+		return
+	if not fit_text:
+		if _fit_node:
+			_fit_node.free()
+			_fit_node = null
+		return
+	if _fit_node == null:
+		_fit_node = WoldFitText.new()
+		add_child(_fit_node, false, Node.INTERNAL_MODE_BACK)
+	_fit_node.min_scale = fit_min_scale
