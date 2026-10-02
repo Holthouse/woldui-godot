@@ -41,8 +41,10 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 			var sb := WoldStyle.flat(look[0], r, pad, look[2], t.border_width)
 			# the tail is the bottom corner on the speaker's side
 			if tail == "Start":
+				@warning_ignore("integer_division")
 				sb.corner_radius_bottom_left = t.radius_sm / 2
 			elif tail == "End":
+				@warning_ignore("integer_division")
 				sb.corner_radius_bottom_right = t.radius_sm / 2
 			theme.set_stylebox("panel", style, sb)
 			theme.set_color("text", style, look[1])

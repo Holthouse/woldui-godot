@@ -89,8 +89,8 @@ func _restyle() -> void:
 	b.shape = WoldButton.Shape.PRIMARY
 	await _frames()
 	check(_sb(b).bg_color == tokens().role("accent") and _sb(b).corner_radius_top_left == 0, "restyling a WoldButton inside keeps it joined, with its new look")
-	var round := tokens().derive({"radius_md": 14})
-	stage.theme = WoldThemeBuilder.build(round)
+	var rounder := tokens().derive({"radius_md": 14})
+	stage.theme = WoldThemeBuilder.build(rounder)
 	await _frames()
 	check(_sb(g.buttons()[0]).corner_radius_top_left == 14, "new tokens reach the joined buttons")
 	stage.theme = WoldThemeBuilder.build(tokens())

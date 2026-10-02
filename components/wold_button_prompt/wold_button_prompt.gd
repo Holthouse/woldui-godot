@@ -87,8 +87,8 @@ func refresh() -> void:
 	glyph = WoldPrompts.glyph_for(event, fam) if event else {shape = "key", text = "?", icon = "", art = ""}
 	var g := %Glyph as WoldPromptGlyph
 	g.glyph = glyph
-	var set := ui.tokens.icon_set
-	g.art = set.get_icon(glyph.art) if set and glyph.art != "" and set.custom_names().has(glyph.art) else null
+	var icons := ui.tokens.icon_set
+	g.art = icons.get_icon(glyph.art) if icons and glyph.art != "" and icons.custom_names().has(glyph.art) else null
 	# a finger is a pointer too: button glyphs mean nothing to it
 	var mouse_now := input_kind == InputKind.AUTO and ui.input_mode in [WoldUIRuntime.InputMode.MOUSE, WoldUIRuntime.InputMode.TOUCH]
 	visible = not (hide_on_mouse and mouse_now)

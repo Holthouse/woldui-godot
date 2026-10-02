@@ -191,7 +191,7 @@ func _touch_at(at: Vector2, pressed: bool) -> void:
 
 # a finger can't hover: long-press shows it, the next touch puts it away
 func _touch() -> void:
-	var ui := WoldUIRuntime.instance()
+	var rt := WoldUIRuntime.instance()
 	var b := _target()
 	var tip := _tip(b)
 	tip.delay = 0.05
@@ -200,7 +200,7 @@ func _touch() -> void:
 	await _touch_at(Vector2(5, 5), false)
 	b.mouse_entered.emit()
 	await create_timer(0.2).timeout
-	check(ui.is_touch() and not tip.is_showing(), "touch: the hover a tap fakes doesn't show it")
+	check(rt.is_touch() and not tip.is_showing(), "touch: the hover a tap fakes doesn't show it")
 	var at := b.get_global_rect().get_center()
 	await _touch_at(at, true)
 	await _touch_at(at, false)
@@ -213,5 +213,5 @@ func _touch() -> void:
 	await _touch_at(Vector2(5, 5), true)
 	await _touch_at(Vector2(5, 5), false)
 	check(not tip.is_showing(), "and the next touch anywhere puts it away")
-	ui.note_input(InputEventMouseButton.new())
+	rt.note_input(InputEventMouseButton.new())
 	b.queue_free()

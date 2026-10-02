@@ -188,6 +188,7 @@ static func _paint_grid(theme: Theme, style: String, look: String, tone: String,
 		var sb := WoldStyle.flat(states[state], radius, padding, p.border, p.border_width)
 		if p.shadow.a > 0.0:
 			sb.shadow_color = p.shadow
+			@warning_ignore("integer_division")
 			sb.shadow_size = maxi(t.shadow_size / 2, 1)
 			sb.shadow_offset = Vector2(0, maxf(t.shadow_offset.y / 2.0, 1.0))
 		theme.set_stylebox(state, style, sb)

@@ -254,6 +254,7 @@ func _draw_tab_face(i: int, rect: Rect2, color: Color) -> void:
 		var max_w := bar.get_tab_icon_max_width(i)
 		var h := icon.get_height()
 		if max_w > 0 and w > max_w:
+			@warning_ignore("integer_division")
 			h = h * max_w / w
 			w = max_w
 		_overlay.draw_texture_rect(icon, Rect2(x, rect.position.y + floorf((rect.size.y - h) / 2.0), w, h), false, color)

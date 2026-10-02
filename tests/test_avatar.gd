@@ -74,11 +74,11 @@ func _sizes_and_shapes() -> void:
 	a.avatar_size = WoldAvatar.Size.SM
 	await _frames()
 	check(a.size.x == t.icon_size_sm * 2 and (a.get_node("%Initials") as Label).get_theme_font_size("font_size") == t.font_size(-2), "SM is smaller, with smaller type")
-	var round := (a.get_node("%Mask").get_theme_stylebox("panel") as StyleBoxFlat).corner_radius_top_left
+	var circle := (a.get_node("%Mask").get_theme_stylebox("panel") as StyleBoxFlat).corner_radius_top_left
 	a.shape = WoldAvatar.Shape.SQUARE
 	await _frames()
 	var square := (a.get_node("%Mask").get_theme_stylebox("panel") as StyleBoxFlat).corner_radius_top_left
-	check(round == int(a.size.x / 2) and square < round, "round is a circle, square just rounded")
+	check(circle == int(a.size.x / 2) and square < circle, "round is a circle, square just rounded")
 	a.queue_free()
 
 

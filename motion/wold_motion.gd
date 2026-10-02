@@ -269,7 +269,10 @@ static func flash(node: CanvasItem, color: Color, seconds := -1.0) -> Tween:
 ## `format` takes one number: "%d", "%.1f", "%d gold".
 static func count_to(label: Label, from: float, to: float, format := "%d", seconds := -1.0) -> Tween:
 	var show := func(v: float) -> void:
-		label.text = format % (roundi(v) if format.contains("%d") else v)
+		if format.contains("%d"):
+			label.text = format % roundi(v)
+		else:
+			label.text = format % v
 	return tween_number(label, from, to, show, seconds)
 
 

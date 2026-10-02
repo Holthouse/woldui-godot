@@ -25,6 +25,7 @@ enum Flow { ACROSS, DOWN }
 		current = to
 		_apply(dir if changed else 0)
 ## Past the last page, back to the first.
+@warning_ignore("shadowed_global_identifier")
 @export var wrap := false:
 	set(v):
 		wrap = v

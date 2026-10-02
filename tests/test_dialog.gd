@@ -100,7 +100,7 @@ func _modal_focus() -> void:
 	await process_frame
 	await process_frame
 	var owner := get_root().gui_get_focus_owner()
-	check(owner != behind and d.is_ancestor_of(owner), "focus cannot leave an open dialog (it went back to %s)" % (owner.name if owner else "nothing"))
+	check(owner != behind and d.is_ancestor_of(owner), "focus cannot leave an open dialog (it went back to %s)" % (String(owner.name) if owner else "nothing"))
 	d.close("cancel")
 	await process_frame
 	check(behind.has_focus(), "closing gives focus back to where it was")

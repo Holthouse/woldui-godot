@@ -70,7 +70,7 @@ func _init() -> void:
 	var bus: String = ProjectSettings.get_setting(SETTING_BUS, "Master")
 	for i in VOICES:
 		var p := AudioStreamPlayer.new()
-		p.bus = bus if AudioServer.get_bus_index(bus) >= 0 else &"Master"
+		p.bus = bus if AudioServer.get_bus_index(bus) >= 0 else "Master"
 		_voices.append(p)
 		add_child(p)
 
@@ -158,10 +158,10 @@ func is_touch() -> bool:
 func play(slot: String, sounds: WoldSoundSet = null) -> void:
 	if not sound_enabled:
 		return
-	var set := sounds if sounds else tokens.sounds
-	var stream: AudioStream = set.stream(slot) if set else null
-	var volume := set.volume_db if set else -6.0
-	var jitter := set.pitch_jitter if set else 0.04
+	var bank := sounds if sounds else tokens.sounds
+	var stream: AudioStream = bank.stream(slot) if bank else null
+	var volume := bank.volume_db if bank else -6.0
+	var jitter := bank.pitch_jitter if bank else 0.04
 	if stream == null and tokens.use_builtin_sounds:
 		var builtin := WoldSounds.builtin()
 		stream = builtin.stream(slot)

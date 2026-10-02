@@ -123,12 +123,12 @@ func _props() -> void:
 func _icon_only_and_sizes() -> void:
 	var sizes := {}
 	for z in [WoldButton.Size.XS, WoldButton.Size.SM]:
-		var b := _button()
-		b.look = WoldButton.Look.SOLID
-		b.button_size = z
+		var sized := _button()
+		sized.look = WoldButton.Look.SOLID
+		sized.button_size = z
 		await process_frame
-		sizes[z] = b.get_combined_minimum_size()
-		b.queue_free()
+		sizes[z] = sized.get_combined_minimum_size()
+		sized.queue_free()
 	check(sizes[WoldButton.Size.XS].y < sizes[WoldButton.Size.SM].y and sizes[WoldButton.Size.XS].x < sizes[WoldButton.Size.SM].x, "XS is smaller than SM")
 	var b := _button()
 	b.text = ""

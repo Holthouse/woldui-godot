@@ -43,13 +43,13 @@ func _geometry() -> void:
 
 
 func _meter() -> void:
-	var root := Control.new()
-	root.theme = WoldThemeBuilder.build(tokens())
-	get_root().add_child(root)
+	var host := Control.new()
+	host.theme = WoldThemeBuilder.build(tokens())
+	get_root().add_child(host)
 	var meter: WoldMeter = load("res://addons/woldui/components/wold_meter/wold_meter.tscn").instantiate()
 	meter.size = Vector2(300, 20)
 	meter.value = 50
-	root.add_child(meter)
+	host.add_child(meter)
 	await process_frame
 	check(meter.get_combined_minimum_size().x > 0.0 and meter.size.x > 0.0, "the meter scene instantiates on its own with a size")
 	check(meter.get_theme_stylebox("background") is StyleBoxFlat, "without a fill the meter draws its style's own track")
@@ -71,22 +71,22 @@ func _meter() -> void:
 	meter.theme_type_variation = &"MeterThin"
 	await process_frame
 	var thin_track = meter._layers.track_style
-	check(thin_track == root.theme.get_stylebox("background", "MeterThin"), "the textured track follows the meter's style")
+	check(thin_track == host.theme.get_stylebox("background", "MeterThin"), "the textured track follows the meter's style")
 
 	meter.fill = null
 	await process_frame
 	check(meter.get_theme_stylebox("fill") is StyleBoxFlat, "removing the fill restores the style's flat fill")
-	root.queue_free()
+	host.queue_free()
 
 
 func _slider() -> void:
-	var root := Control.new()
-	root.theme = WoldThemeBuilder.build(tokens())
-	get_root().add_child(root)
+	var host := Control.new()
+	host.theme = WoldThemeBuilder.build(tokens())
+	get_root().add_child(host)
 	var slider: WoldSlider = load("res://addons/woldui/components/wold_slider/wold_slider.tscn").instantiate()
 	slider.size = Vector2(300, 24)
 	slider.value = 25
-	root.add_child(slider)
+	host.add_child(slider)
 	var f := WoldFill.new()
 	f.texture = _texture(16, 16)
 	slider.fill = f
@@ -100,17 +100,17 @@ func _slider() -> void:
 	slider.value = 75
 	await process_frame
 	check(slider.filled_rect().end.x > before, "moving the slider moves the end of the fill")
-	root.queue_free()
+	host.queue_free()
 
 
 func _vslider() -> void:
-	var root := Control.new()
-	root.theme = WoldThemeBuilder.build(tokens())
-	get_root().add_child(root)
+	var host := Control.new()
+	host.theme = WoldThemeBuilder.build(tokens())
+	get_root().add_child(host)
 	var s: WoldVSlider = load("res://addons/woldui/components/wold_vslider/wold_vslider.tscn").instantiate()
 	s.size = Vector2(24, 300)
 	s.value = 25
-	root.add_child(s)
+	host.add_child(s)
 	var f := WoldFill.new()
 	f.texture = _texture(16, 16)
 	s.fill = f
@@ -135,22 +135,22 @@ func _vslider() -> void:
 	var ui := WoldUIRuntime.instance()
 	ui.sound_volume_db = linear_to_db(0.5)
 	var fader: WoldVSlider = load("res://addons/woldui/gallery/examples/ui_fader.tscn").instantiate()
-	root.add_child(fader)
+	host.add_child(fader)
 	await process_frame
 	var hidden := fader.get_child_count(true) - fader.get_child_count()
 	check(hidden == 2 and is_equal_approx(fader.value, 50.0), "UiFader starts from the saved volume, with one set of hidden layers (%d)" % hidden)
 	fader.value = 25
 	check(is_equal_approx(ui.sound_volume_db, linear_to_db(0.25)), "and moving it writes the volume back")
 	ui.sound_volume_db = 0.0
-	root.queue_free()
+	host.queue_free()
 
 
 # a script on top of the component's (what an inherited scene with its own
 # script does) runs _init again on the same node
 func _subclassed() -> void:
-	var root := Control.new()
-	root.theme = WoldThemeBuilder.build(tokens())
-	get_root().add_child(root)
+	var host := Control.new()
+	host.theme = WoldThemeBuilder.build(tokens())
+	get_root().add_child(host)
 	var counts := []
 	for pair in [["WoldMeter", "res://addons/woldui/components/wold_meter/wold_meter.tscn"], ["WoldSlider", "res://addons/woldui/components/wold_slider/wold_slider.tscn"], ["WoldVSlider", "res://addons/woldui/components/wold_vslider/wold_vslider.tscn"]]:
 		var sub := GDScript.new()
@@ -158,12 +158,12 @@ func _subclassed() -> void:
 		sub.reload()
 		var n: Range = load(pair[1]).instantiate()
 		n.set_script(sub)
-		root.add_child(n)
+		host.add_child(n)
 		await process_frame
 		n.value = 30
 		counts.append(n.get_child_count(true) - n.get_child_count())
 	check(counts == [2, 2, 2], "meter, slider and vertical slider keep one set of hidden layers when subclassed (%s)" % [counts])
-	root.queue_free()
+	host.queue_free()
 
 
 func _meter_directions() -> void:

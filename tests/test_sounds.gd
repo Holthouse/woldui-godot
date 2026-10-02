@@ -4,10 +4,10 @@ extends "res://addons/woldui/tests/wold_test_base.gd"
 
 
 func _run() -> void:
-	var set := WoldSounds.builtin()
+	var bank := WoldSounds.builtin()
 	var s := {}
 	for slot in WoldSoundSet.SLOTS:
-		s[slot] = WoldSounds._floats(set.stream(slot))
+		s[slot] = WoldSounds._floats(bank.stream(slot))
 	_levels(s)
 	_edges(s)
 	_pitch(s)
@@ -38,6 +38,7 @@ func _hz(a: PackedFloat32Array) -> float:
 
 
 func _half(a: PackedFloat32Array, second: bool) -> PackedFloat32Array:
+	@warning_ignore("integer_division")
 	var mid := a.size() / 2
 	return a.slice(mid) if second else a.slice(0, mid)
 

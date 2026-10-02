@@ -14,7 +14,7 @@ func _run() -> void:
 	stage.theme = WoldThemeBuilder.build(tokens())
 	get_root().add_child(stage)
 	await _basics()
-	await _counts()
+	_counts()
 	_contrast()
 	await _corner()
 	await _bump()

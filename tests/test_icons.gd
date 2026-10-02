@@ -49,18 +49,18 @@ func _sizes_and_cache() -> void:
 
 func _icon_sets() -> void:
 	var own := ImageTexture.create_from_image(Image.create(8, 8, false, Image.FORMAT_RGBA8))
-	var set := WoldIconSet.new()
-	set.icons = {"sword": own, "food": own}
-	check(set.get_icon("sword") == own, "a game's own icon replaces the library icon of the same name")
-	check(set.get_icon("food") == own, "a game's own name works")
-	check(set.get_icon("coins", 20) == WoldIcons.texture("coins", 20), "any other name falls through to the library")
+	var icon_set := WoldIconSet.new()
+	icon_set.icons = {"sword": own, "food": own}
+	check(icon_set.get_icon("sword") == own, "a game's own icon replaces the library icon of the same name")
+	check(icon_set.get_icon("food") == own, "a game's own name works")
+	check(icon_set.get_icon("coins", 20) == WoldIcons.texture("coins", 20), "any other name falls through to the library")
 	var outer := WoldIconSet.new()
-	outer.fallback = set
+	outer.fallback = icon_set
 	check(outer.get_icon("food") == own, "a set falls back to another set")
 	check(outer.custom_names().has("food"), "custom_names includes the fallback's names")
-	set.use_library = false
-	check(not set.has_icon("coins"), "use_library off hides the library")
-	check(set.get_icon("coins") == null, "and an unknown name returns null (with an error), never a random icon")
+	icon_set.use_library = false
+	check(not icon_set.has_icon("coins"), "use_library off hides the library")
+	check(icon_set.get_icon("coins") == null, "and an unknown name returns null (with an error), never a random icon")
 
 
 func _tokens_icon() -> void:
@@ -98,10 +98,10 @@ func _ink_colour(img: Image) -> Color:
 
 # a game names its icons by meaning ("food") before it has art for them
 func _aliases() -> void:
-	var set := WoldIconSet.new()
-	set.aliases = {"food": "wheat", "gold": "coins"}
-	check(set.has_icon("food") and set.get_icon("food", 20) == WoldIcons.texture("wheat", 20), "an alias stands in for a library icon")
+	var icon_set := WoldIconSet.new()
+	icon_set.aliases = {"food": "wheat", "gold": "coins"}
+	check(icon_set.has_icon("food") and icon_set.get_icon("food", 20) == WoldIcons.texture("wheat", 20), "an alias stands in for a library icon")
 	var art := ImageTexture.create_from_image(Image.create(8, 8, false, Image.FORMAT_RGBA8))
-	set.icons = {"food": art}
-	check(set.get_icon("food") == art, "real art under the same name replaces the stand-in")
-	check(set.custom_names().has("gold"), "aliases count as the game's own names")
+	icon_set.icons = {"food": art}
+	check(icon_set.get_icon("food") == art, "real art under the same name replaces the stand-in")
+	check(icon_set.custom_names().has("gold"), "aliases count as the game's own names")

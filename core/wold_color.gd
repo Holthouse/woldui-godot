@@ -13,18 +13,18 @@ const DARKEST := 0.16
 
 
 ## {step: Color} from one seed. `overrides` wins per step.
-static func ramp(seed: Color, overrides: Dictionary = {}) -> Dictionary:
+static func ramp(base: Color, overrides: Dictionary = {}) -> Dictionary:
 	var out := {}
-	var h := seed.ok_hsl_h
-	var s := seed.ok_hsl_s
-	var seed_l := seed.ok_hsl_l
+	var h := base.ok_hsl_h
+	var s := base.ok_hsl_s
+	var seed_l := base.ok_hsl_l
 	var top := maxf(LIGHTEST, seed_l + 0.02)
 	var bottom := minf(DARKEST, seed_l - 0.05)
 	var mid := STEPS.find(500)
 	for i in STEPS.size():
 		var step := STEPS[i]
 		if step == 500:
-			out[step] = seed
+			out[step] = base
 			continue
 		var l: float
 		if i < mid:

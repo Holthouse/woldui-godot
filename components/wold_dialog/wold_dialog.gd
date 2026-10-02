@@ -216,14 +216,14 @@ func _on_focus_changed(node: Control) -> void:
 
 func _focus_first() -> void:
 	# always grab focus so Enter confirms, but hide the ring for mouse users
-	var hide := not WoldUIRuntime.instance().is_focus_navigating()
+	var quiet := not WoldUIRuntime.instance().is_focus_navigating()
 	for candidate in [%Confirm, %Cancel]:
 		if candidate.visible and candidate.focus_mode != Control.FOCUS_NONE:
-			candidate.grab_focus(hide)
+			candidate.grab_focus(quiet)
 			return
 	var any := _first_focusable(%Panel)
 	if any:
-		any.grab_focus(hide)
+		any.grab_focus(quiet)
 
 
 func _first_focusable(node: Node) -> Control:

@@ -28,7 +28,7 @@ func _notify_and_auto_dismiss() -> void:
 	await process_frame
 	var toaster := _toaster()
 	check(toaster.get_parent() is CanvasLayer and toaster.toasts() == [t], "notify() makes a toaster on its own layer and shows the toast")
-	check(WoldToast.notify(get_root(), "Again", 0, "", 0.3) and _toaster() == toaster, "a second notify() reuses the same toaster")
+	check(WoldToast.notify(get_root(), "Again", WoldToast.Tone.NEUTRAL, "", 0.3) and _toaster() == toaster, "a second notify() reuses the same toaster")
 	check(ui.last_sound == "open", "a toast arriving plays the open sound")
 	var slot := t.get_parent() as Control
 	check(slot.custom_minimum_size.y > 0.0, "the toast takes room in the stack")
@@ -38,7 +38,7 @@ func _notify_and_auto_dismiss() -> void:
 
 
 func _hover_and_sticky() -> void:
-	var t := WoldToast.notify(get_root(), "Hover me", 0, "", 0.3)
+	var t := WoldToast.notify(get_root(), "Hover me", WoldToast.Tone.NEUTRAL, "", 0.3)
 	await process_frame
 	t.mouse_entered.emit()
 	await create_timer(0.6).timeout
@@ -47,7 +47,7 @@ func _hover_and_sticky() -> void:
 	await create_timer(0.9).timeout
 	check(not is_instance_valid(t), "leaving the toast lets the timer run out")
 
-	var sticky := WoldToast.notify(get_root(), "Sticky", 0, "", 0.0)
+	var sticky := WoldToast.notify(get_root(), "Sticky", WoldToast.Tone.NEUTRAL, "", 0.0)
 	await create_timer(0.5).timeout
 	check(is_instance_valid(sticky) and not sticky.is_leaving, "duration 0 stays until closed")
 	check(not sticky.get_node("%Timer").visible, "and shows no timer bar")
@@ -65,7 +65,7 @@ func _action_and_close() -> void:
 	check(t.get_node("%Action").visible and (t.get_node("%Action") as Button).text == "View", "action_text shows an action button")
 	(t.get_node("%Action") as Button).pressed.emit()
 	check(got == ["action", "dismissed"], "the action emits action_pressed and dismisses")
-	var c := WoldToast.notify(get_root(), "Close me", 0, "", 0.0)
+	var c := WoldToast.notify(get_root(), "Close me", WoldToast.Tone.NEUTRAL, "", 0.0)
 	await process_frame
 	(c.get_node("%Close") as Button).pressed.emit()
 	check(c.is_leaving, "the close button dismisses")
@@ -79,7 +79,7 @@ func _stacking() -> void:
 	toaster.max_visible = 3
 	var made := []
 	for i in 5:
-		made.append(WoldToast.notify(get_root(), "Toast %d" % i, 0, "", 0.0))
+		made.append(WoldToast.notify(get_root(), "Toast %d" % i, WoldToast.Tone.NEUTRAL, "", 0.0))
 	await process_frame
 	var live := toaster.toasts()
 	check(live.size() == 3, "max_visible caps the stack (%d showing)" % live.size())

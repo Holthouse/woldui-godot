@@ -109,7 +109,9 @@ func _wold_refresh() -> void:
 func _wold_format(v: float) -> String:
 	if compact:
 		return _compact(v)
-	return format % (roundi(v) if format.contains("%d") else v)
+	if format.contains("%d"):
+		return format % roundi(v)
+	return format % v
 
 
 ## What the Value label shows. Pass v to format something other than value
@@ -171,9 +173,9 @@ func _on_value(old: float) -> void:
 	var value_node := _node("Value") as Label
 	var live := animate and is_inside_tree() and not Engine.is_editor_hint()
 	if live and not is_equal_approx(old, value):
-		var show := func(v: float) -> void:
+		var set_text := func(v: float) -> void:
 			value_node.text = display_text(v)
-		WoldMotion.tween_number(value_node, old, value, show)
+		WoldMotion.tween_number(value_node, old, value, set_text)
 		var up_style := &"StatDeltaUp" if value > old else &"StatDeltaDown"
 		WoldMotion.flash(value_node, get_theme_color("font_color", up_style))
 	else:

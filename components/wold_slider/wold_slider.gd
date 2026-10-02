@@ -65,10 +65,10 @@ func filled_rect() -> Rect2:
 ## Grabber centre in local x. The fill ends here.
 func grabber_center_x() -> float:
 	var grabber := get_theme_icon("grabber")
-	var gw := grabber.get_width() if grabber else 0.0
+	var gw: float = float(grabber.get_width()) if grabber else 0.0
 	var span := max_value - min_value
-	var ratio := clampf((value - min_value) / span, 0.0, 1.0) if span > 0.0 else 0.0
-	return ratio * (size.x - gw) + gw / 2.0
+	var filled := clampf((value - min_value) / span, 0.0, 1.0) if span > 0.0 else 0.0
+	return filled * (size.x - gw) + gw / 2.0
 
 
 func _refresh() -> void:

@@ -16,7 +16,7 @@ func _run() -> void:
 	await _standalone()
 	_formatting()
 	await _layout_and_icon()
-	await _delta()
+	_delta()
 	await _counting()
 	await _saved_scene()
 	await _extension()

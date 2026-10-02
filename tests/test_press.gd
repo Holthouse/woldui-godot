@@ -2,6 +2,7 @@ extends "res://addons/woldui/tests/wold_test_base.gd"
 ## Press effects: which one a button gets, the clipped layer, cleanup.
 
 
+@warning_ignore("missing_tool")
 class Probe extends WoldPressEffect:
 	var got: Array[Vector2] = []
 

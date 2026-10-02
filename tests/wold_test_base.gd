@@ -16,6 +16,7 @@ func _initialize() -> void:
 		quit(2))
 	# one frame so the tree and theme cache settle
 	await process_frame
+	@warning_ignore("redundant_await")
 	await _run()
 
 

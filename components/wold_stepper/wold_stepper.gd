@@ -48,6 +48,7 @@ const Content := preload("../shared/wold_button_content.gd")
 		_refresh()
 @export_group("")
 ## Past the last step, back to the first (and the other way).
+@warning_ignore("shadowed_global_identifier")
 @export var wrap := false:
 	set(v):
 		wrap = v
@@ -148,7 +149,9 @@ func _clamp(v: float) -> float:
 
 
 func _format(v: float) -> String:
-	return format % (roundi(v) if format.contains("%d") else v)
+	if format.contains("%d"):
+		return format % roundi(v)
+	return format % v
 
 
 func _refresh() -> void:

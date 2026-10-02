@@ -148,10 +148,10 @@ func _mark_invalid(c: Control) -> void:
 	if Engine.is_editor_hint() or not (c is LineEdit or c is TextEdit):
 		return
 	if not c.has_meta(_BASE):
-		var base := c.theme_type_variation
-		if base == &"":
-			base = &"TextEdit" if c is TextEdit else &"LineEdit"
-		c.set_meta(_BASE, base)
+		var own := c.theme_type_variation
+		if own == &"":
+			own = &"TextEdit" if c is TextEdit else &"LineEdit"
+		c.set_meta(_BASE, own)
 	var base: StringName = c.get_meta(_BASE)
 	var bad := StringName(base + "Invalid")
 	if error != "" and c.has_theme_stylebox(&"normal", bad):

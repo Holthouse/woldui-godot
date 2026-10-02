@@ -214,6 +214,7 @@ static func _wav(samples: PackedFloat32Array) -> AudioStreamWAV:
 
 static func _floats(wav: AudioStreamWAV) -> PackedFloat32Array:
 	var out := PackedFloat32Array()
+	@warning_ignore("integer_division")
 	out.resize(wav.data.size() / 2)
 	for i in out.size():
 		out[i] = wav.data.decode_s16(i * 2) / 32767.0

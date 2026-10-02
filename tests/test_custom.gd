@@ -43,7 +43,7 @@ func _boxes() -> void:
 	var theme_hover := b.get_theme_stylebox("hover") as StyleBoxFlat
 	var theme_focus := b.get_theme_stylebox("focus") as StyleBoxFlat
 	var gold := Color(0.85, 0.65, 0.2)
-	var c := _custom(b, func(c): c.fill = gold; c.corner_radius = 12; c.padding = Vector2i(30, 14))
+	var c := _custom(b, func(cu): cu.fill = gold; cu.corner_radius = 12; cu.padding = Vector2i(30, 14))
 	var normal := b.get_theme_stylebox("normal") as StyleBoxFlat
 	var hover := b.get_theme_stylebox("hover") as StyleBoxFlat
 	var pressed := b.get_theme_stylebox("pressed") as StyleBoxFlat
@@ -64,7 +64,7 @@ func _boxes() -> void:
 	var panel := PanelContainer.new()
 	stage.add_child(panel)
 	await process_frame
-	_custom(panel, func(c): c.fill = Color.DARK_SLATE_BLUE; c.border = Color.GOLD)
+	_custom(panel, func(cu): cu.fill = Color.DARK_SLATE_BLUE; cu.border = Color.GOLD)
 	var sb := panel.get_theme_stylebox("panel") as StyleBoxFlat
 	check(_near(sb.bg_color, Color.DARK_SLATE_BLUE) and _near(sb.border_color, Color.GOLD) and sb.border_width_top >= 1, "any Control: a panel gets its fill and a visible border")
 	var bare := Button.new()
@@ -72,7 +72,7 @@ func _boxes() -> void:
 	stage.add_child(bare)
 	await process_frame
 	check((bare.get_theme_stylebox("normal") as StyleBoxFlat).border_width_top == 0, "(fixture) primary buttons have no border")
-	_custom(bare, func(c): c.border = Color.GOLD)
+	_custom(bare, func(cu): cu.border = Color.GOLD)
 	check((bare.get_theme_stylebox("normal") as StyleBoxFlat).border_width_top >= 1, "a border colour on a borderless button makes the border show")
 	bare.queue_free()
 	b.queue_free()

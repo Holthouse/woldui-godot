@@ -146,11 +146,11 @@ func _header(path: String) -> void:
 func _wold_buttons() -> void:
 	var s := _section("WoldButton", "components/wold_button. Icons at the start and/or end by name; shape, size and sound are props. ConfirmButton extends it with a busy prop.")
 	var scene := load("res://addons/woldui/components/wold_button/wold_button.tscn")
-	var make := func(label: String, shape: int, size: int, start := "", end := "") -> WoldButton:
+	var make := func(label: String, shape: int, z: int, start := "", end := "") -> WoldButton:
 		var b: WoldButton = scene.instantiate()
 		b.text = label
-		b.shape = shape
-		b.button_size = size
+		b.shape = shape as WoldButton.Shape
+		b.button_size = z as WoldButton.Size
 		b.icon_start = start
 		b.icon_end = end
 		b.disabled = show_disabled
@@ -197,7 +197,7 @@ func _button_grid() -> void:
 		for i in tones.size():
 			var b: WoldButton = scene.instantiate()
 			b.look = looks[look_name]
-			b.tone = i
+			b.tone = i as WoldButton.Tone
 			b.text = tones[i]
 			b.disabled = show_disabled
 			b.tooltip_text = String(b.style_name())
@@ -315,18 +315,18 @@ func _wold_badges() -> void:
 	var scene := load("res://addons/woldui/components/wold_badge/wold_badge.tscn")
 	var tones := ["Neutral", "Accent", "Success", "Warning", "Danger"]
 	for fill in [WoldBadge.Fill.SOFT, WoldBadge.Fill.SOLID, WoldBadge.Fill.OUTLINE, WoldBadge.Fill.GHOST]:
-		var row := _row(&"RowSm")
+		var fill_row := _row(&"RowSm")
 		var tag := _label(WoldBadge.Fill.keys()[fill].capitalize(), &"Caption")
 		tag.custom_minimum_size.x = 120
-		row.add_child(tag)
+		fill_row.add_child(tag)
 		for i in tones.size():
 			var b: WoldBadge = scene.instantiate()
 			b.text = tones[i]
-			b.tone = i
+			b.tone = i as WoldBadge.Tone
 			b.fill = fill
 			b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			row.add_child(b)
-		s.add_child(row)
+			fill_row.add_child(b)
+		s.add_child(fill_row)
 
 	var row := _row(&"RowXl")
 	var labelled := [["Allied", "shield", WoldBadge.Tone.SUCCESS], ["At war", "swords", WoldBadge.Tone.DANGER], ["New", "sparkles", WoldBadge.Tone.ACCENT]]
@@ -632,12 +632,12 @@ func _wold_segmented() -> void:
 func _wold_toggles() -> void:
 	var s := _section("WoldToggle", "components/wold_toggle. A WoldButton that stays on: quiet when off, accent tint when on. outline adds an edge; shape ICON makes it square for icon-only toggles.")
 	var scene := load("res://addons/woldui/components/wold_toggle/wold_toggle.tscn")
-	var make := func(label: String, icon: String, on: bool, outline := false, square := false, size := WoldButton.Size.MD) -> WoldToggle:
+	var make := func(label: String, icon: String, on: bool, outline := false, square := false, z := WoldButton.Size.MD) -> WoldToggle:
 		var b: WoldToggle = scene.instantiate()
 		b.text = label
 		b.icon_start = icon
 		b.outline = outline
-		b.button_size = size
+		b.button_size = z
 		if square:
 			b.shape = WoldButton.Shape.ICON
 			b.tooltip_text = icon
@@ -981,9 +981,9 @@ func _wold_carousels() -> void:
 	var dots: WoldPageDots = load("res://addons/woldui/gallery/examples/step_dots.tscn").instantiate()
 	col.add_child(dots)
 	var note := _label("", &"Muted")
-	var show := func(i: int): note.text = "Step %d of %d" % [i + 1, dots.count]
-	dots.page_selected.connect(show)
-	show.call(dots.current)
+	var show_step := func(i: int): note.text = "Step %d of %d" % [i + 1, dots.count]
+	dots.page_selected.connect(show_step)
+	show_step.call(dots.current)
 	col.add_child(note)
 	row.add_child(col)
 	s.add_child(row)
@@ -1160,7 +1160,7 @@ func _wold_sheets() -> void:
 		var edge: int = e[1]
 		b.pressed.connect(func(): _open_layered(func():
 			var sheet: WoldSheet = load("res://addons/woldui/gallery/examples/city_sheet.tscn").instantiate()
-			sheet.edge = edge
+			sheet.edge = edge as WoldSheet.Edge
 			sheet.extent = 300 if edge == WoldSheet.Edge.BOTTOM else 380
 			return sheet))
 		row.add_child(b)
@@ -1538,13 +1538,13 @@ func _buttons() -> void:
 		var tag := _label(shape, &"Caption")
 		tag.custom_minimum_size.x = 120
 		row.add_child(tag)
-		for size in ["Sm", "", "Lg"]:
+		for step in ["Sm", "", "Lg"]:
 			var b := Button.new()
-			b.theme_type_variation = StringName("Button" + shape + size)
-			b.text = "" if shape == "Icon" else (shape + (" " + size if size != "" else " Md"))
-			b.icon = tokens.icon(shape_icons[shape], size)
+			b.theme_type_variation = StringName("Button" + shape + step)
+			b.text = "" if shape == "Icon" else (shape + (" " + step if step != "" else " Md"))
+			b.icon = tokens.icon(shape_icons[shape], step)
 			b.disabled = show_disabled
-			b.tooltip_text = "Button" + shape + size
+			b.tooltip_text = "Button" + shape + step
 			row.add_child(b)
 		var toggle := Button.new()
 		toggle.theme_type_variation = StringName("Button" + shape)
@@ -1637,9 +1637,9 @@ func _fills() -> void:
 	var gradient := _gradient()
 	for mode in [WoldFill.Mode.TILE, WoldFill.Mode.REVEAL, WoldFill.Mode.STRETCH]:
 		var row := _row(&"RowLg")
-		var tag := _label(WoldFill.Mode.keys()[mode], &"Caption")
-		tag.custom_minimum_size.x = 120
-		row.add_child(tag)
+		var mode_tag := _label(WoldFill.Mode.keys()[mode], &"Caption")
+		mode_tag.custom_minimum_size.x = 120
+		row.add_child(mode_tag)
 		for v in [30, 80]:
 			var f := WoldFill.new()
 			f.mode = mode
@@ -1752,10 +1752,10 @@ func _panels() -> void:
 func _layout() -> void:
 	var s := _section("Spacing", "Stack / Row / Inset / Grid / Flow + Xs…Xxl, one per space token.")
 	var row := _row(&"RowXl")
-	for size in ["Xs", "Sm", "Md", "Lg", "Xl", "Xxl"]:
+	for step in ["Xs", "Sm", "Md", "Lg", "Xl", "Xxl"]:
 		var col := _stack(&"StackXs")
-		col.add_child(_label("Row" + size, &"Caption"))
-		var demo := _row(StringName("Row" + size))
+		col.add_child(_label("Row" + step, &"Caption"))
+		var demo := _row(StringName("Row" + step))
 		for i in 3:
 			var chip := ColorRect.new()
 			chip.color = tokens.role("accent")

@@ -170,12 +170,12 @@ func _apply(changed: bool) -> void:
 		(bar.get_child(current) as Button).set_pressed_no_signal(true)
 	var page_list := pages()
 	for i in page_list.size():
-		var show := i == current
-		if show and not page_list[i].visible and changed and animate_pages and not Engine.is_editor_hint():
+		var is_current := i == current
+		if is_current and not page_list[i].visible and changed and animate_pages and not Engine.is_editor_hint():
 			page_list[i].visible = true
 			WoldMotion.appear(page_list[i], WoldMotion.preset("appear_fade"))
 		else:
-			page_list[i].visible = show
+			page_list[i].visible = is_current
 	# deferred so the bar has laid out the new buttons first
 	_place_indicator.call_deferred(changed)
 	if changed:

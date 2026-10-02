@@ -15,7 +15,7 @@ const STYLES: PackedStringArray = [
 static func contribute(theme: Theme, t: WoldTokens) -> void:
 	var px := t.icon_size_md
 	var on := t.role("accent")
-	var mark := t.role("on_accent")
+	var tick := t.role("on_accent")
 	var off_fill := t.role("field")
 	var edge := t.role("field_border")
 	var dim := t.role("text_disabled")
@@ -23,14 +23,14 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 	var r := t.radius_sm
 
 	theme.set_icon("unchecked", "CheckBox", box(px, r, off_fill, edge, t.border_width))
-	theme.set_icon("checked", "CheckBox", box(px, r, on, on, t.border_width, check_path(px), mark))
+	theme.set_icon("checked", "CheckBox", box(px, r, on, on, t.border_width, check_path(px), tick))
 	theme.set_icon("unchecked_disabled", "CheckBox", box(px, r, dim_fill, dim, t.border_width))
 	theme.set_icon("checked_disabled", "CheckBox", box(px, r, dim_fill, dim, t.border_width, check_path(px), dim))
 	# not an engine item, WoldCheckbox swaps it in for the mixed state
-	theme.set_icon("indeterminate", "CheckBox", box(px, r, on, on, t.border_width, dash_path(px), mark))
+	theme.set_icon("indeterminate", "CheckBox", box(px, r, on, on, t.border_width, dash_path(px), tick))
 	theme.set_icon("indeterminate_disabled", "CheckBox", box(px, r, dim_fill, dim, t.border_width, dash_path(px), dim))
-	theme.set_icon("radio_unchecked", "CheckBox", dot(px, off_fill, edge, t.border_width, 0.0, mark))
-	theme.set_icon("radio_checked", "CheckBox", dot(px, on, on, t.border_width, 0.36, mark))
+	theme.set_icon("radio_unchecked", "CheckBox", dot(px, off_fill, edge, t.border_width, 0.0, tick))
+	theme.set_icon("radio_checked", "CheckBox", dot(px, on, on, t.border_width, 0.36, tick))
 	theme.set_icon("radio_unchecked_disabled", "CheckBox", dot(px, dim_fill, dim, t.border_width, 0.0, dim))
 	theme.set_icon("radio_checked_disabled", "CheckBox", dot(px, dim_fill, dim, t.border_width, 0.36, dim))
 

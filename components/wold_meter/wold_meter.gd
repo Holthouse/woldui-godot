@@ -85,7 +85,7 @@ func _refresh() -> void:
 
 func _place() -> void:
 	var span := max_value - min_value
-	var ratio := clampf((value - min_value) / span, 0.0, 1.0) if span > 0.0 else 0.0
+	var filled := clampf((value - min_value) / span, 0.0, 1.0) if span > 0.0 else 0.0
 	_layers.track_rect = Rect2(Vector2.ZERO, size)
 	var edge := Rect2(Vector2.ZERO, size)
 	if _layers.track_style is StyleBoxFlat:
@@ -96,11 +96,11 @@ func _place() -> void:
 	_layers.reverse = fill_mode == FILL_END_TO_BEGIN or fill_mode == FILL_TOP_TO_BOTTOM
 	match fill_mode:
 		FILL_END_TO_BEGIN:
-			_layers.fill_end = edge.end.x - edge.size.x * ratio
+			_layers.fill_end = edge.end.x - edge.size.x * filled
 		FILL_BOTTOM_TO_TOP:
-			_layers.fill_end = edge.end.y - edge.size.y * ratio
+			_layers.fill_end = edge.end.y - edge.size.y * filled
 		FILL_TOP_TO_BOTTOM:
-			_layers.fill_end = edge.position.y + edge.size.y * ratio
+			_layers.fill_end = edge.position.y + edge.size.y * filled
 		_:
-			_layers.fill_end = edge.position.x + edge.size.x * ratio
+			_layers.fill_end = edge.position.x + edge.size.x * filled
 	_layers.refresh()

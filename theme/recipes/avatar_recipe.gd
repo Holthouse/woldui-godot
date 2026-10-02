@@ -18,6 +18,7 @@ static func contribute(theme: Theme, t: WoldTokens) -> void:
 		for shape in ["Round", "Square"]:
 			var style: String = "Avatar" + shape + size
 			theme.set_type_variation(style, "Panel")
+			@warning_ignore("integer_division")
 			var r: int = px / 2 if shape == "Round" else (t.radius_md if size != "Lg" else t.radius_lg)
 			var sb := WoldStyle.flat(t.role("control_pressed"), r)
 			sb.corner_detail = 16

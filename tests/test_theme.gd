@@ -58,10 +58,10 @@ func _every_script_compiles(dir: String) -> void:
 
 
 func _ramps() -> void:
-	var seed := Color("c9a15b")
-	var r := WoldColor.ramp(seed)
+	var seed_color := Color("c9a15b")
+	var r := WoldColor.ramp(seed_color)
 	check(r.size() == WoldColor.STEPS.size(), "a ramp has every step")
-	check(r[500] == seed, "step 500 IS the seed, so the picked colour is the colour you get")
+	check(r[500] == seed_color, "step 500 IS the seed, so the picked colour is the colour you get")
 	var last := 2.0
 	var monotonic := true
 	for step in WoldColor.STEPS:
@@ -75,7 +75,7 @@ func _ramps() -> void:
 		pale_ok = pale_ok and pale[step].ok_hsl_l < last
 		last = pale[step].ok_hsl_l
 	check(pale_ok, "a very pale seed still gives a monotonic ramp")
-	var custom := WoldColor.ramp(seed, {700: Color.RED})
+	var custom := WoldColor.ramp(seed_color, {700: Color.RED})
 	check(custom[700] == Color.RED, "a ramp override replaces its step")
 	check(absf(WoldColor.contrast(Color.BLACK, Color.WHITE) - 21.0) < 0.01, "black on white is 21:1")
 
@@ -162,15 +162,15 @@ func _update_in_place() -> void:
 
 
 func _resolves_on_a_real_control() -> void:
-	var root := Control.new()
-	root.theme = WoldThemeBuilder.build(tokens())
-	get_root().add_child(root)
+	var host := Control.new()
+	host.theme = WoldThemeBuilder.build(tokens())
+	get_root().add_child(host)
 	var b := Button.new()
 	b.theme_type_variation = &"ButtonPrimarySm"
-	root.add_child(b)
+	host.add_child(b)
 	var l := Label.new()
 	l.theme_type_variation = &"Heading"
-	root.add_child(l)
+	host.add_child(l)
 	await process_frame
 	var t := tokens()
 	check((b.get_theme_stylebox("normal") as StyleBoxFlat).bg_color == t.role("accent"), "a real Button resolves ButtonPrimarySm's fill")
@@ -178,7 +178,7 @@ func _resolves_on_a_real_control() -> void:
 	check(b.get_theme_stylebox("focus") is StyleBoxFlat and not (b.get_theme_stylebox("focus") as StyleBoxFlat).draw_center, "buttons get the focus ring")
 	check(l.get_theme_font_size("font_size") == t.font_size(2), "Heading is two type steps up")
 	check(l.get_theme_color("font_color") == t.role("text"), "a text style inherits the text colour from Label")
-	root.queue_free()
+	host.queue_free()
 
 
 func _layout_spacing() -> void:
