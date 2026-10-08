@@ -200,7 +200,13 @@ Each tone has its own icon, and a thin bar shows the time left. Hovering pauses 
 
 A richer tooltip. Drop `wold_tooltip.tscn` under any Control and fill in `title`, `icon`, a BBCode `body`, `rows` (label/value pairs like Attack 6, Range 2) and a `hint` line in the Inspector.
 
-The main reason it exists: engine tooltips are mouse-only, and this one also shows when a keyboard or pad player focuses the control (`show_on_focus`). It waits `tooltip_delay` from the tokens so brushing past doesn't trigger it, sits next to the control rather than under the cursor (`placement`), flips when there's no room, and never eats mouse input. Only one shows at a time. Override `_wold_fill(panel)` to add your own nodes.
+The main reason it exists: engine tooltips are mouse-only, and this one also shows when a keyboard or pad player focuses the control (`show_on_focus`). It waits `tooltip_delay` from the tokens so brushing past doesn't trigger it, sits next to the control rather than under the cursor (`placement`), flips when there's no room, and never eats mouse input. Only one shows at a time. Override `_wold_fill(panel)` to add your own nodes. Its `max_width` defaults to the `tooltip_max_width` token.
+
+### Plain tooltips (WoldTooltipLayer)
+
+Ordinary `tooltip_text` tooltips get the same treatment without adding anything. With the `tooltip_layer` token on (the default), the runtime puts a `WoldTooltipLayer` on the root that draws them itself: the text wraps at `tooltip_max_width`, the tip sits centred under the control after `tooltip_delay` (above it when there's no room), and for anything big, like a paragraph or a list, it goes under the cursor instead. It reads `get_tooltip()`, so a script's own `_get_tooltip()` works too, and a press hides it until the pointer moves to another control. `show_floating(text)` shows a tip at the cursor for things that aren't Controls, and `show_for(control)` shows one straight away (for focus, say). Reach it with `WoldTooltipLayer.current()`.
+
+Why not the engine's: its tooltip is a popup window, and a click that lands while one is showing is swallowed, so tooltipped buttons need two clicks. Switch it off by setting `gui/timers/tooltip_delay_sec` to something huge (100000) in Project Settings. It has to be the project setting: the engine reads it when the tooltip is made, so changing it from code does nothing.
 
 ### WoldListRow
 

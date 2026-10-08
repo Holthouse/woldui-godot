@@ -81,6 +81,7 @@ func _ready() -> void:
 	get_tree().node_added.connect(_on_node_added)
 	# the main scene isn't in yet while autoloads get ready
 	start_feedback.call_deferred()
+	start_tooltips()
 
 
 ## Puts a WoldFeedback on the root when the tokens ask for it (auto_feedback),
@@ -103,6 +104,14 @@ func start_feedback(force := false) -> void:
 	feedback.animate_popups = tokens.animate_popups
 	feedback.popup_max_height = tokens.popup_max_height
 	tree.root.add_child(feedback)
+
+
+## Puts a WoldTooltipLayer on the root when tokens.tooltip_layer is on. Not
+## headless unless `force`.
+func start_tooltips(force := false) -> void:
+	if tokens == null or not tokens.tooltip_layer or not is_inside_tree():
+		return
+	WoldTooltipLayer.install(get_tree(), force)
 
 
 # customised controls re-apply once they're in, so they follow the tokens the

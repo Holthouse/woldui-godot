@@ -78,8 +78,10 @@ enum IconTint { INHERIT, ORIGINAL }
 @export var state_ease: Tween.EaseType = Tween.EASE_OUT
 @export_range(0.8, 1.0, 0.005) var press_scale := 0.97
 @export_range(1.0, 1.2, 0.005) var hover_scale := 1.0
-## Hover time before a WoldTooltip shows.
+## Hover time before a tooltip shows.
 @export_range(0.0, 2.0, 0.05, "suffix:s") var tooltip_delay := 0.45
+## Tooltip text wraps past this width.
+@export_range(120, 800, 10, "suffix:px") var tooltip_max_width := 360
 ## Game-wide replacements for bundled presets ("appear", "screen_enter"...).
 ## Unlisted names use motion/presets/<name>.tres.
 @export var motion_presets: Dictionary[String, WoldMotionPreset] = {}
@@ -98,6 +100,10 @@ enum IconTint { INHERIT, ORIGINAL }
 @export var fade_states := true
 ## Menus, dropdown lists and tooltips fade in.
 @export var animate_popups := true
+## Plain tooltip_text tooltips are drawn by a WoldTooltipLayer on the root
+## instead of the engine's tooltip window, which eats clicks. Also set
+## gui/timers/tooltip_delay_sec very high so the engine's never shows.
+@export var tooltip_layer := true
 ## Dropdown lists and menus taller than this many pixels scroll instead of
 ## running off the screen. 0 = no limit.
 @export_range(0, 4000, 10) var popup_max_height := 0

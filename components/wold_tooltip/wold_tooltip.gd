@@ -27,7 +27,8 @@ const LAYER := 110
 @export var hint := ""
 ## AUTO tries above, falls back to below. TOP/BOTTOM also flip if cramped.
 @export var placement: Placement = Placement.AUTO
-@export_range(120, 800) var max_width := 320
+## -1 = tokens.tooltip_max_width.
+@export_range(-1, 800) var max_width := -1
 @export var show_on_focus := true
 ## Hover delay in seconds. -1 = use tokens.tooltip_delay.
 @export_range(-1.0, 3.0, 0.05) var delay := -1.0
@@ -187,7 +188,8 @@ func _fill() -> void:
 	var body_node := panel.get_node("%Body") as RichTextLabel
 	body_node.text = body
 	body_node.visible = body != ""
-	body_node.custom_minimum_size.x = max_width - t.space_md * 2
+	var width := max_width if max_width > 0 else t.tooltip_max_width
+	body_node.custom_minimum_size.x = width - t.space_md * 2
 	var grid := panel.get_node("%Rows") as GridContainer
 	for key in rows:
 		var k := Label.new()
