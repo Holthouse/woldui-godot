@@ -12,15 +12,15 @@ extends CanvasLayer
 ## The runtime puts one on the root when tokens.tooltip_layer is on. It reads
 ## Control.get_tooltip() of the hovered control or its nearest parent that has
 ## one, so tooltip_text and a script's own _get_tooltip() both work. Text wraps
-## at tokens.tooltip_max_width. The tip sits centred under the control, or
-## above it if there's no room; for something big (a paragraph, a list) it
-## goes under the cursor instead, since the middle of a wide block is
-## nowhere near what you pointed at.
+## at tokens.tooltip_max_width. The tip sits centred under the control the
+## text belongs to, or above it if there's no room. Over text and lists
+## (RichTextLabel, ItemList, Tree, TextEdit) or anything very tall it goes
+## under the cursor instead: there the tip is about the bit you pointed at.
 
 const NAME := "WoldTooltipLayer"
 const LAYER := 110
-# a control bigger than this is anchored at the cursor
-const BIG := Vector2(560.0, 120.0)
+# a control taller than this is anchored at the cursor
+const TALL := 120.0
 # room left for the pointer when anchored at the cursor
 const CURSOR_HEIGHT := 22.0
 
@@ -61,14 +61,26 @@ static func current() -> WoldTooltipLayer:
 ## The text the engine would show for this control: its own tooltip, else
 ## the nearest parent's.
 static func tooltip_for(control: Control) -> String:
+	var owner := owner_of(control)
+	return owner.get_tooltip(owner.get_local_mouse_position()) if owner else ""
+
+
+## The control a tooltip comes from: this one if it has one, else the nearest
+## parent that does. That's what the tip is placed under.
+static func owner_of(control: Control) -> Control:
 	var node: Node = control
 	while node is Control:
 		var c := node as Control
-		var text := c.get_tooltip(c.get_local_mouse_position())
-		if text != "":
-			return text
+		if c.get_tooltip(c.get_local_mouse_position()) != "":
+			return c
 		node = node.get_parent()
-	return ""
+	return null
+
+
+## Whether a tip for this control goes under the cursor rather than under the
+## control: text and lists, where it's about one part, and very tall things.
+static func follows_cursor(control: Control) -> bool:
+	return control is RichTextLabel or control is ItemList or control is Tree 			or control is TextEdit or control.size.y > TALL
 
 
 func _ready() -> void:
@@ -105,11 +117,11 @@ func show_floating(text: String) -> void:
 ## Shows a control's tooltip now, skipping the delay. Handy for keyboard and
 ## pad focus.
 func show_for(control: Control) -> void:
-	var text := tooltip_for(control)
-	if text == "":
+	var owner := owner_of(control)
+	if owner == null:
 		hide_tip()
 		return
-	_present(text, control)
+	_present(tooltip_for(owner), owner)
 
 
 func is_showing() -> bool:
@@ -143,14 +155,14 @@ func _process(delta: float) -> void:
 			_suppressed = null
 	if _hovered == null or _hovered == _suppressed or not is_instance_valid(_hovered):
 		return
-	var text := tooltip_for(_hovered)
-	if text == "":
+	var owner := owner_of(_hovered)
+	if owner == null:
 		hide_tip()
 		return
 	_waited += delta
 	if _waited < WoldUIRuntime.instance().tokens.tooltip_delay:
 		return
-	_present(text, _hovered)
+	_present(tooltip_for(owner), owner)
 
 
 func _present(text: String, anchor: Control) -> void:
@@ -200,8 +212,7 @@ func _anchor_rect() -> Rect2:
 	var at_cursor := Rect2(mouse.x, mouse.y, 0.0, CURSOR_HEIGHT)
 	if _anchor == null or not is_instance_valid(_anchor) or not _anchor.is_inside_tree():
 		return at_cursor
-	var r := _anchor.get_global_rect()
-	if r.size.x > BIG.x or r.size.y > BIG.y:
+	if follows_cursor(_anchor):
 		return at_cursor
-	return r
+	return _anchor.get_global_rect()
 

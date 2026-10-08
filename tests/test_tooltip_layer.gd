@@ -26,7 +26,7 @@ func _run() -> void:
 	await _placement()
 	await _big()
 	await _floating_and_press()
-	finish(15)
+	finish(18)
 
 
 func _target(pos: Vector2, tip: String) -> Button:
@@ -73,6 +73,32 @@ func _placement() -> void:
 	check(absf(p.get_center().x - r.get_center().x) < 1.0, "centred on the control (%s vs %s)" % [p.get_center().x, r.get_center().x])
 	check(p.position.y >= r.end.y, "and under it")
 	layer.hide_tip()
+	# a column-wide button (a menu entry) is still a button: under its middle,
+	# not under the pointer
+	b.size = Vector2(700, 50)
+	var off_centre := InputEventMouseMotion.new()
+	off_centre.position = Vector2(950, 320)
+	off_centre.global_position = off_centre.position
+	get_root().push_input(off_centre)
+	layer.show_for(b)
+	await process_frame
+	check(absf(layer.panel().get_global_rect().get_center().x - b.get_global_rect().get_center().x) < 1.0,
+			"a wide button's tip centres on the button, not the pointer (%s vs %s)" % [layer.panel().get_global_rect().get_center().x, b.get_global_rect().get_center().x])
+	layer.hide_tip()
+	# a child without a tooltip: the tip goes under the parent it came from
+	b.size = Vector2(120, 40)
+	var icon := Control.new()
+	icon.position = Vector2(80, 8)
+	icon.size = Vector2(24, 24)
+	b.add_child(icon)
+	await process_frame
+	check(WoldTooltipLayer.owner_of(icon) == b, "a child's tooltip belongs to the parent that has it")
+	layer.show_for(icon)
+	await process_frame
+	check(absf(layer.panel().get_global_rect().get_center().x - b.get_global_rect().get_center().x) < 1.0,
+			"and the tip centres on that parent, not the child")
+	icon.queue_free()
+	layer.hide_tip()
 	b.position = Vector2(400, 690)
 	layer.show_for(b)
 	await process_frame
@@ -103,7 +129,7 @@ func _big() -> void:
 	await process_frame
 	var p := layer.panel().get_global_rect()
 	check(absf(p.get_center().x - 700.0) < 1.0 and p.position.y > 200.0,
-			"a big control anchors the tip at the cursor, not its middle (%s)" % p)
+			"over a paragraph the tip goes at the cursor, not its middle (%s)" % p)
 	layer.hide_tip()
 	text.queue_free()
 
