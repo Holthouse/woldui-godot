@@ -16,8 +16,13 @@ extends CanvasLayer
 ## text belongs to, or above it if there's no room. Over text and lists
 ## (RichTextLabel, ItemList, Tree, TextEdit) or anything very tall it goes
 ## under the cursor instead: there the tip is about the bit you pointed at.
+## A control can point at that bit itself (a link in a paragraph, a cell in a
+## grid): set_meta(ANCHOR_META, rect), a global Rect2, and the tip goes under
+## that. Remove the meta when the pointer leaves it.
 
 const NAME := "WoldTooltipLayer"
+## Meta on a control: a global Rect2 to put its tip under.
+const ANCHOR_META := &"wold_tooltip_anchor"
 const LAYER := 110
 # a control taller than this is anchored at the cursor
 const TALL := 120.0
@@ -212,6 +217,8 @@ func _anchor_rect() -> Rect2:
 	var at_cursor := Rect2(mouse.x, mouse.y, 0.0, CURSOR_HEIGHT)
 	if _anchor == null or not is_instance_valid(_anchor) or not _anchor.is_inside_tree():
 		return at_cursor
+	if _anchor.has_meta(ANCHOR_META):
+		return _anchor.get_meta(ANCHOR_META) as Rect2
 	if follows_cursor(_anchor):
 		return at_cursor
 	return _anchor.get_global_rect()

@@ -26,7 +26,7 @@ func _run() -> void:
 	await _placement()
 	await _big()
 	await _floating_and_press()
-	finish(18)
+	finish(19)
 
 
 func _target(pos: Vector2, tip: String) -> Button:
@@ -130,6 +130,15 @@ func _big() -> void:
 	var p := layer.panel().get_global_rect()
 	check(absf(p.get_center().x - 700.0) < 1.0 and p.position.y > 200.0,
 			"over a paragraph the tip goes at the cursor, not its middle (%s)" % p)
+	layer.hide_tip()
+	# ...unless it says which part the tip is about, a link say
+	var link := Rect2(300, 150, 80, 24)
+	text.set_meta(WoldTooltipLayer.ANCHOR_META, link)
+	layer.show_for(text)
+	await process_frame
+	p = layer.panel().get_global_rect()
+	check(absf(p.get_center().x - link.get_center().x) < 1.0 and p.position.y >= link.end.y,
+			"an anchor rect on the control puts the tip under that part (%s)" % p)
 	layer.hide_tip()
 	text.queue_free()
 
