@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/woldui/components/wold_radial_menu/wold_radial_menu.gd" id="1_radial"]
+
+[node name="WoldRadialMenu" type="Control"]
+custom_minimum_size = Vector2(340, 340)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 340.0
+offset_bottom = 340.0
+script = ExtResource("1_radial")
+items = [{
+"label": "Train"
+}, {
+"label": "Research"
+}, {
+"label": "Build"
+}, {
+"disabled": true,
+"label": "Age Up"
+}, {
+"label": "Demolish"
+}]
+center_title = "City"

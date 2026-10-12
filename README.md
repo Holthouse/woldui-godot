@@ -450,6 +450,10 @@ log.add(any_control)                   # a turn marker, a notice, a card
 
 Key caps for a shortcut written as text: `keys = "Ctrl+Shift+S"`. It uses the same drawn caps as WoldButtonPrompt. Use WoldButtonPrompt when you want an action that follows the player's device (from the InputMap, or from your own bindings through `WoldPrompts.set_binding_resolver`), and WoldKbd for fixed text in help screens and menus. See `gallery/examples/save_shortcut.tscn`.
 
+### WoldRadialMenu
+
+A ring of choices round a centre, the way console strategy games give a selected unit its commands. `items` is a list of `{label, icon, disabled}`; the first slice sits at the top and they go round clockwise. `center_title` and `center_icon` say what the choices are for, and the highlighted slice's name shows under them. It only draws and picks: your game decides what drives it, with `aim(stick_vector)` (a resting stick keeps the pick), `step(1)` / `step(-1)` for a d-pad or keys, and `choose()`, which emits `chosen(index)` unless the slice is disabled. Hovering a slice with the mouse highlights it and a click chooses it. For more than eight choices, put groups on the slices and open a second ring for the one picked.
+
 ### WoldTabs
 
 Tabs with a marker that slides to the current one: an underline, or a raised pill on a sunken track.
