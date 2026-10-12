@@ -53,7 +53,16 @@ enum Layout { TOP, SIDE }
 		marker_first = v
 		_rebuild()
 ## LB/RB flip tabs. Reads the joypad buttons directly, no InputMap needed.
-@export var pad_shoulders := true
+@export var pad_shoulders := true:
+	set(v):
+		pad_shoulders = v
+		_refresh_shoulders()
+## Draw the LB/RB glyphs at the two ends of the bar while the player is on a
+## pad, so they can see the shoulders flip tabs. Needs pad_shoulders.
+@export var show_shoulder_prompts := true:
+	set(v):
+		show_shoulder_prompts = v
+		_refresh_shoulders()
 @export var animate_pages := true
 
 var _group := ButtonGroup.new()
@@ -70,7 +79,46 @@ func _ready() -> void:
 	child_exiting_tree.connect(func(_n): _rebuild.call_deferred())
 	# after the bar lays its buttons out; resized comes before that
 	%Bar.sort_children.connect(_follow, CONNECT_DEFERRED)
+	var ui := WoldUIRuntime.instance()
+	if not ui.input_mode_changed.is_connected(_on_input_mode):
+		ui.input_mode_changed.connect(_on_input_mode)
 	_rebuild()
+
+
+func _exit_tree() -> void:
+	var ui := WoldUIRuntime.instance()
+	if ui.input_mode_changed.is_connected(_on_input_mode):
+		ui.input_mode_changed.disconnect(_on_input_mode)
+
+
+func _on_input_mode(_mode: int) -> void:
+	_refresh_shoulders()
+
+
+## Whether the LB/RB glyphs are up right now.
+func shoulders_shown() -> bool:
+	return is_node_ready() and (%ShoulderLeft as Control).visible
+
+
+func _refresh_shoulders() -> void:
+	if not is_node_ready():
+		return
+	var on := show_shoulder_prompts and pad_shoulders and tab_count() > 1 and not Engine.is_editor_hint() \
+			and WoldUIRuntime.instance().input_mode == WoldUIRuntime.InputMode.PAD
+	var left := %ShoulderLeft as WoldPromptGlyph
+	var right := %ShoulderRight as WoldPromptGlyph
+	left.visible = on
+	right.visible = on
+	if not on:
+		return
+	var family := WoldPrompts.family_of()
+	for pair in [[left, JOY_BUTTON_LEFT_SHOULDER], [right, JOY_BUTTON_RIGHT_SHOULDER]]:
+		var e := InputEventJoypadButton.new()
+		e.button_index = pair[1]
+		(pair[0] as WoldPromptGlyph).glyph = WoldPrompts.glyph_for(e, family)
+	# an end that can't go further is dimmed
+	left.modulate.a = 1.0 if current > 0 else 0.35
+	right.modulate.a = 1.0 if current < tab_count() - 1 else 0.35
 
 
 ## Subclass hook, runs before the bar is rebuilt.
@@ -176,6 +224,7 @@ func _apply(changed: bool) -> void:
 			WoldMotion.appear(page_list[i], WoldMotion.preset("appear_fade"))
 		else:
 			page_list[i].visible = is_current
+	_refresh_shoulders()
 	# deferred so the bar has laid out the new buttons first
 	_place_indicator.call_deferred(changed)
 	if changed:
@@ -246,6 +295,13 @@ func _arrange() -> void:
 	vertical = top
 	(%Header as BoxContainer).vertical = top
 	(%Bar as BoxContainer).vertical = not top
+	# the shoulder glyphs sit at the two ends of the bar, whichever way it runs
+	(%BarRow as BoxContainer).vertical = not top
+	(%Bar as Control).size_flags_horizontal = Control.SIZE_EXPAND_FILL if top else Control.SIZE_FILL
+	(%Bar as Control).size_flags_vertical = Control.SIZE_FILL if top else Control.SIZE_EXPAND_FILL
+	for glyph in [%ShoulderLeft, %ShoulderRight]:
+		(glyph as Control).size_flags_vertical = Control.SIZE_SHRINK_CENTER if top else Control.SIZE_FILL
+		(glyph as Control).size_flags_horizontal = Control.SIZE_FILL if top else Control.SIZE_SHRINK_CENTER
 	# down the side the bar is only as tall as its tabs
 	(%Header as Control).size_flags_vertical = Control.SIZE_FILL if top else Control.SIZE_SHRINK_BEGIN
 	var header := %Header as Control

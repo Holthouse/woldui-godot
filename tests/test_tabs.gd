@@ -20,10 +20,11 @@ func _run() -> void:
 	await _indicator()
 	await _metadata_and_live_pages()
 	await _pad()
+	await _shoulder_prompts()
 	await _saved_past_three()
 	await _pill()
 	await _side()
-	finish(44)
+	finish(48)
 
 
 func _bar_only() -> void:
@@ -135,6 +136,28 @@ func _pad() -> void:
 	t.pad_shoulders = false
 	get_root().push_input(lb)
 	check(t.current == 1, "pad_shoulders off ignores them")
+	t.queue_free()
+
+
+func _shoulder_prompts() -> void:
+	var t := _example()
+	await process_frame
+	ui.note_input(InputEventMouseButton.new())
+	check(not t.shoulders_shown(), "no LB/RB glyphs under the mouse")
+	var pad := InputEventJoypadButton.new()
+	pad.pressed = true
+	ui.note_input(pad)
+	await process_frame
+	var left := t.get_node("%ShoulderLeft") as WoldPromptGlyph
+	var right := t.get_node("%ShoulderRight") as WoldPromptGlyph
+	check(t.shoulders_shown() and left.glyph.text == "LB" and right.glyph.text == "RB", "on a pad, LB and RB show at the ends of the bar")
+	var first := t.tab_button(0).get_global_rect()
+	var last := t.tab_button(t.tab_count() - 1).get_global_rect()
+	check(left.get_global_rect().end.x <= first.position.x and right.get_global_rect().position.x >= last.end.x,
+			"LB left of the first tab, RB right of the last")
+	check(left.modulate.a < 1.0 and right.modulate.a == 1.0, "on the first tab LB is dimmed: there's nowhere left to go")
+	t.show_shoulder_prompts = false
+	ui.note_input(InputEventMouseButton.new())
 	t.queue_free()
 
 
