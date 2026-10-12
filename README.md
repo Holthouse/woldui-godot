@@ -448,7 +448,7 @@ log.add(any_control)                   # a turn marker, a notice, a card
 
 ### WoldKbd
 
-Key caps for a shortcut written as text: `keys = "Ctrl+Shift+S"`. It uses the same drawn caps as WoldButtonPrompt. Use WoldButtonPrompt when you want an InputMap action that follows the player's device, and WoldKbd for fixed text in help screens and menus. See `gallery/examples/save_shortcut.tscn`.
+Key caps for a shortcut written as text: `keys = "Ctrl+Shift+S"`. It uses the same drawn caps as WoldButtonPrompt. Use WoldButtonPrompt when you want an action that follows the player's device (from the InputMap, or from your own bindings through `WoldPrompts.set_binding_resolver`), and WoldKbd for fixed text in help screens and menus. See `gallery/examples/save_shortcut.tscn`.
 
 ### WoldTabs
 
@@ -459,7 +459,7 @@ tabs.current = 1
 tabs.tab_changed.connect(func(i): print("tab ", i))
 ```
 
-Add your pages as children of the WoldTabs node, like a TabContainer; each page's name is its tab label. Page metadata `wold_title`, `wold_icon` and `wold_badge` change the label, add an icon or add a count. With no pages and `tabs` set, it's just a tab bar. `stretch` spreads the tabs over the width, and LB/RB switch tabs on a pad with no InputMap setup (`pad_shoulders`). See `gallery/examples/tabs_example.tscn`.
+Add your pages as children of the WoldTabs node, like a TabContainer; each page's name is its tab label. Page metadata `wold_title`, `wold_icon` and `wold_badge` change the label, add an icon or add a count. With no pages and `tabs` set, it's just a tab bar. `stretch` spreads the tabs over the width, and LB/RB switch tabs on a pad with no InputMap setup (`pad_shoulders`). While the player is on a pad, LB and RB glyphs sit at the two ends of the bar, dimmed at an end with nowhere to go (`show_shoulder_prompts`). See `gallery/examples/tabs_example.tscn`.
 
 ```gdscript
 tabs.look = WoldTabs.Look.PILL        # LINE (default) or PILL
@@ -563,6 +563,8 @@ For something you draw yourself, `WoldMotion.blend(prev_tween, node, from, to, f
 There are eight sound slots (hover, click, confirm, back, error, open, close, focus), set through a `WoldSoundSet` on the tokens. Empty slots fall back to built-in synthesised sounds while `use_builtin_sounds` is on: soft mallet notes (confirm goes up, back comes down), a wooden tick for clicks, a low double knock for errors and quiet whooshes for open and close. They're made on first use, so there are no audio files, and `WoldSounds.mallet()`, `tick()`, `knock()`, `whoosh()` and `mix()` are there if you want to make your own the same way.
 
 Enabling the plugin adds a `WoldUI` autoload. It holds the player preferences (`reduced_motion`, `sound_enabled`, `sound_volume_db`) and tracks the input device in `input_mode` (MOUSE, KEYBOARD, PAD or TOUCH), with `input_mode_changed` when it switches. Focus sounds only play on keyboard and pad.
+
+Two things for pad support. Godot's `ui_accept` and `ui_cancel` come with keys only, so call `WoldUIRuntime.add_pad_ui_bindings()` once to put A and B on them. And with `swallow_mode_switch` on, the press that moves between the pad and the keyboard/mouse only switches devices: it's eaten before the GUI sees it, so picking up the pad never also presses whatever has focus. The very first press is let through (that's the player choosing a device, like a "press any button" screen), and a mouse that only moves doesn't take over from the pad.
 
 On touch (`WoldUI.is_touch()`) the components behave for fingers: buttons don't lift or play a hover sound on a tap, tooltips show on a long-press and hide on the next touch, hover cards open on a tap, page dots take a fingertip-sized tap, and a stepper steps towards whichever side of its value you tap. Button prompts hide when `hide_on_mouse` is on, as they do for the mouse. If you don't have the autoload, `WoldUIRuntime.instance()` makes one when first needed.
 

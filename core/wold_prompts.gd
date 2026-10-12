@@ -47,8 +47,22 @@ static func family_of(device := 0) -> Family:
 	return Family.XBOX
 
 
+## A game that keeps its bindings somewhere other than the InputMap hands
+## them over here: Callable(action: StringName, device: Device) -> InputEvent
+## (or null when it doesn't know the action, which falls back to the InputMap).
+static var _resolver := Callable()
+
+
+static func set_binding_resolver(resolver: Callable) -> void:
+	_resolver = resolver
+
+
 ## First event on `action` for that device, or null.
 static func event_for(action: StringName, device: Device) -> InputEvent:
+	if _resolver.is_valid():
+		var resolved = _resolver.call(action, device)
+		if resolved is InputEvent:
+			return resolved
 	if not InputMap.has_action(action):
 		return null
 	for e in InputMap.action_get_events(action):

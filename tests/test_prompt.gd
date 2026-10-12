@@ -18,7 +18,9 @@ func _run() -> void:
 	await _live_switching()
 	await _fallbacks_and_hiding()
 	await _own_art()
-	finish(27)
+	_resolver()
+	await _switch_press()
+	finish(37)
 
 
 func _key(code: Key, physical := false) -> InputEventKey:
@@ -132,6 +134,76 @@ func _fallbacks_and_hiding() -> void:
 	check(not p.visible, "a finger counts as the mouse here too")
 	ui.note_input(InputEventMouseButton.new())
 	p.queue_free()
+
+
+# a game whose bindings aren't in the InputMap hands them over itself
+func _resolver() -> void:
+	WoldPrompts.set_binding_resolver(func(action: StringName, device: int) -> InputEvent:
+		if action == &"game_only" and device == WoldPrompts.Device.PAD:
+			return _pad(JOY_BUTTON_X)
+		return null)
+	var p := _prompt()
+	p.input_kind = WoldButtonPrompt.InputKind.PAD
+	p.action = &"game_only"
+	check(p.glyph.text == "X", "a binding resolver supplies an action the InputMap doesn't have")
+	p.action = ACTION
+	check(p.glyph.text == "A", "and the InputMap still answers what the resolver doesn't know")
+	WoldPrompts.set_binding_resolver(Callable())
+	p.queue_free()
+
+
+func _press_and_release(e: InputEvent) -> void:
+	var down := e.duplicate()
+	down.pressed = true
+	get_root().push_input(down)
+	var up := e.duplicate()
+	up.pressed = false
+	get_root().push_input(up)
+
+
+# swallow_mode_switch: the press that crosses between the pad and the
+# keyboard/mouse only switches
+func _switch_press() -> void:
+	var b := Button.new()
+	b.text = "Focused"
+	stage.add_child(b)
+	await process_frame
+	b.grab_focus()
+	var presses := [0]
+	b.pressed.connect(func(): presses[0] += 1)
+	var accept_before := InputMap.action_get_events(&"ui_accept")
+	_press_and_release(_pad(JOY_BUTTON_A))
+	check(presses[0] == 0, "Godot's own ui_accept has no pad button")
+	WoldUIRuntime.add_pad_ui_bindings()
+	WoldUIRuntime.add_pad_ui_bindings()
+	check(InputMap.action_get_events(&"ui_accept").size() == accept_before.size() + 1, "add_pad_ui_bindings adds A to ui_accept, once")
+	ui.swallow_mode_switch = true
+	ui._device_chosen = false
+	ui.input_mode = WoldUIRuntime.InputMode.MOUSE
+	_press_and_release(_pad(JOY_BUTTON_A))
+	check(presses[0] == 1 and ui.input_mode == WoldUIRuntime.InputMode.PAD, "the very first press chooses the pad AND acts")
+	var nudge := InputEventMouseMotion.new()
+	nudge.relative = Vector2(40, 0)
+	ui.note_input(nudge)
+	check(ui.input_mode == WoldUIRuntime.InputMode.PAD, "a mouse that only moves doesn't take over from the pad")
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	check(ui.note_input(click) and ui.input_mode == WoldUIRuntime.InputMode.MOUSE, "a click while on the pad switches, and is to be eaten")
+	var key := InputEventKey.new()
+	key.keycode = KEY_E
+	key.pressed = true
+	check(not ui.note_input(key), "keyboard and mouse are one device: a key after a click isn't eaten")
+	_press_and_release(_pad(JOY_BUTTON_A))
+	check(presses[0] == 1 and ui.input_mode == WoldUIRuntime.InputMode.PAD, "back to the pad: that press only switches, the focused button isn't pressed")
+	_press_and_release(_pad(JOY_BUTTON_A))
+	check(presses[0] == 2, "and the next press acts")
+	ui.swallow_mode_switch = false
+	ui.input_mode = WoldUIRuntime.InputMode.MOUSE
+	InputMap.action_erase_events(&"ui_accept")
+	for e in accept_before:
+		InputMap.action_add_event(&"ui_accept", e)
+	b.queue_free()
 
 
 func _own_art() -> void:

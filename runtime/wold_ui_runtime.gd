@@ -35,8 +35,17 @@ var sound_enabled := true:
 ## Added on top of the set's volume. Hook a settings slider to it.
 var sound_volume_db := 0.0
 var input_mode: InputMode = InputMode.MOUSE
+## Moving between the pad and the keyboard/mouse takes a press, and that press
+## only switches: it's eaten before the GUI and _unhandled_input see it, so
+## picking up the pad never also clicks whatever has focus. The very first press
+## is let through (it's the player choosing a device, e.g. "press any button").
+## A mouse that only moves doesn't take over from the pad. Off by default.
+var swallow_mode_switch := false
 ## for tests
 var last_sound := ""
+
+# set by the first press of any device; until then nothing is swallowed
+var _device_chosen := false
 
 ## The WoldFeedback that the tokens' auto_feedback puts on the root, or null.
 var feedback: WoldFeedback
@@ -126,30 +135,66 @@ func _on_node_added(node: Node) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	note_input(event)
+	if note_input(event) and is_inside_tree():
+		get_viewport().set_input_as_handled()
 
 
-## Called from _input. Public in case your game routes input itself.
-func note_input(event: InputEvent) -> void:
+## Called from _input. Public in case your game routes input itself; then eat
+## the event yourself when this returns true (see swallow_mode_switch).
+func note_input(event: InputEvent) -> bool:
 	# a tap also arrives as made-up mouse events for mouse-only controls;
 	# those mustn't flip TOUCH back to MOUSE
 	if event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION:
-		return
+		return false
 	var mode := input_mode
+	var press := false
 	if event is InputEventScreenTouch or event is InputEventScreenDrag:
 		mode = InputMode.TOUCH
 	elif event is InputEventJoypadButton:
 		mode = InputMode.PAD
+		press = event.pressed
 	elif event is InputEventJoypadMotion:
 		if absf((event as InputEventJoypadMotion).axis_value) >= PAD_DEADZONE:
 			mode = InputMode.PAD
+			press = true
 	elif event is InputEventKey:
 		mode = InputMode.KEYBOARD
-	elif event is InputEventMouseButton or (event is InputEventMouseMotion and (event as InputEventMouseMotion).relative.length() > 2.0):
+		press = event.pressed and not event.echo
+	elif event is InputEventMouseButton:
 		mode = InputMode.MOUSE
+		press = event.pressed
+	elif event is InputEventMouseMotion and (event as InputEventMouseMotion).relative.length() > 2.0:
+		# a nudged mouse doesn't take the screen from someone on the pad
+		if not (swallow_mode_switch and input_mode == InputMode.PAD):
+			mode = InputMode.MOUSE
+	var eat := swallow_mode_switch and press and _device_chosen \
+			and (mode == InputMode.PAD) != (input_mode == InputMode.PAD)
+	if press:
+		_device_chosen = true
 	if mode != input_mode:
 		input_mode = mode
 		input_mode_changed.emit(mode)
+	return eat
+
+
+## Godot's ui_accept and ui_cancel come with keys only, so out of the box a
+## pad can move focus but not press anything or go back. This adds the bottom
+## face button to ui_accept and the right one to ui_cancel (A and B on an Xbox
+## pad), unless they're there already. Call it once at startup.
+static func add_pad_ui_bindings() -> void:
+	for pair in [[&"ui_accept", JOY_BUTTON_A], [&"ui_cancel", JOY_BUTTON_B]]:
+		if not InputMap.has_action(pair[0]):
+			continue
+		var has := false
+		for e in InputMap.action_get_events(pair[0]):
+			if e is InputEventJoypadButton and (e as InputEventJoypadButton).button_index == pair[1]:
+				has = true
+		if not has:
+			var b := InputEventJoypadButton.new()
+			b.button_index = pair[1]
+			# any pad, not just the first one plugged in
+			b.device = -1
+			InputMap.action_add_event(pair[0], b)
 
 
 ## Keys or pad. Focus rings/sounds and prompts only matter then.
