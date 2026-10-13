@@ -48,6 +48,8 @@ WoldCustomize.apply(button)
 
 From the ramps come semantic roles like `role("text")`, `role("surface_raised")` or `role("accent_text")`, worked out for dark or light mode. If one role comes out wrong for your game, replace just that one in `role_overrides`. The dock shows each role's contrast so you can see what you're doing.
 
+To let players pick light or dark (or anything else, like high contrast) while the game runs, swap the tokens: `WoldUI.apply_tokens(WoldUI.tokens.derive({"mode": WoldTokens.Mode.DARK}))`. It rebuilds the project theme in memory, so every control repaints, HUDs under a CanvasLayer and popups included, and WoldScopes rebuild. Nothing is saved; the tokens file stays as it is.
+
 The part you actually touch day to day is the named styles. You put them in a node's Theme Type Variation:
 
 - Buttons: `ButtonPrimary`, `ButtonSecondary`, `ButtonOutline`, `ButtonGhost`, `ButtonDanger`, `ButtonIcon`, each also in `Sm` and `Lg`

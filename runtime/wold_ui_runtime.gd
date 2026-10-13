@@ -234,10 +234,19 @@ func play(slot: String, sounds: WoldSoundSet = null) -> void:
 	voice.play()
 
 
-## Runtime token swap (high contrast, faction colours...). Rebuilds the theme
-## and sets it on the root window.
+## Runtime token swap (light/dark, high contrast, faction colours...). Rebuilds
+## the theme and writes it into the project theme in memory (never saved), or,
+## without one, into the engine's default theme. Not onto the root window: a
+## Window's theme stops at a CanvasLayer, so a HUD under one kept the old look.
+## Controls repaint from the theme's `changed`.
 func apply_tokens(new_tokens: WoldTokens) -> void:
 	tokens = new_tokens
-	get_tree().root.theme = WoldThemeBuilder.build(new_tokens)
+	var built := WoldThemeBuilder.build(new_tokens)
+	var project := ThemeDB.get_project_theme()
+	if project:
+		WoldThemeBuilder.update_in_place(project, built)
+	else:
+		# merge, not replace: the default theme also holds what WoldUI doesn't style
+		ThemeDB.get_default_theme().merge_with(built)
 	tokens_changed.emit()
 	WoldCustomize.apply_tree(get_tree().root)

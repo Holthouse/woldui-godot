@@ -42,7 +42,8 @@ func _run() -> void:
 	_update_in_place()
 	await _resolves_on_a_real_control()
 	_layout_spacing()
-	finish(260)
+	await _apply_tokens_reaches_canvas_layers()
+	finish(262)
 
 
 ## a broken script only fails when something loads it (bit me once with an enum
@@ -189,3 +190,27 @@ func _layout_spacing() -> void:
 		check(theme.get_constant("separation", "Stack" + size) == px, "Stack%s = space_%s" % [size, size.to_lower()])
 		check(theme.get_constant("separation", "Row" + size) == px, "Row%s = space_%s" % [size, size.to_lower()])
 		check(theme.get_constant("margin_left", "Inset" + size) == px, "Inset%s = space_%s" % [size, size.to_lower()])
+
+
+## a light/dark swap at runtime has to reach a HUD under a CanvasLayer too;
+## a theme set on the root window stops there
+func _apply_tokens_reaches_canvas_layers() -> void:
+	var ui := WoldUIRuntime.instance()
+	var before := ui.tokens
+	var layer := CanvasLayer.new()
+	get_root().add_child(layer)
+	var label := Label.new()
+	layer.add_child(label)
+	var light: WoldTokens = load("res://addons/woldui/tokens/default_light.tres")
+	var dark: WoldTokens = load("res://addons/woldui/tokens/default_dark.tres")
+	ui.apply_tokens(light)
+	await process_frame
+	var light_text := label.get_theme_color("font_color")
+	ui.apply_tokens(dark)
+	await process_frame
+	var dark_text := label.get_theme_color("font_color")
+	check(light_text.is_equal_approx(light.role("text")) and dark_text.is_equal_approx(dark.role("text")),
+		"apply_tokens reaches a Label under a CanvasLayer (light %s, dark %s)" % [light_text.to_html(), dark_text.to_html()])
+	check(get_root().theme == null, "and leaves the root window's theme alone")
+	ui.apply_tokens(before)
+	layer.free()
