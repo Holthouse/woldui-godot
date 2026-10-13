@@ -22,8 +22,13 @@ const _FACE_ART := {
 const _PILL := {
 	JOY_BUTTON_LEFT_SHOULDER: ["LB", "L1", "L"], JOY_BUTTON_RIGHT_SHOULDER: ["RB", "R1", "R"],
 	JOY_BUTTON_LEFT_STICK: ["LS", "L3", "LS"], JOY_BUTTON_RIGHT_STICK: ["RS", "R3", "RS"],
-	JOY_BUTTON_BACK: ["View", "Share", "−"], JOY_BUTTON_START: ["Menu", "Options", "+"],
+	JOY_BUTTON_BACK: ["View", "Create", "−"], JOY_BUTTON_START: ["Menu", "Options", "+"],
 	JOY_BUTTON_GUIDE: ["Home", "PS", "Home"],
+}
+## Pills that show a symbol instead of their name. Xbox prints one on its two
+## middle buttons and players don't know them as "View" and "Menu".
+const _PILL_ICON := {
+	JOY_BUTTON_BACK: ["copy", "", ""], JOY_BUTTON_START: ["menu", "", ""],
 }
 const _DPAD := {
 	JOY_BUTTON_DPAD_UP: "arrow-up", JOY_BUTTON_DPAD_DOWN: "arrow-down",
@@ -97,7 +102,9 @@ static func glyph_for(event: InputEvent, family := Family.XBOX) -> Dictionary:
 			return {shape = "pill", text = "", icon = _DPAD[b], art = "prompt_%s_%s" % [fam, _DPAD[b].replace("arrow", "dpad")]}
 		if _PILL.has(b):
 			var label: String = _PILL[b][family]
-			return {shape = "pill", text = label, icon = "", art = "prompt_%s_%s" % [fam, label.to_lower()]}
+			var symbol: String = _PILL_ICON[b][family] if _PILL_ICON.has(b) else ""
+			return {shape = "pill", text = "" if symbol != "" else label, icon = symbol,
+				art = "prompt_%s_%s" % [fam, label.to_lower()]}
 	if event is InputEventJoypadMotion:
 		var axis := (event as InputEventJoypadMotion).axis
 		var label: String

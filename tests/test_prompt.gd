@@ -20,7 +20,7 @@ func _run() -> void:
 	await _own_art()
 	_resolver()
 	await _switch_press()
-	finish(37)
+	finish(39)
 
 
 func _key(code: Key, physical := false) -> InputEventKey:
@@ -59,6 +59,13 @@ func _mapping() -> void:
 	trig.axis = JOY_AXIS_TRIGGER_RIGHT
 	check(WoldPrompts.glyph_for(trig, X).text == "RT" and WoldPrompts.glyph_for(trig, N).text == "ZR", "triggers: RT / ZR")
 	check(WoldPrompts.glyph_for(_pad(JOY_BUTTON_DPAD_LEFT), X).icon == "arrow-left", "the d-pad draws arrows")
+	# nobody knows the small middle buttons by name: Xbox prints a symbol on them
+	var view := WoldPrompts.glyph_for(_pad(JOY_BUTTON_BACK), X)
+	var menu := WoldPrompts.glyph_for(_pad(JOY_BUTTON_START), X)
+	check(view.text == "" and view.icon == "copy" and menu.text == "" and menu.icon == "menu",
+		"Xbox View and Menu draw their symbols, not their names (%s / %s)" % [view, menu])
+	check(WoldPrompts.glyph_for(_pad(JOY_BUTTON_BACK), P).text == "Create"
+		and WoldPrompts.glyph_for(_pad(JOY_BUTTON_BACK), N).text == "−", "PlayStation's is Create, Switch's is −")
 	var mouse := InputEventMouseButton.new()
 	mouse.button_index = MOUSE_BUTTON_RIGHT
 	check(WoldPrompts.glyph_for(mouse).shape == "icon" and WoldPrompts.glyph_for(mouse).icon == "mouse-right", "mouse buttons are mouse icons")
