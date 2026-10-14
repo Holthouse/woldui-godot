@@ -3,22 +3,28 @@
 [ext_resource type="Script" path="res://addons/woldui/components/wold_radial_menu/wold_radial_menu.gd" id="1_radial"]
 
 [node name="WoldRadialMenu" type="Control"]
-custom_minimum_size = Vector2(340, 340)
+custom_minimum_size = Vector2(340, 390)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 340.0
-offset_bottom = 340.0
+offset_bottom = 390.0
 script = ExtResource("1_radial")
 items = [{
+"count": 3,
+"hint": "Villagers, soldiers and scouts.",
 "label": "Train"
 }, {
+"count": 5,
 "label": "Research"
 }, {
+"count": 4,
 "label": "Build"
 }, {
 "disabled": true,
+"hint": "Needs 500 food and 200 gold.",
 "label": "Age Up"
 }, {
 "label": "Demolish"
 }]
 center_title = "City"
+caption = "City"
