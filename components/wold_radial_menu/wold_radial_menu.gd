@@ -266,16 +266,19 @@ func _draw() -> void:
 	var c := ring_center()
 	var ring := ring_radius()
 	var band := item_radius * (1.0 + _POP) * 2.0 + _BAND_PAD * 2.0
-	# the band the medallions sit on, with a fine edge each side
-	draw_arc(c, ring, 0.0, TAU, 96, Color(tokens.role("surface_overlay"), 0.94), band, true)
+	# the band the medallions sit on, one solid disc under the centre's, with a
+	# fine edge each side (a thick draw_arc lets the board show through)
+	var outer := ring + band / 2.0
+	draw_circle(c, outer, tokens.role("surface_overlay"))
 	var edge := Color(tokens.role("accent"), 0.45)
-	draw_arc(c, ring + band / 2.0, 0.0, TAU, 96, edge, 1.5, true)
-	draw_arc(c, ring - band / 2.0, 0.0, TAU, 96, edge, 1.5, true)
-	# the band lights up behind the pointed-at choice
+	draw_arc(c, outer, 0.0, TAU, 96, edge, 1.5, true)
+	draw_arc(c, ring - band / 2.0, 0.0, TAU, 96, Color(edge, 0.25), 1.0, true)
+	# the band lights up behind the pointed-at choice, about a medallion wide
 	if highlighted >= 0 and items.size() > 1:
 		var mid := -PI / 2.0 + slice_angle() * highlighted
-		var half := slice_angle() / 2.0 * 0.86
-		draw_arc(c, ring, mid - half, mid + half, 24, Color(tokens.role("accent"), 0.18), band, true)
+		var half := minf(slice_angle() / 2.0, item_radius * 1.9 / ring)
+		draw_colored_polygon(_sector(c, ring - band / 2.0, outer, mid - half, mid + half),
+			Color(tokens.role("accent"), 0.16))
 	# the centre disc
 	draw_circle(c, inner_radius, tokens.role("surface_raised"))
 	draw_arc(c, inner_radius, 0.0, TAU, 96, edge, 2.0, true)
@@ -309,14 +312,24 @@ func _draw_medallion(i: int, tokens: WoldTokens, font: Font) -> void:
 		draw_string(font, at + Vector2(-w / 2.0, fs / 3.0), label, HORIZONTAL_ALIGNMENT_CENTER, -1, fs, ink)
 	var n := int(items[i].get("count", 0))
 	if n > 0 and font != null:
-		var badge_at := at + Vector2(r * 0.72, -r * 0.72)
-		var br := maxf(9.0, r * 0.34)
+		var badge_at := at + Vector2(r * 0.74, -r * 0.74)
+		var br := maxf(10.0, r * 0.4)
 		draw_circle(badge_at, br, tokens.role("accent") if enabled else tokens.role("control_disabled"))
-		var fs := int(br * 1.15)
+		var fs := int(br * 1.25)
 		var text := str(n)
 		var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, fs).x
 		draw_string(font, badge_at + Vector2(-w / 2.0, fs * 0.36), text, HORIZONTAL_ALIGNMENT_CENTER, -1, fs,
 			tokens.role("on_accent") if enabled else tokens.role("text_disabled"))
+
+
+# A piece of ring between two radii and two angles, as a polygon
+func _sector(c: Vector2, r0: float, r1: float, a0: float, a1: float) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for s in 13:
+		points.append(c + Vector2.from_angle(lerpf(a0, a1, s / 12.0)) * r1)
+	for s in range(12, -1, -1):
+		points.append(c + Vector2.from_angle(lerpf(a0, a1, s / 12.0)) * r0)
+	return points
 
 
 # The centre's words: the pointed-at choice, or the menu's own title
