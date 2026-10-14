@@ -108,6 +108,7 @@ func _init() -> void:
 	_title.theme_type_variation = &"Subheading"
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_title.max_lines_visible = 2
 	_centre.add_child(_title)
 	_details = HBoxContainer.new()
 	_details.theme_type_variation = &"RowSm"
@@ -118,6 +119,8 @@ func _init() -> void:
 	_hint.theme_type_variation = &"Muted"
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hint.max_lines_visible = 4
+	_hint.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_centre.add_child(_hint)
 	_caption_panel = PanelContainer.new()
 	_caption_panel.theme_type_variation = &"PanelRaised"
@@ -138,6 +141,7 @@ func _ready() -> void:
 	add_child(_prompt, false, Node.INTERNAL_MODE_BACK)
 	_prompt.resized.connect(_place_prompt)
 	_caption_panel.resized.connect(_layout)
+	_centre.minimum_size_changed.connect(_layout)
 	var ui := WoldUIRuntime.instance()
 	if not ui.input_mode_changed.is_connected(_on_mode):
 		ui.input_mode_changed.connect(_on_mode)
@@ -384,11 +388,14 @@ func _layout() -> void:
 	if not _centre:
 		return
 	var c := ring_center()
-	# the words fit the square inside the centre disc
-	var side := inner_radius * 1.5
+	# the words fit the square inside the centre disc, centred on it however
+	# many lines they take (the title at most two, the hint four)
+	var side := inner_radius * 1.45
 	_centre.custom_minimum_size = Vector2(side, 0.0)
-	_centre.size = Vector2(side, side)
-	_centre.position = c - Vector2(side, side) / 2.0
+	_centre.size = Vector2(side, 0.0)
+	var tall := _centre.get_combined_minimum_size().y
+	_centre.size = Vector2(side, tall)
+	_centre.position = c - Vector2(side, tall) / 2.0
 	if _caption_panel.visible:
 		var want := _caption_panel.get_combined_minimum_size()
 		_caption_panel.size = want
