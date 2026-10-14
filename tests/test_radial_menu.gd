@@ -103,6 +103,9 @@ func _centre_and_caption() -> void:
 	m.aim(Vector2(1, 0.4))
 	await process_frame
 	check(m.center_text().details == 0 and m.center_text().hint == "", "and a choice without them clears them")
+	# the preview scene carries a caption of its own; measure without one
+	m.caption = ""
+	await process_frame
 	var bare_height := m.get_combined_minimum_size().y
 	m.caption = "Site Commands"
 	await process_frame

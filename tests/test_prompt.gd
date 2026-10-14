@@ -20,7 +20,8 @@ func _run() -> void:
 	await _own_art()
 	_resolver()
 	await _switch_press()
-	finish(39)
+	await _families()
+	finish(44)
 
 
 func _key(code: Key, physical := false) -> InputEventKey:
@@ -227,4 +228,39 @@ func _own_art() -> void:
 	p.pad_family = WoldButtonPrompt.PadFamily.NINTENDO
 	check((p.get_node("%Glyph") as WoldPromptGlyph).art == null, "only for the glyphs it supplies")
 	ui.tokens = before
+	p.queue_free()
+
+
+# which glyphs a pad wants: its name, unless the game knows better (Steam Input
+# shows every pad as an Xbox one), and the prompts redraw when it changes
+func _families() -> void:
+	var P := WoldPrompts.Family.PLAYSTATION
+	var N := WoldPrompts.Family.NINTENDO
+	var X := WoldPrompts.Family.XBOX
+	check(WoldPrompts.family_from_name("PS5 Controller") == P and WoldPrompts.family_from_name("DualSense Wireless Controller") == P
+		and WoldPrompts.family_from_name("PS4 Controller") == P, "PlayStation pads by the names Godot reports")
+	check(WoldPrompts.family_from_name("Nintendo Switch Pro Controller") == N and WoldPrompts.family_from_name("Joy-Con (L/R)") == N,
+		"Switch pads too")
+	check(WoldPrompts.family_from_name("Xbox Series Controller") == X and WoldPrompts.family_from_name("") == X,
+		"an Xbox pad, or no name, is Xbox")
+	if not InputMap.has_action(&"test_family_a"):
+		InputMap.add_action(&"test_family_a")
+		var a_button := InputEventJoypadButton.new()
+		a_button.button_index = JOY_BUTTON_A
+		InputMap.action_add_event(&"test_family_a", a_button)
+	var p := _prompt()
+	p.action = &"test_family_a"
+	p.input_kind = WoldButtonPrompt.InputKind.PAD
+	p.pad_family = WoldButtonPrompt.PadFamily.AUTO
+	await process_frame
+	var heard := []
+	var on_change := func(f): heard.append(f)
+	ui.pad_family_changed.connect(on_change)
+	WoldPrompts.set_family_resolver(func(_device): return P)
+	await process_frame
+	check(ui.pad_family == P and heard == [P], "a game's resolver wins, and says so (%s)" % [heard])
+	check(p.glyph.icon == "x" and p.glyph.text == "", "and the prompts redraw: A is now the cross")
+	WoldPrompts.set_family_resolver(Callable())
+	ui.pad_family_changed.disconnect(on_change)
+	check(ui.pad_family == X, "without it, back to the name (no pad here: Xbox)")
 	p.queue_free()

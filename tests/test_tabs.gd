@@ -156,6 +156,20 @@ func _shoulder_prompts() -> void:
 	check(left.get_global_rect().end.x <= first.position.x and right.get_global_rect().position.x >= last.end.x,
 			"LB left of the first tab, RB right of the last")
 	check(left.modulate.a < 1.0 and right.modulate.a == 1.0, "on the first tab LB is dimmed: there's nowhere left to go")
+	# hung outside, the bar is as wide on a pad as with the mouse
+	t.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	t.position = Vector2(80, 40)
+	await process_frame
+	var inside_width := (t.get_node("%BarPad") as Control).get_combined_minimum_size().x
+	t.shoulder_prompts_outside = true
+	await process_frame
+	await process_frame
+	var bar := t.get_node("%BarPad") as Control
+	var outside_width := bar.get_combined_minimum_size().x
+	check(outside_width < inside_width - left.size.x, "outside, the glyphs no longer widen the bar (%d, was %d)" % [outside_width, inside_width])
+	var bar_rect := bar.get_global_rect()
+	check(left.visible and left.get_global_rect().end.x <= bar_rect.position.x and right.get_global_rect().position.x >= bar_rect.end.x,
+			"...and hang just beyond its two ends")
 	t.show_shoulder_prompts = false
 	ui.note_input(InputEventMouseButton.new())
 	t.queue_free()

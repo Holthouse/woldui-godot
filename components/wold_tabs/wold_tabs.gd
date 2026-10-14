@@ -63,7 +63,17 @@ enum Layout { TOP, SIDE }
 	set(v):
 		show_shoulder_prompts = v
 		_refresh_shoulders()
+## Hang the LB/RB glyphs just outside the bar's two ends instead of inside it,
+## so the bar is as wide on a pad as with a mouse. Leave room for them round
+## the tabs (a margin, a panel's padding). Bars along the top only.
+@export var shoulder_prompts_outside := false:
+	set(v):
+		shoulder_prompts_outside = v
+		_refresh_shoulders()
 @export var animate_pages := true
+
+## Gap between the bar's end and a glyph hung outside it.
+const _OUTSIDE_GAP := 6.0
 
 var _group := ButtonGroup.new()
 var _slide: Tween
@@ -82,6 +92,8 @@ func _ready() -> void:
 	var ui := WoldUIRuntime.instance()
 	if not ui.input_mode_changed.is_connected(_on_input_mode):
 		ui.input_mode_changed.connect(_on_input_mode)
+	if not ui.pad_family_changed.is_connected(_on_input_mode):
+		ui.pad_family_changed.connect(_on_input_mode)
 	_rebuild()
 
 
@@ -89,6 +101,8 @@ func _exit_tree() -> void:
 	var ui := WoldUIRuntime.instance()
 	if ui.input_mode_changed.is_connected(_on_input_mode):
 		ui.input_mode_changed.disconnect(_on_input_mode)
+	if ui.pad_family_changed.is_connected(_on_input_mode):
+		ui.pad_family_changed.disconnect(_on_input_mode)
 
 
 func _on_input_mode(_mode: int) -> void:
@@ -109,6 +123,13 @@ func _refresh_shoulders() -> void:
 	var right := %ShoulderRight as WoldPromptGlyph
 	left.visible = on
 	right.visible = on
+	# outside: out of the row's layout (a box skips top-level children), placed
+	# by _place_outside every frame they show, since the bar can move
+	var outside := on and shoulder_prompts_outside and layout == Layout.TOP
+	left.top_level = outside
+	right.top_level = outside
+	(%BarRow as Control).update_minimum_size()
+	set_process(outside)
 	if not on:
 		return
 	var family := WoldPrompts.family_of()
@@ -119,6 +140,22 @@ func _refresh_shoulders() -> void:
 	# an end that can't go further is dimmed
 	left.modulate.a = 1.0 if current > 0 else 0.35
 	right.modulate.a = 1.0 if current < tab_count() - 1 else 0.35
+
+
+# Glyphs hung outside the bar: beside its two ends, centred on its height
+func _process(_delta: float) -> void:
+	var left := %ShoulderLeft as Control
+	var right := %ShoulderRight as Control
+	if not left.top_level:
+		set_process(false)
+		return
+	var bar := %BarPad as Control
+	var at := bar.global_position
+	for glyph in [left, right]:
+		glyph.size = glyph.get_combined_minimum_size()
+	var y := at.y + (bar.size.y - left.size.y) / 2.0
+	left.global_position = Vector2(at.x - _OUTSIDE_GAP - left.size.x, y)
+	right.global_position = Vector2(at.x + bar.size.x + _OUTSIDE_GAP, y)
 
 
 ## Subclass hook, runs before the bar is rebuilt.

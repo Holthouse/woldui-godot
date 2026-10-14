@@ -46,6 +46,8 @@ func _ready() -> void:
 	var ui := WoldUIRuntime.instance()
 	if not ui.input_mode_changed.is_connected(_on_mode):
 		ui.input_mode_changed.connect(_on_mode)
+	if not ui.pad_family_changed.is_connected(_on_mode):
+		ui.pad_family_changed.connect(_on_mode)
 	refresh()
 
 
@@ -53,6 +55,8 @@ func _exit_tree() -> void:
 	var ui := WoldUIRuntime.instance()
 	if ui.input_mode_changed.is_connected(_on_mode):
 		ui.input_mode_changed.disconnect(_on_mode)
+	if ui.pad_family_changed.is_connected(_on_mode):
+		ui.pad_family_changed.disconnect(_on_mode)
 
 
 func _on_mode(_mode: int) -> void:

@@ -42,14 +42,42 @@ const _KEY_ICON := {KEY_UP: "arrow-up", KEY_DOWN: "arrow-down", KEY_LEFT: "arrow
 const _FAMILY_NAME := ["xbox", "ps", "switch"]
 
 
-## Guessed from the joy name. Anything unknown counts as Xbox.
-static func family_of(device := 0) -> Family:
-	var n := Input.get_joy_name(device).to_lower()
-	if n.contains("playstation") or n.contains("dualsense") or n.contains("dualshock") or n.contains("ps4") or n.contains("ps5") or n.contains("sony"):
-		return Family.PLAYSTATION
-	if n.contains("nintendo") or n.contains("switch") or n.contains("joy-con"):
-		return Family.NINTENDO
+## Which glyphs a pad wants. `device` -1 means the pad pressed last
+## (WoldUIRuntime.pad_device). A game's family resolver answers first, then the
+## pad's name; anything unknown counts as Xbox.
+static func family_of(device := -1) -> Family:
+	if device < 0:
+		device = WoldUIRuntime.instance().pad_device
+	if _family_resolver.is_valid():
+		var told = _family_resolver.call(device)
+		if told is int and told >= 0 and told <= Family.NINTENDO:
+			return told
+	return family_from_name(Input.get_joy_name(device))
+
+
+## The family a pad's name gives away (the names Godot reports, from SDL's
+## controller list, and the raw ones some drivers use).
+static func family_from_name(joy_name: String) -> Family:
+	var n := joy_name.to_lower()
+	for word in ["playstation", "dualsense", "dualshock", "ps3", "ps4", "ps5", "sony"]:
+		if n.contains(word):
+			return Family.PLAYSTATION
+	for word in ["nintendo", "switch", "joy-con", "joycon", "pro controller"]:
+		if n.contains(word):
+			return Family.NINTENDO
 	return Family.XBOX
+
+
+## Some pads hide what they are: Steam Input, for one, shows every controller to
+## the game as an Xbox pad. A game that can find out hands it over here:
+## Callable(device: int) -> int, a Family, or -1 when it doesn't know. Call
+## WoldUIRuntime.refresh_pad_family() when its answer may have changed.
+static var _family_resolver := Callable()
+
+
+static func set_family_resolver(resolver: Callable) -> void:
+	_family_resolver = resolver
+	WoldUIRuntime.instance().refresh_pad_family()
 
 
 ## A game that keeps its bindings somewhere other than the InputMap hands

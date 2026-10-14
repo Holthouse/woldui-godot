@@ -10,6 +10,9 @@ signal input_mode_changed(mode: InputMode)
 signal preferences_changed
 ## From apply_tokens(). WoldScopes listen and rebuild.
 signal tokens_changed
+## The pad in use turned out to be another kind (Xbox, PlayStation, Nintendo):
+## button glyphs redraw.
+signal pad_family_changed(family: int)
 
 enum InputMode { MOUSE, KEYBOARD, PAD, TOUCH }
 
@@ -35,6 +38,9 @@ var sound_enabled := true:
 ## Added on top of the set's volume. Hook a settings slider to it.
 var sound_volume_db := 0.0
 var input_mode: InputMode = InputMode.MOUSE
+## The pad that was pressed last, and which glyphs it wants (WoldPrompts.Family).
+var pad_device := 0
+var pad_family := 0
 ## Moving between the pad and the keyboard/mouse takes a press, and that press
 ## only switches: it's eaten before the GUI and _unhandled_input see it, so
 ## picking up the pad never also clicks whatever has focus. The very first press
@@ -88,6 +94,8 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	get_tree().node_added.connect(_on_node_added)
+	Input.joy_connection_changed.connect(func(_d, _c): refresh_pad_family())
+	refresh_pad_family()
 	# the main scene isn't in yet while autoloads get ready
 	start_feedback.call_deferred()
 	start_tooltips()
@@ -153,10 +161,12 @@ func note_input(event: InputEvent) -> bool:
 	elif event is InputEventJoypadButton:
 		mode = InputMode.PAD
 		press = event.pressed
+		_note_pad(event.device)
 	elif event is InputEventJoypadMotion:
 		if absf((event as InputEventJoypadMotion).axis_value) >= PAD_DEADZONE:
 			mode = InputMode.PAD
 			press = true
+			_note_pad(event.device)
 	elif event is InputEventKey:
 		mode = InputMode.KEYBOARD
 		press = event.pressed and not event.echo
@@ -250,3 +260,19 @@ func apply_tokens(new_tokens: WoldTokens) -> void:
 		ThemeDB.get_default_theme().merge_with(built)
 	tokens_changed.emit()
 	WoldCustomize.apply_tree(get_tree().root)
+
+
+## Work out which glyphs the pad in use wants again (WoldPrompts.family_of)
+## and tell the prompts when that changed. Runs when a pad connects or another
+## one is pressed; a game with its own family resolver calls it too.
+func refresh_pad_family() -> void:
+	var family: int = WoldPrompts.family_of(pad_device)
+	if family != pad_family:
+		pad_family = family
+		pad_family_changed.emit(family)
+
+
+func _note_pad(device: int) -> void:
+	if device != pad_device:
+		pad_device = device
+		refresh_pad_family()
